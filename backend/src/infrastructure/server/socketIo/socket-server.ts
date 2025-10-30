@@ -14,8 +14,23 @@ export class SocketServer {
     constructor(httpServer: HttpServer) {
         this.io = new SocketIOServer(httpServer, {
             cors: {
-                origin: "*",
+                origin: (origin, callback) => {
+                    const allowedOrigins = [
+                        'https://screen-board.com',
+                        'http://localhost:5000',
+                        'http://localhost:5173',
+                    ];
+                    
+                    if (!origin || allowedOrigins.includes(origin)) {
+                        callback(null, true);
+                    } else if (origin && (origin.includes('.replit.dev') || origin.includes('.repl.co') || origin.includes('.replit.app'))) {
+                        callback(null, true);
+                    } else {
+                        callback(null, false);
+                    }
+                },
                 methods: ["GET", "POST"],
+                credentials: true,
             },
         })
 
