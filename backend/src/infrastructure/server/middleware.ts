@@ -6,11 +6,24 @@ import { config } from '../../config/config';
 import axios from 'axios';
 
 export const setupMiddleware = (app: Express): void => {
+  const allowedOrigins = ['https://screen-board.com'];
+
   app.use(cors({
-    origin: '*',
+    origin: (origin, callback) => {
+      // Wenn kein Origin (z.B. Postman) oder erlaubte Origin
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   }));
+
+  // Preflight-Optionen für alle Routen
+  app.options('*', cors());
+
 
   app.use(express.json());
 
@@ -45,9 +58,9 @@ export const setupMiddleware = (app: Express): void => {
 
   app.use('/api', async (req, res, next) => {
     const excludedPaths = [
-      '/api/google/calendar/webhook',
-      '/api/auth/smartthings/webhook',
-      '/api/auth/smartthings/callback',
+      '/google/calendar/webhook',
+      '/auth/smartthings/webhook',
+      '/auth/smartthings/callback',
     ];
     console.log("Incoming path:", req.path);
     if (excludedPaths.some(path => req.path.startsWith(path))) {
