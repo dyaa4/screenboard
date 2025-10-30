@@ -1,0 +1,377 @@
+{
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "logout": "Logout",
+    "login": "Login",
+    "deactive": "Deactivate",
+    "active": "Activate",
+    "create": "Create",
+    "open": "Open",
+    "send": "Send",
+    "refresh": "Refresh",
+    "tryAgain": "Try again"
+  },
+  "sites": {
+    "aboutus": {
+      "title": "About Us",
+      "name": "Dyaa Kassoma",
+      "profession": "Musician & Fullstack Developer",
+      "bio": {
+        "part1": "Born in Damascus, Syria, I come from a city rich in history and culture. Today I live in Germany, where I incorporate the diversity of both worlds into my work.",
+        "part2": "As a passionate full-stack developer with a heart for frontend and UI, I founded Screen Board. The idea came from a small disagreement with my girlfriend, who often missed my appointments. That’s how I developed this platform to share important information easily.",
+        "part3": "Beyond programming, music is my great passion. In my free time, I produce my own tracks and find there the perfect balance to working at the computer. This creativity also flows into my development work and helps me find innovative solutions."
+      },
+      "imageAlt": "Portrait of Dyaa Kassoma"
+    },
+    "notfound": {
+      "infoTitle": "Page Not Found",
+      "infoText": "The page could not be found. It may have been moved or deleted.",
+      "returnToHomeText": "Return to Home"
+    },
+    "names": {
+      "dashboards": "Dashboards",
+      "config": "Configuration",
+      "home": "Home",
+      "price": "Price",
+      "aboutus": "About Us",
+      "privacyPolicy": "Privacy Policy",
+      "imprint": "Imprint"
+    },
+    "config": {
+      "components": {
+        "eventEdit": {
+          "connectWithGoogle": "Connect with Google"
+        },
+        "choiseCalender": "Choose calendar",
+        "noCalenderFound": "No calendars found",
+        "editWidgetModal": {
+          "title": "Edit {{widgetName}} widget"
+        },
+        "newsEdit": {
+          "chooseSource": "Choose your news source",
+          "title": "News source",
+          "customUrl": "Custom RSS link"
+        },
+        "eventsEdit": {
+          "google": "Google",
+          "ical": "iCal",
+          "microsoft": "Microsoft",
+          "signInGoogle": "Sign in with Google",
+          "signInMicrosoft": "Sign in with Microsoft",
+          "noCalendarFound": "No calendars found",
+          "selectACalendar": "Please select a calendar"
+        },
+        "iotEdit": {
+          "deviceSelection": "Device selection",
+          "deviceType": "Type",
+          "deviceRoom": "Room",
+          "noDevices": "No devices found",
+          "noSelectedDevice": "Please select at least one device"
+        },
+        "layout": {
+          "security": "Security",
+          "pinProtection": "PIN protection",
+          "display": "Display",
+          "fontsizesmall": "Small",
+          "fontsizemedium": "Medium",
+          "fontsizelarge": "Large",
+          "background": "Background",
+          "error": {
+            "title": "Error loading layout"
+          },
+          "enterPin": "Enter PIN"
+        },
+        "widgetList": {
+          "emptyStateTitle": "No widgets available",
+          "errorLoading": "Error loading widgets"
+        },
+        "dateTimeEdit": {
+          "dateFormat": "Date format",
+          "timezone": "Time zone",
+          "selectTimezone": "Select your time zone",
+          "timeFormat": "Time format",
+          "12h": "12‑hour",
+          "24h": "24‑hour",
+          "digital": "Digital",
+          "clockType": "Clock type",
+          "analog": "Analog",
+          "timeSettings": "Time settings",
+          "selectTimeFormat": "Select the time format.",
+          "selectDateFormat": "Select the date format."
+        },
+        "weatherEdit": {
+          "city": "City",
+          "cityRequired": "City is required"
+        },
+        "qrcodeEdit": {
+          "qrCodeRequired": "At least one QR code must be created.",
+          "encryption": "Encryption",
+          "noPassword": "no password",
+          "text": "Text",
+          "url": "URL",
+          "wifi": "WiFi",
+          "type": "Type",
+          "nameRequired": "Name is required",
+          "qrCodeList": "QR Code List",
+          "qrCodeListDesc": "The following list shows your existing QR codes",
+          "createQRCode": "New QR Code",
+          "createQRCodeDesc": "Please fill in the input",
+          "editQRCode": "Edit QR Code"
+        },
+        "displaySection": {
+          "fontsize": "Font size",
+          "rotation": "Rotation",
+          "color": "Custom color"
+        },
+        "backgroundSection": {
+          "backgroundanimation": "Background animation",
+          "backgroundblur": "Background blur",
+          "brightness": "Brightness",
+          "backgroundblurDescription": "Determines how sharp or blurred the background is displayed.",
+          "backgroundanimationDescription": "Specifies whether backgrounds are shown animated."
+        },
+        "remarksEdit": {
+          "remarksIntervall": "Renewal interval",
+          "remarksIntervallDescription": "Set the interval for displaying quotes",
+          "remarks": "Quotes",
+          "remarksDescription": "Add new quotes or delete existing ones",
+          "remarksEmpty": "At least one entry is required"
+        },
+        "communication": {
+          "desc": "You can send messages to your dashboard here"
+        },
+        "musicEdit": {
+          "login": "Connect with Spotify",
+          "description": "You haven't linked your Spotify account with Screen Board yet",
+          "connected": "Successfully connected to Spotify",
+          "connectedMessage": "You've successfully logged into Spotify; now you can enjoy your music on your dashboard.",
+          "logout": "Logout"
+        },
+        "colorPicker": {
+          "standard": "System color"
+        }
+      },
+      "tabLayout": "Layout",
+      "tabWidgets": "Widgets",
+      "errors": {
+        "invalidPin": "Invalid PIN"
+      },
+      "toDashboard": "Go to Dashboard",
+      "title": "Settings",
+      "description": "Manage widgets, customize design, choose backgrounds and integrate services."
+    },
+    "dashboard": {
+      "components": {
+        "calendar": {
+          "notConfigured": "Events aren't configured yet. Please use the Event widget to configure them.",
+          "today": "Today",
+          "noEvents": "No events",
+          "allDay": "all day"
+        },
+        "news": {
+          "notConfigured": "You haven't added an RSS link to your widget yet. Please add the RSS link on the configuration page.",
+          "error": "RSS link could not be found or is invalid. Please check your configuration."
+        },
+        "qrcodeWidget": {
+          "notConfigured": "No QR code has been added yet. Please go to the QR Code widget and add one."
+        },
+        "pin": {
+          "enterPin": "Enter PIN"
+        },
+        "musicWidget": {
+          "title": "Music",
+          "configFaild": "You haven't configured a music service in your widget yet. Please go to the widget configuration and sign in to your service.",
+          "noPlayerAvailable": "No Spotify player available",
+          "noPlayerAvailableDesc": "Please ensure you have an active Spotify Premium account and try again.",
+          "connectedToSpotify": "Connected to Spotify",
+          "connecting": "Connecting..."
+        },
+        "iot": {
+          "no_devices": "No devices found",
+          "not_connected": "Not connected",
+          "status_available": "Connected",
+          "on": "On",
+          "off": "Off",
+          "unknown": "Unknown",
+          "turn_off": "Turn off",
+          "turn_on": "Turn on",
+          "status": "Status",
+          "no_selected_device": "No devices available",
+          "command_error": "Error"
+        },
+        "weatherWidget": {
+          "notConfigured": "Error loading the data, please check the settings for this widget"
+        }
+      }
+    },
+    "descriptions": {
+      "config": "Configure your dashboard, customize widgets and more",
+      "dashboard": "The view of your day you always want in focus"
+    },
+    "home": {
+      "shortDesc1": "Your daily companion",
+      "shortDesc2": "at a glance.",
+      "shortDesc3": "Elegant, simple and efficient.",
+      "longDesc": "Screen Board is a digital dashboard that helps you organize your day and boost your productivity. It shows you the most important information at a glance and supports you in achieving your goals.",
+      "getStarted": "Discover now",
+      "widgetsTitle": "Discover our versatile widgets",
+      "widgets": {
+        "event": {
+          "title": "Events",
+          "description": "Display upcoming events and important appointments."
+        },
+        "news": {
+          "title": "News",
+          "description": "Stay up to date with the latest news and updates."
+        },
+        "weather": {
+          "title": "Weather",
+          "description": "Current weather forecasts and conditions at a glance."
+        },
+        "qr": {
+          "title": "QR Codes",
+          "description": "Share information quickly and easily with scannable QR codes."
+        },
+        "music": {
+          "title": "Music Player",
+          "description": "Music player for your favorite tunes, with Spotify integration."
+        },
+        "video": {
+          "title": "Video Streams",
+          "description": "Integrate live video feeds or recorded content."
+        },
+        "clock": {
+          "title": "Date & Time",
+          "description": "Show the current date and time across different time zones."
+        },
+        "quote": {
+          "title": "Quotes & Sayings",
+          "description": "Inspire with daily quotes or motivational sayings."
+        },
+        "note": {
+          "title": "Notes",
+          "description": "Leave important messages or reminders for your team."
+        },
+        "liveMessage": "Send live messages directly to your board and keep everyone updated!",
+        "getStarted": "Send live message"
+      },
+      "integrations": {
+        "title": "Integration with leading services",
+        "subtitle": "Seamless integration with your favorite services",
+        "googleCalendar": "Google Calendar",
+        "spotify": "Spotify",
+        "microsoft": "Microsoft",
+        "smartthings": "SmartThings"
+      },
+      "features": {
+        "dashboards": "Customizable Dashboards",
+        "realtime": "Real-time Updates",
+        "multidevice": "Multi-Device Support",
+        "darkmode": "Dark Mode"
+      },
+      "cta": {
+        "learnMore": "Learn more",
+        "welcome": "Welcome to Screen Board",
+        "widgetsSubtitle": "Choose from a variety of widgets to create your perfect dashboard",
+        "createDashboard": "Create your individual dashboard in minutes"
+      }
+    },
+    "footer": {
+      "allRightsReserved": "All rights reserved"
+    },
+    "liveInteraction": {
+      "title": "Live Interaction",
+      "noDashboards": "No dashboards available",
+      "loading": "Loading dashboards...",
+      "selectDashboard": "Select a dashboard",
+      "lastMessage": "Last message",
+      "messageInput": "Enter your message"
+    },
+    "spotifyCallback": {
+      "title": "Spotify Login",
+      "success": "Successfully logged in!",
+      "successMessage": "You have successfully logged in to Spotify and can now use the music widget on your dashboard.",
+      "goToDashboard": "Go to Dashboard",
+      "goToHome": "Go to Home",
+      "notLoggedIn": "You are not logged into Spotify",
+      "loginPrompt": "Please go to your music widget configuration",
+      "toWidgets": "To widgets"
+    },
+    "dashboards": {
+      "title": "Dashboards",
+      "pluralTitle": "Dashboards",
+      "singularTitle": "Dashboard",
+      "available": "available",
+      "editDashboard": "Edit Dashboard",
+      "dashboardNewName": "New Name",
+      "createDashboard": "Create Dashboard",
+      "dashboardName": "Dashboard Name",
+      "noDashboards": "No dashboards found",
+      "noDashboardsDescription": "Create your first dashboard to visualize your widgets.",
+      "errorLoading": "Error loading dashboards",
+      "components": {
+        "dashboardItem": {
+          "settings": "Settings"
+        }
+      }
+    }
+  },
+  "components": {
+    "navLayout": {
+      "singedAs": "signed in as",
+      "mysettings": "My settings",
+      "signedAs": "Signed in as",
+      "liveInteractionDesc": "Send real‑time messages",
+      "profileSettings": "Profile settings"
+    },
+    "profileSettings": {
+      "subtitle": "Manage your profile and app settings",
+      "userInfo": "User Information",
+      "language": "Language",
+      "languageDescription": "Choose your preferred language",
+      "theme": "Theme",
+      "darkMode": "Dark Mode",
+      "darkModeDescription": "Enable dark mode for a more comfortable view at night"
+    },
+    "notConfiguredMessage": {
+      "configureNow": "Configure widgets now"
+    },
+    "errorWidget": {
+      "errorTitle": "Error when loading the widget: {{Widgetname}}",
+      "errorMessage": "Please make sure that the configuration is correct. \nTry it again. \nIf the error still exists, please contact support."
+    }
+  },
+  "domain": {
+    "widget": {
+      "news": "News",
+      "weather": "Weather",
+      "calendar": "Calendar",
+      "events": "Events",
+      "datetime": "Date & Time",
+      "remarks": "Quotes",
+      "qrcodes": "QR Codes",
+      "music": "Music",
+      "notes ": "Notes",
+      "iot": "IoT",
+      "notes": "Notes"
+    }
+  },
+  "hooks": {
+    "dashboard": {
+      "useNext5DaysWeather": {
+        "today": "Today"
+      }
+    }
+  },
+  "common": {
+    "all": "All"
+  }
+}

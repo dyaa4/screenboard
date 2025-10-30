@@ -1,0 +1,1229 @@
+openapi: 3.0.3
+info:
+  title: Wallboard Backend API
+  description: |
+    Backend API für die Wallboard/Dashboard-Anwendung mit Unterstützung für:
+    - Dashboard- und Widget-Verwaltung
+    - Google Calendar Integration  
+    - Spotify Integration
+    - SmartThings IoT Integration
+    - Real-time Updates über Socket.IO
+  version: 1.0.0
+  contact:
+    name: API Support
+    url: https://screen-board.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.screen-board.com/api
+    description: Produktionsserver
+  - url: http://localhost:5000/api
+    description: Entwicklungsserver
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Dashboard
+    description: Dashboard-Verwaltung
+  - name: Widget
+    description: Widget-Operationen
+  - name: Layout
+    description: Layout-Konfiguration
+  - name: User
+    description: Benutzerverwaltung
+  - name: Google Calendar
+    description: Google Calendar Integration
+  - name: Spotify
+    description: Spotify Music Integration
+  - name: SmartThings
+    description: SmartThings IoT Integration
+
+paths:
+  # Dashboard Endpoints
+  /dashboard/{dashboardId}:
+    get:
+      tags:
+        - Dashboard
+      summary: Dashboard abrufen
+      description: Ruft ein spezifisches Dashboard mit allen zugehörigen Widgets und Layout ab
+      operationId: getDashboard
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          description: Eindeutige Dashboard-ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dashboard erfolgreich abgerufen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Dashboard nicht gefunden
+    
+    put:
+      tags:
+        - Dashboard
+      summary: Dashboard aktualisieren
+      description: Aktualisiert ein bestehendes Dashboard
+      operationId: updateDashboard
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardUpdate'
+      responses:
+        '200':
+          description: Dashboard erfolgreich aktualisiert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Dashboard nicht gefunden
+    
+    delete:
+      tags:
+        - Dashboard
+      summary: Dashboard löschen
+      description: Löscht ein Dashboard und alle zugehörigen Widgets
+      operationId: deleteDashboard
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Dashboard erfolgreich gelöscht
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Dashboard nicht gefunden
+
+  /dashboardList:
+    get:
+      tags:
+        - Dashboard
+      summary: Liste aller Dashboards
+      description: Ruft alle Dashboards des authentifizierten Benutzers ab
+      operationId: getDashboardList
+      responses:
+        '200':
+          description: Liste der Dashboards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dashboard'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /dashboard:
+    post:
+      tags:
+        - Dashboard
+      summary: Neues Dashboard erstellen
+      description: Erstellt ein neues Dashboard für den authentifizierten Benutzer
+      operationId: createDashboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardCreate'
+      responses:
+        '201':
+          description: Dashboard erfolgreich erstellt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '400':
+          description: Ungültige Eingabedaten
+
+  # Widget Endpoints
+  /dashboard/{dashboardId}/widgets:
+    get:
+      tags:
+        - Widget
+      summary: Alle Widgets eines Dashboards
+      description: Ruft alle Widgets für ein spezifisches Dashboard ab
+      operationId: getWidgetsByDashboardId
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste der Widgets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Widget'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /dashboard/{dashboardId}/widgets/{id}:
+    get:
+      tags:
+        - Widget
+      summary: Widget abrufen
+      description: Ruft ein spezifisches Widget ab
+      operationId: getWidgetById
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Widget erfolgreich abgerufen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Widget'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Widget nicht gefunden
+    
+    put:
+      tags:
+        - Widget
+      summary: Widget aktualisieren
+      description: Aktualisiert ein bestehendes Widget
+      operationId: updateWidget
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WidgetUpdate'
+      responses:
+        '200':
+          description: Widget erfolgreich aktualisiert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Widget'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Widget nicht gefunden
+
+  # Layout Endpoints
+  /dashboard/{dashboardId}/layout:
+    get:
+      tags:
+        - Layout
+      summary: Layout abrufen
+      description: Ruft die Layout-Konfiguration für ein Dashboard ab
+      operationId: getLayout
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Layout erfolgreich abgerufen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layout'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    put:
+      tags:
+        - Layout
+      summary: Layout aktualisieren
+      description: Aktualisiert die Layout-Konfiguration
+      operationId: updateLayout
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LayoutUpdate'
+      responses:
+        '200':
+          description: Layout erfolgreich aktualisiert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layout'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # User Endpoints
+  /users:
+    get:
+      tags:
+        - User
+      summary: Alle Benutzer abrufen
+      description: Ruft alle registrierten Benutzer ab
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Liste der Benutzer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    post:
+      tags:
+        - User
+      summary: Benutzer erstellen
+      description: Erstellt einen neuen Benutzer
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: Benutzer erfolgreich erstellt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Ungültige Eingabedaten
+
+  /users/{id}:
+    get:
+      tags:
+        - User
+      summary: Benutzer nach ID abrufen
+      description: Ruft einen spezifischen Benutzer ab
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Benutzer erfolgreich abgerufen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Benutzer nicht gefunden
+
+  # Google Calendar Endpoints
+  /auth/google/login:
+    post:
+      tags:
+        - Google Calendar
+      summary: Google OAuth Login
+      description: Initiiert den Google OAuth-Flow
+      operationId: googleLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dashboardId
+                - code
+              properties:
+                dashboardId:
+                  type: string
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Login erfolgreich
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/google/loginStatus:
+    get:
+      tags:
+        - Google Calendar
+      summary: Google Login-Status
+      description: Prüft den Google-Login-Status
+      operationId: googleLoginStatus
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Login-Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isLoggedIn:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/google/logout:
+    delete:
+      tags:
+        - Google Calendar
+      summary: Google Logout
+      description: Meldet den Benutzer von Google ab
+      operationId: googleLogout
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Logout erfolgreich
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /google/userinfo:
+    get:
+      tags:
+        - Google Calendar
+      summary: Google Benutzerinformationen
+      description: Ruft Benutzerinformationen von Google ab
+      operationId: getGoogleUserInfo
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Benutzerinformationen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleUserInfo'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /google/calendar/list:
+    get:
+      tags:
+        - Google Calendar
+      summary: Kalenderliste
+      description: Ruft alle Google-Kalender ab
+      operationId: getCalendarList
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Kalenderliste
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GoogleCalendar'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /google/calendar/events:
+    get:
+      tags:
+        - Google Calendar
+      summary: Kalenderereignisse
+      description: Ruft Ereignisse aus einem Google-Kalender ab
+      operationId: getCalendarEvents
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: calendarId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: timeMin
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: timeMax
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Kalenderereignisse
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GoogleEvent'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /google/calendar/webhook:
+    post:
+      tags:
+        - Google Calendar
+      summary: Calendar Webhook
+      description: Webhook-Endpunkt für Google Calendar-Benachrichtigungen
+      operationId: handleCalendarWebhook
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                resourceId:
+                  type: string
+      responses:
+        '200':
+          description: Webhook verarbeitet
+
+  # Spotify Endpoints
+  /auth/spotify/login:
+    get:
+      tags:
+        - Spotify
+      summary: Spotify OAuth Login
+      description: Initiiert den Spotify OAuth-Flow
+      operationId: spotifyLogin
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect zu Spotify
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/spotify/callback:
+    get:
+      tags:
+        - Spotify
+      summary: Spotify OAuth Callback
+      description: OAuth-Callback-Endpunkt für Spotify
+      operationId: spotifyCallback
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect zur Anwendung
+
+  /auth/spotify/loginStatus:
+    get:
+      tags:
+        - Spotify
+      summary: Spotify Login-Status
+      description: Prüft den Spotify-Login-Status
+      operationId: spotifyLoginStatus
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Login-Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isLoggedIn:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/spotify/logout:
+    get:
+      tags:
+        - Spotify
+      summary: Spotify Logout
+      description: Meldet den Benutzer von Spotify ab
+      operationId: spotifyLogout
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Logout erfolgreich
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/spotify/accessToken:
+    get:
+      tags:
+        - Spotify
+      summary: Spotify Access Token
+      description: Ruft ein gültiges Spotify-Access-Token ab
+      operationId: getSpotifyAccessToken
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Access Token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /spotify/setActiveDevice:
+    post:
+      tags:
+        - Spotify
+      summary: Aktives Gerät setzen
+      description: Setzt das aktive Spotify-Wiedergabegerät
+      operationId: setActiveDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dashboardId
+                - deviceId
+              properties:
+                dashboardId:
+                  type: string
+                deviceId:
+                  type: string
+      responses:
+        '200':
+          description: Gerät erfolgreich gesetzt
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # SmartThings Endpoints
+  /auth/smartthings/login:
+    get:
+      tags:
+        - SmartThings
+      summary: SmartThings OAuth Login
+      description: Initiiert den SmartThings OAuth-Flow
+      operationId: smartThingsLogin
+      parameters:
+        - name: dashboardId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect zu SmartThings
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/smartthings/callback:
+    get:
+      tags:
+        - SmartThings
+      summary: SmartThings OAuth Callback
+      description: OAuth-Callback-Endpunkt für SmartThings
+      operationId: smartThingsCallback
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect zur Anwendung
+
+  /auth/smartthings/{dashboardId}/loginStatus:
+    get:
+      tags:
+        - SmartThings
+      summary: SmartThings Login-Status
+      description: Prüft den SmartThings-Login-Status
+      operationId: smartThingsLoginStatus
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Login-Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isLoggedIn:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/smartthings/{dashboardId}/logout:
+    get:
+      tags:
+        - SmartThings
+      summary: SmartThings Logout
+      description: Meldet den Benutzer von SmartThings ab
+      operationId: smartThingsLogout
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Logout erfolgreich
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/smartthings/{dashboardId}/accessToken:
+    get:
+      tags:
+        - SmartThings
+      summary: SmartThings Access Token
+      description: Ruft ein gültiges SmartThings-Access-Token ab
+      operationId: getSmartThingsAccessToken
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Access Token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/smartthings/webhook:
+    post:
+      tags:
+        - SmartThings
+      summary: SmartThings Webhook
+      description: Webhook-Endpunkt für SmartThings-Ereignisse
+      operationId: handleSmartThingsWebhook
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook verarbeitet
+
+  /smartthings/{dashboardId}/devices:
+    get:
+      tags:
+        - SmartThings
+      summary: SmartThings-Geräte
+      description: Ruft alle SmartThings-Geräte ab
+      operationId: getSmartThingsDevices
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Geräteliste
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmartThingsDevice'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /smartthings/{dashboardId}/devices/{deviceId}/command:
+    post:
+      tags:
+        - SmartThings
+      summary: Gerätebefehl ausführen
+      description: Führt einen Befehl auf einem SmartThings-Gerät aus
+      operationId: executeDeviceCommand
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - capability
+              properties:
+                command:
+                  type: string
+                  example: "on"
+                capability:
+                  type: string
+                  example: "switch"
+                arguments:
+                  type: array
+                  items: {}
+      responses:
+        '200':
+          description: Befehl erfolgreich ausgeführt
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /smartthings/{dashboardId}/devices/{deviceId}/status:
+    get:
+      tags:
+        - SmartThings
+      summary: Gerätestatus abrufen
+      description: Ruft den aktuellen Status eines SmartThings-Geräts ab
+      operationId: getDeviceStatus
+      parameters:
+        - name: dashboardId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gerätestatus
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmartThingsDeviceStatus'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Auth0 JWT Token. Alle API-Endpunkte (außer OAuth-Callbacks und Webhooks) 
+        erfordern einen gültigen JWT-Token im Authorization-Header.
+
+  schemas:
+    Dashboard:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Eindeutige Dashboard-ID
+        userId:
+          type: string
+          description: Benutzer-ID des Eigentümers
+        name:
+          type: string
+          description: Name des Dashboards
+        description:
+          type: string
+          description: Beschreibung des Dashboards
+        widgets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Widget'
+        layout:
+          $ref: '#/components/schemas/Layout'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - userId
+        - name
+
+    DashboardCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+      required:
+        - name
+
+    DashboardUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    Widget:
+      type: object
+      properties:
+        _id:
+          type: string
+        dashboardId:
+          type: string
+        type:
+          type: string
+          enum:
+            - datetime
+            - weather
+            - music
+            - events
+            - notes
+            - qrcodes
+            - remarks
+            - iot
+            - news
+        config:
+          type: object
+          description: Widget-spezifische Konfiguration
+        position:
+          type: object
+          properties:
+            x:
+              type: integer
+            y:
+              type: integer
+            w:
+              type: integer
+            h:
+              type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - dashboardId
+        - type
+
+    WidgetUpdate:
+      type: object
+      properties:
+        type:
+          type: string
+        config:
+          type: object
+        position:
+          type: object
+
+    Layout:
+      type: object
+      properties:
+        _id:
+          type: string
+        dashboardId:
+          type: string
+        cols:
+          type: integer
+          description: Anzahl der Spalten
+        rowHeight:
+          type: integer
+          description: Höhe einer Zeile in Pixeln
+        layouts:
+          type: object
+          description: Responsive Layout-Konfiguration
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LayoutUpdate:
+      type: object
+      properties:
+        cols:
+          type: integer
+        rowHeight:
+          type: integer
+        layouts:
+          type: object
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        auth0Id:
+          type: string
+          description: Auth0-Benutzer-ID
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - auth0Id
+        - email
+
+    UserCreate:
+      type: object
+      properties:
+        auth0Id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+      required:
+        - auth0Id
+        - email
+
+    GoogleUserInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        verified_email:
+          type: boolean
+        name:
+          type: string
+        given_name:
+          type: string
+        family_name:
+          type: string
+        picture:
+          type: string
+
+    GoogleCalendar:
+      type: object
+      properties:
+        id:
+          type: string
+        summary:
+          type: string
+        description:
+          type: string
+        timeZone:
+          type: string
+        primary:
+          type: boolean
+
+    GoogleEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        summary:
+          type: string
+        description:
+          type: string
+        start:
+          type: object
+          properties:
+            dateTime:
+              type: string
+              format: date-time
+            timeZone:
+              type: string
+        end:
+          type: object
+          properties:
+            dateTime:
+              type: string
+              format: date-time
+            timeZone:
+              type: string
+        location:
+          type: string
+        attendees:
+          type: array
+          items:
+            type: object
+
+    SmartThingsDevice:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        label:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+
+    SmartThingsDeviceStatus:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        components:
+          type: object
+          additionalProperties:
+            type: object
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+      required:
+        - error
+        - message
+
+  responses:
+    UnauthorizedError:
+      description: Authentifizierung fehlgeschlagen oder Token ungültig
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid token"
+            message: "Unauthorized"

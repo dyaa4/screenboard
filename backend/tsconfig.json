@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+      "sourceMap": true,
+      "module": "CommonJS",
+      "target": "ES2020",
+      "types": ["node", "express"],
+      "typeRoots": ["./node_modules/@types"],
+      "useDefineForClassFields": true,
+      "lib": ["ES2020", "DOM", "DOM.Iterable"],
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "skipLibCheck": true,
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "isolatedModules": true,
+      "noEmit": false,
+      "jsx": "react-jsx",
+      "strict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noFallthroughCasesInSwitch": true,
+      "esModuleInterop": true,
+      "skipDefaultLibCheck": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "forceConsistentCasingInFileNames": false,
+      "baseUrl": "./src"
+    },
+    "include": ["src", "postcss.config.js"],
+    "exclude": ["node_modules", "dist"],
+    // "references": [{ "path": "./tsconfig.node.json" }]
+  }
+  

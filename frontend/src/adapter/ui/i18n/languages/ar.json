@@ -1,0 +1,376 @@
+{
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "close": "إغلاق",
+    "back": "عودة",
+    "next": "التالي",
+    "finish": "إنهاء",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول",
+    "deactive": "تعطيل",
+    "active": "تفعيل",
+    "create": "إنشاء",
+    "open": "فتح",
+    "send": "إرسال",
+    "refresh": "تحديث",
+    "tryAgain": "تحديث"
+  },
+  "sites": {
+    "aboutus": {
+      "title": "من نحن",
+      "name": "ضياء كسّوما",
+      "profession": "موسيقي ومطوّر Fullstack",
+      "bio": {
+        "part1": "ولدت في دمشق، سوريا، وأصولي من مدينة ذات تاريخ وثقافة غنيّة. أعيش اليوم في ألمانيا، حيث أدمج تنوّع العالمين في عملي.",
+        "part2": "بصفتي مطوّر Fullstack شغوفًا ولديّ قلب يعشق الواجهة وتجربة المستخدم، أسست منصة Screen Board. جاءت الفكرة بعد خلاف بسيط مع صديقتي التي غالبًا لا تعلم بموعداتي. لذا طوّرت هذه المنصة لأشارك المعلومات الهامة بسهولة.",
+        "part3": "بعيدًا عن البرمجة، الموسيقى هي شغفي الكبير. في وقت فراغي، أُنتج مقطوعاتي الخاصة وأجد فيها التوازن المثالي للعمل أمام الكمبيوتر. هذه الإبداعية تنعكس أيضًا في عملي التطويري وتساعدني في العثور على حلول مبتكرة."
+      },
+      "imageAlt": "صورة ضياء كسّوما"
+    },
+    "notfound": {
+      "infoTitle": "الصفحة غير موجودة",
+      "infoText": "تعذّر العثور على الصفحة. قد تكون نُقلت أو حُذِفت.",
+      "returnToHomeText": "العودة إلى الصفحة الرئيسية"
+    },
+    "names": {
+      "dashboards": "لوحات القيادة",
+      "config": "الإعدادات",
+      "home": "الصفحة الرئيسية",
+      "price": "السعر",
+      "aboutus": "من نحن",
+      "privacyPolicy": "سياسة الخصوصية",
+      "imprint": "الإشـعـار"
+    },
+    "config": {
+      "components": {
+        "eventEdit": {
+          "connectWithGoogle": "الاتصال بـ Google"
+        },
+        "choiseCalender": "اختر التقويم",
+        "noCalenderFound": "لم يتم العثور على تقاويم",
+        "editWidgetModal": {
+          "title": "تعديل ودجيت {{widgetName}}"
+        },
+        "newsEdit": {
+          "chooseSource": "اختر مصدر الأخبار",
+          "title": "مصدر الأخبار",
+          "customUrl": "رابط RSS مخصص"
+        },
+        "eventsEdit": {
+          "google": "Google",
+          "ical": "iCal",
+          "microsoft": "Microsoft",
+          "signInGoogle": "تسجيل الدخول عبر Google",
+          "signInMicrosoft": "تسجيل الدخول عبر Microsoft",
+          "noCalendarFound": "لم يتم العثور على تقاويم",
+          "selectACalendar": "يرجى اختيار تقويم"
+        },
+        "iotEdit": {
+          "deviceSelection": "اختيار الجهاز",
+          "deviceType": "النوع",
+          "deviceRoom": "الغرفة",
+          "noDevices": "لم يتم العثور على أجهزة",
+          "noSelectedDevice": "يرجى اختيار جهاز واحد على الأقل"
+        },
+        "layout": {
+          "security": "الأمان",
+          "pinProtection": "حماية PIN",
+          "display": "العرض",
+          "fontsizesmall": "صغير",
+          "fontsizemedium": "متوسط",
+          "fontsizelarge": "كبير",
+          "background": "الخلفية",
+          "error": {
+            "title": "خطأ في تحميل التخطيط"
+          },
+          "enterPin": "أدخل PIN"
+        },
+        "widgetList": {
+          "emptyStateTitle": "لا توجد ودجيتات",
+          "errorLoading": "خطأ في تحميل الودجيتات"
+        },
+        "dateTimeEdit": {
+          "dateFormat": "تنسيق التاريخ",
+          "timezone": "المنطقة الزمنية",
+          "selectTimezone": "اختر منطقتك الزمنية",
+          "timeFormat": "تنسيق الوقت",
+          "12h": "12‑ساعة",
+          "24h": "24‑ساعة",
+          "digital": "رقمي",
+          "clockType": "نوع الساعة",
+          "analog": "تناظري",
+          "timeSettings": "إعدادات الوقت",
+          "selectTimeFormat": "اختر تنسيق الوقت.",
+          "selectDateFormat": "اختر تنسيق التاريخ."
+        },
+        "weatherEdit": {
+          "city": "المدينة",
+          "cityRequired": "المدينة حقل مطلوب"
+        },
+        "qrcodeEdit": {
+          "qrCodeRequired": "يجب إنشاء رمز QR واحد على الأقل.",
+          "encryption": "التشفير",
+          "noPassword": "بدون كلمة مرور",
+          "text": "نص",
+          "url": "رابط",
+          "wifi": "WiFi",
+          "type": "النوع",
+          "nameRequired": "الاسم مطلوب",
+          "qrCodeList": "قائمة رموز QR",
+          "qrCodeListDesc": "تعرض القائمة التالية رموز QR الموجودة لديك",
+          "createQRCode": "إنشاء رمز QR جديد",
+          "createQRCodeDesc": "يرجى ملء الإدخال",
+          "editQRCode": "تعديل رمز QR"
+        },
+        "displaySection": {
+          "fontsize": "حجم الخط",
+          "rotation": "الدوران",
+          "color": "لون مخصص"
+        },
+        "backgroundSection": {
+          "backgroundanimation": "رسوم خلفية متحركة",
+          "backgroundblur": "ضبابية الخلفية",
+          "brightness": "السطوع",
+          "backgroundblurDescription": "يحدد مدى وضوح أو ضبابية الخلفية.",
+          "backgroundanimationDescription": "هل تُعرض الخلفيات كرسوم متحركة."
+        },
+        "remarksEdit": {
+          "remarksIntervall": "فاصل التحديث",
+          "remarksIntervallDescription": "حدد الفاصل الزمني لعرض الأقوال",
+          "remarks": "أقوال",
+          "remarksDescription": "أضف أقوالًا جديدة أو احذف الموجود منها",
+          "remarksEmpty": "مطلوب إدخال واحد على الأقل"
+        },
+        "communication": {
+          "desc": "يمكنك إرسال رسائل إلى لوحة المعلومات الخاصة بك هنا"
+        },
+        "musicEdit": {
+          "login": "الاتصال بـ Spotify",
+          "description": "لم تقم بربط حساب Spotify مع Screen Board بعد",
+          "connected": "تم الاتصال بنجاح بـ Spotify",
+          "connectedMessage": "لقد سجلت الدخول بنجاح إلى Spotify ويمكنك الآن الاستمتاع بالموسيقى في لوحة التحكم الخاصة بك.",
+          "logout": "تسجيل الخروج"
+        },
+        "colorPicker": {
+          "standard": "لون النظام"
+        }
+      },
+      "tabLayout": "التخطيط",
+      "tabWidgets": "الودجيتات",
+      "errors": {
+        "invalidPin": "رمز PIN غير صالح"
+      },
+      "toDashboard": "الانتقال إلى لوحة التحكم",
+      "title": "الإعدادات",
+      "description": "إدارة الودجيتات، تخصيص التصميم، اختيار الخلفيات، ودمج الخدمات."
+    },
+    "dashboard": {
+      "components": {
+        "calendar": {
+          "notConfigured": "لم تُضبط الأحداث بعد. يرجى استخدام ودجيت الأحداث لضبطها.",
+          "today": "اليوم",
+          "noEvents": "لا توجد أحداث",
+          "allDay": "طوال اليوم"
+        },
+        "news": {
+          "notConfigured": "لم تقم بإضافة رابط RSS إلى ودجيتك بعد. الرجاء إضافة الرابط في صفحة الإعدادات.",
+          "error": "تعذر العثور على رابط RSS أو هو غير صالح. يرجى التحقق من الإعدادات."
+        },
+        "qrcodeWidget": {
+          "notConfigured": "لم يتم إضافة رمز QR بعد. يرجى الذهاب إلى ودجيت QR وإضافة رمز."
+        },
+        "pin": {
+          "enterPin": "أدخل PIN"
+        },
+        "musicWidget": {
+          "title": "الموسيقى",
+          "configFaild": "لم تقم بضبط خدمة الموسيقى في الودجيت بعد. يرجى الذهاب إلى الإعدادات وتسجيل الدخول إلى خدمتك.",
+          "noPlayerAvailable": "لا يوجد مشغل Spotify متاح",
+          "noPlayerAvailableDesc": "يرجى التأكد من أن لديك اشتراك Spotify Premium نشط وحاول مرة أخرى.",
+          "connectedToSpotify": "متصل بـ Spotify",
+          "connecting": "جاري الاتصال ..."
+        },
+        "iot": {
+          "no_devices": "لا توجد أجهزة",
+          "not_connected": "غير متصل",
+          "status_available": "الحالة متصلة",
+          "on": "تشغيل",
+          "off": "إيقاف",
+          "unknown": "غير معروف",
+          "turn_off": "إيقاف",
+          "turn_on": "تشغيل",
+          "status": "الحالة",
+          "no_selected_device": "لا توجد أجهزة متاحة",
+          "command_error": "خطأ"
+        },
+        "weatherWidget": {
+          "notConfigured": "خطأ في تحميل البيانات ، يرجى التحقق من الإعدادات لهذا القطعة"
+        }
+      }
+    },
+    "descriptions": {
+      "config": "ضبط لوحة التحكم، تخصيص الودجيتات، والمزيد",
+      "dashboard": "عرض يومك الذي تريد أن تراه دائمًا"
+    },
+    "home": {
+      "shortDesc1": "رفيقك اليومي",
+      "shortDesc2": "في لمحة.",
+      "shortDesc3": "أنيق، بسيط وفعّال.",
+      "longDesc": "Screen Board هو لوحة معلومات رقمية تساعدك على تنظيم يومك وزيادة إنتاجيتك. يعرض أهم المعلومات في لمحة، ويدعمك لتحقيق أهدافك.",
+      "getStarted": "اكتشف الآن",
+      "widgetsTitle": "اكتشف ودجيتاتنا المتنوعة",
+      "widgets": {
+        "event": {
+          "title": "الأحداث",
+          "description": "عرض الفعاليات القادمة والمواعيد المهمة."
+        },
+        "news": {
+          "title": "الأخبار",
+          "description": "ابقَ على اطلاع بآخر الأخبار والتحديثات."
+        },
+        "weather": {
+          "title": "الطقس",
+          "description": "عرض تنبؤات الطقس والحالة الحالية."
+        },
+        "qr": {
+          "title": "رموز QR",
+          "description": "شارك المعلومات بسرعة وسهولة مع رموز QR قابلة للمسح."
+        },
+        "music": {
+          "title": "مشغل الموسيقى",
+          "description": "مشغل موسيقى لموسيقاك المفضلة، مع تكامل Spotify."
+        },
+        "video": {
+          "title": "بث الفيديو",
+          "description": "ادمج الفيديو الحي أو المحتوى المسجل."
+        },
+        "clock": {
+          "title": "التاريخ والوقت",
+          "description": "عرض التاريخ والوقت الحالي في مناطق زمنية مختلفة."
+        },
+        "quote": {
+          "title": "أقوال وحكم",
+          "description": "ألهم باقتباسات يومية أو حكم تحفيزية."
+        },
+        "note": {
+          "title": "ملاحظات",
+          "description": "اترك رسائل أو تذكيرات هامة لفريقك."
+        },
+        "liveMessage": "أرسل رسائل مباشرة إلى لوحتك وابقِ الجميع محدثين!",
+        "getStarted": "أرسل رسالة مباشرة"
+      },
+      "integrations": {
+        "title": "التكامل مع الخدمات الرائدة",
+        "subtitle": "تكامل سلس مع خدماتك المفضلة",
+        "googleCalendar": "Google Calendar",
+        "spotify": "Spotify",
+        "microsoft": "Microsoft",
+        "smartthings": "SmartThings"
+      },
+      "features": {
+        "dashboards": "لوحات قابلة للتخصيص",
+        "realtime": "تحديثات فورية",
+        "multidevice": "دعم متعدد الأجهزة",
+        "darkmode": "الوضع الليلي"
+      },
+      "cta": {
+        "learnMore": "اعرف المزيد",
+        "welcome": "مرحباً بك في Screen Board",
+        "widgetsSubtitle": "اختر من مجموعة متنوعة من الودجيتات لإنشاء لوحة التحكم المثالية",
+        "createDashboard": "أنشئ لوحة التحكم الخاصة بك في دقائق"
+      }
+    },
+    "footer": {
+      "allRightsReserved": "جميع الحقوق محفوظة"
+    },
+    "liveInteraction": {
+      "title": "التفاعل المباشر",
+      "noDashboards": "لا توجد لوحات قيادة",
+      "loading": "جاري تحميل لوحات القيادة ...",
+      "selectDashboard": "اختر لوحة قيادة",
+      "lastMessage": "آخر رسالة",
+      "messageInput": "اكتب رسالتك"
+    },
+    "spotifyCallback": {
+      "title": "دخول Spotify",
+      "success": "تم تسجيل الدخول بنجاح!",
+      "successMessage": "لقد سجلت الدخول إلى Spotify بنجاح ويمكنك الآن استخدام وِدجِت الموسيقى على لوحة القيادة.",
+      "goToDashboard": "الانتقال إلى لوحة القيادة",
+      "goToHome": "العودة إلى الصفحة الرئيسية",
+      "notLoggedIn": "لم تقم بتسجيل الدخول إلى Spotify",
+      "loginPrompt": "الرجاء الذهاب إلى إعداد ودجِت الموسيقى",
+      "toWidgets": "إلى الودجِيتات"
+    },
+    "dashboards": {
+      "title": "لوحات القيادة",
+      "pluralTitle": "لوحات القيادة",
+      "singularTitle": "لوحة القيادة",
+      "available": "متاحة",
+      "editDashboard": "تعديل لوحة القيادة",
+      "dashboardNewName": "اسم جديد",
+      "createDashboard": "إنشاء لوحة جديدة",
+      "dashboardName": "اسم لوحة القيادة",
+      "noDashboards": "لم يتم العثور على لوحات قيادة",
+      "noDashboardsDescription": "أنشئ لوحتك الأولى لعرض ودجيتاتك.",
+      "errorLoading": "خطأ في تحميل لوحات القيادة",
+      "components": {
+        "dashboardItem": {
+          "settings": "الإعدادات"
+        }
+      }
+    }
+  },
+  "components": {
+    "navLayout": {
+      "singedAs": "مسجل دخول كـ",
+      "mysettings": "إعداداتي",
+      "signedAs": "مسجل دخول كـ",
+      "liveInteractionDesc": "إرسال رسائل فورية",
+      "profileSettings": "إعدادات الملف الشخصي"
+    },
+    "profileSettings": {
+      "subtitle": "إدارة إعدادات ملفك الشخصي والتطبيق",
+      "userInfo": "معلومات المستخدم",
+      "language": "اللغة",
+      "languageDescription": "اختر لغتك المفضلة",
+      "theme": "التصميم",
+      "darkMode": "الوضع الداكن",
+      "darkModeDescription": "قم بتفعيل الوضع الداكن لمظهر أكثر راحة في الليل"
+    },
+    "notConfiguredMessage": {
+      "configureNow": "ضبط الودجيتات الآن"
+    },
+    "errorWidget": {
+      "errorTitle": "خطأ عند تحميل القطعة: {{widgetName}}",
+      "errorMessage": "يرجى التأكد من أن التكوين صحيح. جربه مرة أخرى. إذا كان الخطأ لا يزال موجودًا ، فيرجى الاتصال بالدعم."
+    }
+  },
+  "domain": {
+    "widget": {
+      "news": "الأخبار",
+      "weather": "الطقس",
+      "calendar": "التقويم",
+      "events": "الفعاليات",
+      "datetime": "التاريخ والوقت",
+      "remarks": "الأقوال",
+      "qrcodes": "رموز QR",
+      "music": "الموسيقى",
+      "notes ": "الملاحظات",
+      "iot": "IoT"
+    }
+  },
+  "hooks": {
+    "dashboard": {
+      "useNext5DaysWeather": {
+        "today": "اليوم"
+      }
+    }
+  },
+  "common": {
+    "all": "الكل"
+  }
+}

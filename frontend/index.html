@@ -1,0 +1,42 @@
+<!doctype html>
+<html id="html-root">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Beschreibung Ihrer Webseite" />
+    <meta name="keywords" content="Screenboard,events,dashboard," />
+    <meta name="author" content="Dyaa Kassoma" />
+
+    <link rel="icon" type="image/png" href="/images/icons/Favicon-01.png" />
+    <title>Screen Board</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import i18n from '@adapter/ui/i18n/i18n';
+
+      function setLanguageAndDirection() {
+        const htmlElement = document.getElementById('html-root');
+        const currentLanguage = i18n.language; // Verwenden Sie die aktuelle Sprache von i18n
+
+        htmlElement.lang = currentLanguage;
+
+        // Liste der RTL-Sprachen
+        const rtlLanguages = ['ar', 'he', 'fa', ' '];
+
+        if (rtlLanguages.includes(currentLanguage)) {
+          htmlElement.dir = 'rtl';
+        } else {
+          htmlElement.dir = 'ltr';
+        }
+      }
+
+      // Führen Sie diese Funktion aus, sobald das DOM geladen ist
+      document.addEventListener('DOMContentLoaded', setLanguageAndDirection);
+
+      // Fügen Sie einen Listener hinzu, um auf Sprachänderungen zu reagieren
+      i18n.on('languageChanged', setLanguageAndDirection);
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

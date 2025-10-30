@@ -1,0 +1,142 @@
+classDiagram
+    class BaseEntity {
+        +ObjectId _id
+        +Date createdAt
+        +Date updatedAt
+    }
+
+    class User {
+        +String auth0Id
+        +String name
+        +String email
+        +String picture
+    }
+
+    class Layout {
+        +String userId
+        +Boolean pinProtectionEnabled
+        +String pinCode
+        +Number brightness
+        +FontSize fontSize
+        +String[] backgroundImages
+        +Theme theme
+    }
+
+    class Widget {
+        +WidgetType type
+        +String title
+        +String userId
+        +Number position
+        +Boolean isActive
+        +WidgetSettings settings
+    }
+
+    class WidgetSettings {
+        <<interface>>
+    }
+
+    class NewsWidgetSettings {
+        +String[] sources
+        +Number maxArticles
+        +Number refreshInterval
+    }
+
+    class WeatherWidgetSettings {
+        +String city
+        +String units
+        +Number refreshInterval
+    }
+
+    class EventWidgetSettings {
+        +String calendarId
+        +Number maxEvents
+        +Number refreshInterval
+    }
+
+    class RemarkWidgetSettings {
+        +String[] remarks
+        +Number intervalMinutes
+    }
+
+    class DateTimeWidgetSettings {
+        +String timezone
+        +String format
+        +String timeformat
+        +String clockType
+    }
+
+    class QRCodeWidgetSettings {
+        +QRCodeData[] qrcodes
+    }
+
+    BaseEntity <|-- User
+    BaseEntity <|-- Layout
+    BaseEntity <|-- Widget
+    WidgetSettings <|.. NewsWidgetSettings
+    WidgetSettings <|.. WeatherWidgetSettings
+    WidgetSettings <|.. EventWidgetSettings
+    WidgetSettings <|.. RemarkWidgetSettings
+    WidgetSettings <|.. DateTimeWidgetSettings
+    WidgetSettings <|.. QRCodeWidgetSettings
+    Widget --> WidgetSettings
+
+    class FontSize {
+        <<enumeration>>
+        SMALL
+        MEDIUM
+        LARGE
+    }
+
+    class WidgetType {
+        <<enumeration>>
+        NEWS
+        EVENTS
+        WEATHER
+        REMARKS
+        DATETIME
+        QRCODES
+        LOCK
+    }
+
+    class Theme {
+        <<enumeration>>
+        LIGHT
+        DARK
+        SYSTEM
+    }
+
+    Layout --> FontSize
+    Layout --> Theme
+    Widget --> WidgetType
+
+    class QRCodeData {
+        +String name
+        +QRCodeType type
+        +QRCodeDataContent data
+        +Date createdAt
+        +Date lastModified
+    }
+
+    class QRCodeType {
+        <<enumeration>>
+        TEXT
+        URL
+        WIFI
+    }
+
+    class QRCodeDataContent {
+        +String text
+        +String url
+        +WifiData wifi
+    }
+
+    class WifiData {
+        +String ssid
+        +String password
+        +String encryption
+    }
+
+    QRCodeWidgetSettings --> QRCodeData
+    QRCodeData --> QRCodeType
+    QRCodeData --> QRCodeDataContent
+    QRCodeDataContent --> WifiData

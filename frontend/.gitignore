@@ -1,0 +1,11 @@
+# Ignoriere die .env-Datei
+.env
+
+
+# Ignoriere Node.js und andere temporäre Dateien
+node_modules/
+*.log
+*.tmp
+dist/
+# Local Netlify folder
+.netlify

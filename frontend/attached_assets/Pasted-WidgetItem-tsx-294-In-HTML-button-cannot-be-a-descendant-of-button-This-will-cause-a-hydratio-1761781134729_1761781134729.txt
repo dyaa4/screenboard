@@ -1,0 +1,96 @@
+WidgetItem.tsx:294 In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <SortableContext items={[...]} strategy={function verticalListSortingStrategy}>
+      <div className="flex flex-...">
+        <SortableItem id="67c895c7da...">
+          <div ref={function} style={{...}} role="button" tabIndex={0} aria-disabled={false} aria-pressed={undefined} ...>
+            <WidgetItem widget={{id:"67c895...", ...}} updateWidget={function updateWidget} isDragging={false} ...>
+              <div className="group rela...">
+                <div>
+                <HeroUI.Accordion showDivider={false} itemClasses={{base:"py-0...", ...}} variant="splitted" ...>
+                  <div ref={{current:null}} className="px-2 flex ..." data-orientation="vertical" ...>
+                    <LayoutGroup>
+                      <HeroUI.AccordionItem item={{type:"item", ...}} variant="splitted" onFocusChange={function} ...>
+                        <div data-open={undefined} data-disabled={undefined} data-slot="base" className="px-4 bg-co..." ...>
+                          <h2 data-open={undefined} data-disabled={undefined} data-slot="heading" className={undefined}>
+>                           <button
+>                             ref={{current:null}}
+>                             data-open={undefined}
+>                             data-focus={undefined}
+>                             data-focus-visible={undefined}
+>                             data-disabled={undefined}
+>                             data-hover={undefined}
+>                             data-pressed={undefined}
+>                             data-slot="trigger"
+>                             className="w-full gap-3 tap-highlight-transparent outline-solid outline-transparent data..."
+>                             onFocus={function func}
+>                             onBlur={function func}
+>                             type="button"
+>                             disabled={false}
+>                             form={undefined}
+>                             formAction={undefined}
+>                             formEncType={undefined}
+>                             formMethod={undefined}
+>                             formNoValidate={undefined}
+>                             formTarget={undefined}
+>                             name={undefined}
+>                             value={undefined}
+>                             onKeyDown={function}
+>                             onKeyUp={undefined}
+>                             tabIndex={0}
+>                             onClick={function}
+>                             onPointerDown={function}
+>                             onMouseDown={function}
+>                             onPointerUp={function}
+>                             onPointerEnter={function}
+>                             onPointerLeave={function}
+>                             onDragStart={function}
+>                             data-react-aria-pressable={true}
+>                             id="«r2l»"
+>                             aria-haspopup={undefined}
+>                             aria-expanded={false}
+>                             aria-controls={undefined}
+>                             aria-pressed={undefined}
+>                             aria-current={undefined}
+>                           >
+                              <div>
+                              ...
+                                <div className="flex items...">
+                                  <HeroUI.Tooltip showArrow={true} content="Deaktivieren">
+                                    <HeroUI.Button isLoading={false} isIconOnly={true} ...>
+>                                     <button
+>                                       ref={{current:null}}
+>                                       data-disabled={undefined}
+>                                       data-focus={undefined}
+>                                       data-pressed={undefined}
+>                                       data-focus-visible={undefined}
+>                                       data-hover={undefined}
+>                                       data-loading={undefined}
+>                                       type="button"
+>                                       disabled={false}
+>                                       onFocus={function}
+>                                       onBlur={function}
+>                                       onKeyDown={function}
+>                                       onKeyUp={undefined}
+>                                       tabIndex={0}
+>                                       onClick={function onClick}
+>                                       onPointerDown={function}
+>                                       onMouseDown={function}
+>                                       onPointerUp={function}
+>                                       onPointerEnter={function}
+>                                       onPointerLeave={function}
+>                                       onDragStart={function}
+>                                       data-react-aria-pressable={true}
+>                                       aria-describedby={undefined}
+>                                       aria-haspopup={undefined}
+>                                       aria-expanded={undefined}
+>                                       aria-controls={undefined}
+>                                       aria-pressed={undefined}
+>                                       aria-current={undefined}
+>                                       className="z-0 group relative inline-flex items-center justify-center box-bord..."
+>                                     >
+                                    ...
+                              ...
+                          ...

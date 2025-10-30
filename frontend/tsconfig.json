@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ES2020",
+    "types": ["node", "express"],
+    "typeRoots": ["./node_modules/@types"],
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false, // Setze auf false, wenn du JavaScript-Dateien generierst
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "skipDefaultLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "forceConsistentCasingInFileNames": false,
+
+    "baseUrl": "./src",
+    "paths": {
+      "@components/*": ["adapter/ui/components/*"],
+      "@sites/*": ["adapter/ui/sites/*"],
+      "@assets/*": ["assets/*"],
+      "@config/*": ["config/*"],
+      "@hooks/*": ["adapter/ui/hooks/*"],
+      "@common/*": ["common/*"],
+      "@adapter/*": ["adapter/*"],
+      "@i18n/*": ["adapter/ui/i18n/*"],
+      "../../application/*": ["application/*"],
+      "../../domain/*": ["domain/*"]
+    }
+  },
+  "include": ["src", "postcss.config.js"],
+  "exclude": ["node_modules", "dist"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

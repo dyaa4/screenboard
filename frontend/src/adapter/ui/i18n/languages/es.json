@@ -1,0 +1,359 @@
+{
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "deactive": "Desactivar",
+    "active": "Activar",
+    "create": "Crear",
+    "open": "Abrir",
+    "send": "Enviar",
+    "refresh": "Actualizar",
+    "tryAgain": "Intentar otra vez"
+  },
+  "sites": {
+    "aboutus": {
+      "title": "Acerca de nosotros",
+      "name": "Dyaa Kassoma",
+      "profession": "Músico y desarrollador Fullstack",
+      "bio": {
+        "part1": "Nacido en Damasco, Siria, tengo raíces en una ciudad con una rica historia y cultura. Hoy vivo en Alemania, donde incorporo la diversidad de ambos mundos en mi trabajo.",
+        "part2": "Como apasionado desarrollador Fullstack con afinidad por el frontend y la interfaz de usuario, creé Screen Board. La idea surgió tras una pequeña disputa con mi novia, que a menudo no se enteraba de mis citas. Así desarrollé esta plataforma para compartir información importante de manera sencilla.",
+        "part3": "Además de la programación, la música es mi gran pasión. En mi tiempo libre produzco mis propias pistas y encuentro en ello el equilibrio perfecto al trabajar frente al ordenador. Esta creatividad también se refleja en mi trabajo de desarrollo y me ayuda a encontrar soluciones innovadoras."
+      },
+      "imageAlt": "Retrato de Dyaa Kassoma"
+    },
+    "notfound": {
+      "infoTitle": "Página no encontrada",
+      "infoText": "No se pudo encontrar la página. Es posible que haya sido movida o eliminada.",
+      "returnToHomeText": "Volver a la página principal"
+    },
+    "names": {
+      "dashboards": "Tableros",
+      "config": "Configuración",
+      "home": "Inicio",
+      "price": "Precio",
+      "aboutus": "Acerca de",
+      "privacyPolicy": "Política de privacidad",
+      "imprint": "Aviso legal"
+    },
+    "config": {
+      "components": {
+        "eventEdit": {
+          "connectWithGoogle": "Conectar con Google"
+        },
+        "choiseCalender": "Seleccionar calendario",
+        "noCalenderFound": "No se encontraron calendarios",
+        "editWidgetModal": {
+          "title": "Editar widget {{widgetName}}"
+        },
+        "newsEdit": {
+          "chooseSource": "Elige tu fuente de noticias",
+          "title": "Fuente de noticias",
+          "customUrl": "URL RSS personalizada"
+        },
+        "eventsEdit": {
+          "google": "Google",
+          "ical": "iCal",
+          "microsoft": "Microsoft",
+          "signInGoogle": "Iniciar sesión con Google",
+          "signInMicrosoft": "Iniciar sesión con Microsoft",
+          "noCalendarFound": "No se encontraron calendarios",
+          "selectACalendar": "Por favor selecciona un calendario"
+        },
+        "iotEdit": {
+          "deviceSelection": "Selección de dispositivo",
+          "deviceType": "Tipo",
+          "deviceRoom": "Sala",
+          "noDevices": "No se encontraron dispositivos",
+          "noSelectedDevice": "Por favor selecciona al menos un dispositivo"
+        },
+        "layout": {
+          "security": "Seguridad",
+          "pinProtection": "Protección PIN",
+          "display": "Pantalla",
+          "fontsizesmall": "Pequeño",
+          "fontsizemedium": "Mediano",
+          "fontsizelarge": "Grande",
+          "background": "Fondo",
+          "error": {
+            "title": "Error al cargar el diseño"
+          },
+          "enterPin": "Introduce el PIN"
+        },
+        "widgetList": {
+          "emptyStateTitle": "No hay widgets",
+          "errorLoading": "Error al cargar los widgets"
+        },
+        "dateTimeEdit": {
+          "dateFormat": "Formato de fecha",
+          "timezone": "Zona horaria",
+          "selectTimezone": "Selecciona tu zona horaria",
+          "timeFormat": "Formato de hora",
+          "12h": "12 horas",
+          "24h": "24 horas",
+          "digital": "Digital",
+          "clockType": "Tipo de reloj",
+          "analog": "Analógico",
+          "timeSettings": "Configuración de hora",
+          "selectTimeFormat": "Selecciona el formato de hora.",
+          "selectDateFormat": "Selecciona el formato de fecha."
+        },
+        "weatherEdit": {
+          "city": "Ciudad",
+          "cityRequired": "La ciudad es obligatoria"
+        },
+        "qrcodeEdit": {
+          "qrCodeRequired": "Se debe crear al menos un código QR.",
+          "encryption": "Cifrado",
+          "noPassword": "sin contraseña",
+          "text": "Texto",
+          "url": "URL",
+          "wifi": "WiFi",
+          "type": "Tipo",
+          "nameRequired": "El nombre es obligatorio",
+          "qrCodeList": "Lista de códigos QR",
+          "qrCodeListDesc": "La lista siguiente muestra tus códigos QR existentes",
+          "createQRCode": "Crear nuevo código QR",
+          "createQRCodeDesc": "Por favor rellena la entrada",
+          "editQRCode": "Editar código QR"
+        },
+        "displaySection": {
+          "fontsize": "Tamaño de fuente",
+          "rotation": "Rotación",
+          "color": "Color personalizado"
+        },
+        "backgroundSection": {
+          "backgroundanimation": "Animación de fondo",
+          "backgroundblur": "Desenfoque de fondo",
+          "brightness": "Brillo",
+          "backgroundblurDescription": "Determina qué tan nítido o desenfocado se muestra el fondo.",
+          "backgroundanimationDescription": "Indica si los fondos se muestran como una animación."
+        },
+        "remarksEdit": {
+          "remarksIntervall": "Intervalo de renovación",
+          "remarksIntervallDescription": "Establece el intervalo para mostrar citas",
+          "remarks": "Citas",
+          "remarksDescription": "Añade nuevas citas o elimina las existentes",
+          "remarksEmpty": "Se requiere al menos una entrada"
+        },
+        "communication": {
+          "desc": "Aquí puedes enviar mensajes a tu tablero"
+        },
+        "musicEdit": {
+          "login": "Conectar con Spotify",
+          "description": "No has vinculado tu cuenta de Spotify con Screen Board aún",
+          "connected": "Conectado exitosamente a Spotify",
+          "connectedMessage": "Has iniciado sesión correctamente en Spotify y ahora puedes disfrutar música en tu tablero.",
+          "logout": "Cerrar sesión"
+        },
+        "colorPicker": {
+          "standard": "Color del sistema"
+        }
+      },
+      "tabLayout": "Diseño",
+      "tabWidgets": "Widgets",
+      "errors": {
+        "invalidPin": "PIN no válido"
+      },
+      "toDashboard": "Ir al tablero",
+      "title": "Configuración",
+      "description": "Administrar widgets, personalizar diseño, elegir fondos e integrar servicios."
+    },
+    "dashboard": {
+      "components": {
+        "calendar": {
+          "notConfigured": "Los eventos aún no están configurados. Por favor usa el widget de eventos para configurarlos.",
+          "today": "Hoy",
+          "noEvents": "No hay eventos",
+          "allDay": "todo el día"
+        },
+        "news": {
+          "notConfigured": "Aún no has añadido un enlace RSS a tu widget. Por favor agrégalo en la página de configuración.",
+          "error": "No se pudo encontrar el enlace RSS o es inválido. Revisa tu configuración."
+        },
+        "qrcodeWidget": {
+          "notConfigured": "Aún no se ha agregado ningún código QR. Ve al widget QR y añádelo."
+        },
+        "pin": {
+          "enterPin": "Introduce el PIN"
+        },
+        "musicWidget": {
+          "title": "Música",
+          "configFaild": "Aún no has configurado un servicio de música en el widget. Ve a configuración e inicia sesión.",
+          "noPlayerAvailable": "Reproductor de Spotify no disponible",
+          "noPlayerAvailableDesc": "Por favor, asegúrate de tener una suscripción Spotify Premium activa e inténtalo de nuevo.",
+          "connectedToSpotify": "Conectado a Spotify",
+          "connecting": "Conectando..."
+        },
+        "iot": {
+          "no_devices": "No hay dispositivos",
+          "not_connected": "No conectado",
+          "status_available": "Estado disponible",
+          "on": "Encendido",
+          "off": "Apagado",
+          "unknown": "Desconocido",
+          "turn_off": "Apagar",
+          "turn_on": "Encender",
+          "status": "Estado",
+          "no_selected_device": "No hay dispositivos disponibles",
+          "command_error": "Error"
+        },
+        "weatherWidget": {
+          "notConfigured": "Error al cargar los datos, verifique la configuración de este widget"
+        }
+      }
+    },
+    "descriptions": {
+      "config": "Configura tu tablero, widgets y mucho más",
+      "dashboard": "La vista de tu día que siempre quieres tener presente"
+    },
+    "home": {
+      "shortDesc1": "Tu compañero diario",
+      "shortDesc2": "en un vistazo.",
+      "shortDesc3": "Elegante, simple y eficiente.",
+      "longDesc": "Screen Board es un tablero digital que te ayuda a organizar tu día y aumentar tu productividad. Te muestra la información más importante de un vistazo y te apoya para alcanzar tus metas.",
+      "getStarted": "Descubre ahora",
+      "widgetsTitle": "Descubre nuestros widgets versátiles",
+      "widgets": {
+        "event": {
+          "title": "Eventos",
+          "description": "Muestra los próximos eventos y citas importantes."
+        },
+        "news": {
+          "title": "Noticias",
+          "description": "Mantente al día con las últimas noticias y actualizaciones."
+        },
+        "weather": {
+          "title": "Clima",
+          "description": "Pronósticos y condiciones meteorológicas actuales de un vistazo."
+        },
+        "qr": {
+          "title": "Códigos QR",
+          "description": "Comparte información rápida y fácilmente con códigos QR escaneables."
+        },
+        "music": {
+          "title": "Reproductor de música",
+          "description": "Reproductor para tu música favorita, con integración Spotify."
+        },
+        "video": {
+          "title": "Transmisiones de video",
+          "description": "Integra flujos de video en vivo o contenido grabado."
+        },
+        "clock": {
+          "title": "Fecha y hora",
+          "description": "Muestra la fecha y hora actual en diferentes zonas horarias."
+        },
+        "quote": {
+          "title": "Citas y frases",
+          "description": "Inspira con frases diarias o citas motivacionales."
+        },
+        "note": {
+          "title": "Notas",
+          "description": "Deja mensajes importantes o recordatorios para tu equipo."
+        },
+        "liveMessage": "¡Envía mensajes en vivo directamente a tu tablero y mantén a todos actualizados!",
+        "getStarted": "Enviar mensaje en vivo"
+      },
+      "integrations": {
+        "title": "Integración con servicios líderes."
+      }
+    },
+    "footer": {
+      "allRightsReserved": "Todos los derechos reservados"
+    },
+    "liveInteraction": {
+      "title": "Interacción en vivo",
+      "noDashboards": "No hay tableros",
+      "loading": "Cargando tableros...",
+      "selectDashboard": "Selecciona un tablero",
+      "lastMessage": "Último mensaje",
+      "messageInput": "Introduce tu mensaje"
+    },
+    "spotifyCallback": {
+      "title": "Inicio de sesión con Spotify",
+      "success": "¡Ingreso exitoso!",
+      "successMessage": "Has iniciado sesión en Spotify correctamente y ahora puedes usar el widget de música en tu tablero.",
+      "goToDashboard": "Ir al tablero",
+      "goToHome": "Volver a inicio",
+      "notLoggedIn": "No has iniciado sesión en Spotify",
+      "loginPrompt": "Por favor, ve a configuración del widget de música",
+      "toWidgets": "A los widgets"
+    },
+    "dashboards": {
+      "title": "Tableros",
+      "pluralTitle": "Tableros",
+      "singularTitle": "Tablero",
+      "available": "disponible",
+      "editDashboard": "Editar tablero",
+      "dashboardNewName": "Nuevo nombre",
+      "createDashboard": "Crear tablero",
+      "dashboardName": "Nombre del tablero",
+      "noDashboards": "No se encontraron tableros",
+      "noDashboardsDescription": "Crea tu primer tablero para visualizar tus widgets.",
+      "errorLoading": "Error al cargar los tableros",
+      "components": {
+        "dashboardItem": {
+          "settings": "Configuración"
+        }
+      }
+    }
+  },
+  "components": {
+    "navLayout": {
+      "singedAs": "conectado como",
+      "mysettings": "Mis ajustes",
+      "signedAs": "conectado como",
+      "liveInteractionDesc": "Enviar mensajes en tiempo real",
+      "profileSettings": "Configuración de perfil"
+    },
+    "profileSettings": {
+      "subtitle": "Administra tu perfil y configuración de la aplicación",
+      "userInfo": "Información del usuario",
+      "language": "Idioma",
+      "languageDescription": "Elige tu idioma preferido",
+      "theme": "Tema",
+      "darkMode": "Modo oscuro",
+      "darkModeDescription": "Activa el modo oscuro para una vista más cómoda por la noche"
+    },
+    "notConfiguredMessage": {
+      "configureNow": "Configura widgets ahora"
+    },
+    "errorWidget": {
+      "errorTitle": "Error Al cargar el widget: {{widgetName}}",
+      "errorMessage": "Asegúrese de que la configuración sea correcta. Pruébalo de nuevo. Si el error todavía existe, comuníquese con el soporte."
+    }
+  },
+  "domain": {
+    "widget": {
+      "news": "Noticias",
+      "weather": "Clima",
+      "calendar": "Calendario",
+      "events": "Eventos",
+      "datetime": "Fecha y hora",
+      "remarks": "Citas",
+      "qrcodes": "Códigos QR",
+      "music": "Música",
+      "notes ": "Notas",
+      "iot": "IoT"
+    }
+  },
+  "hooks": {
+    "dashboard": {
+      "useNext5DaysWeather": {
+        "today": "Hoy"
+      }
+    }
+  },
+  "common": {
+    "all": "Todo"
+  }
+}

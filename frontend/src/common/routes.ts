@@ -1,0 +1,14 @@
+export const ROUTE_DASHBOARD_ID = ':dashboardId';
+export const ROUTE_DASHBOARD = '/dashboard/';
+export const ROUTE_DASHBOARDS = '/dashboards';
+export const ROUTE_LIVE_INTERACTION = '/live-interaction';
+export const ROUTE_CONFIG = '/config/';
+export const ROUTE_CONFIG_WIDGETS = `/config/${ROUTE_DASHBOARD_ID}#widgets`;
+export const ROUTE_CONFIG_LAYOUT = `/config/${ROUTE_DASHBOARD_ID}#layout`;
+export const ROUTE_PRICE = '/price';
+export const ROUTE_ABOUT_US = '/aboutus';
+export const ROUTE_PRIVACY_POLICY = '/privacy-policy';
+export const ROUTE_IMPRINT = '/imprint';
+export const ROUTE_SPOTIFY_CALLBACK = '/spotify-callback';
+export const ROUTE_SMARTTHINGS_CALLBACK = '/smartthings/callback';
+export const ROUTE_HOME = '/';

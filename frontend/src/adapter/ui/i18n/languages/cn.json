@@ -1,0 +1,360 @@
+{
+  "actions": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "finish": "完成",
+    "logout": "登出",
+    "login": "登录",
+    "deactive": "停用",
+    "active": "启用",
+    "create": "创建",
+    "open": "打开",
+    "send": "发送",
+    "refresh": "刷新",
+    "tryAgain": "Try again"
+  },
+  "sites": {
+    "aboutus": {
+      "title": "关于我们",
+      "name": "Dyaa Kassoma",
+      "profession": "音乐家 & 全栈开发者",
+      "bio": {
+        "part1": "我出生于叙利亚大马士革，这是一座拥有丰富历史与文化的城市。现在我居住在德国，将两个世界的多样性融入我的工作之中。",
+        "part2": "作为一名对前端和用户界面充满热情的全栈开发者，我创办了 Screen Board。这个想法源于一次与女友的小争执，她经常不知道我的日程安排。因此我开发了这个平台，以便轻松分享重要信息。",
+        "part3": "除了编程，音乐是我最大的热情所在。在空闲时间，我喜欢制作自己的曲目，在其中找到与电脑前工作的完美平衡。这种创造力也融入到我的开发工作中，帮助我找到创新解决方案。"
+      },
+      "imageAlt": "Dyaa Kassoma 肖像"
+    },
+    "notfound": {
+      "infoTitle": "页面未找到",
+      "infoText": "无法找到该页面。页面可能已被移动或删除。",
+      "returnToHomeText": "返回首页"
+    },
+    "names": {
+      "dashboards": "仪表板",
+      "config": "设置",
+      "home": "首页",
+      "price": "价格",
+      "aboutus": "关于我们",
+      "privacyPolicy": "隐私政策",
+      "imprint": "版权信息"
+    },
+    "config": {
+      "components": {
+        "eventEdit": {
+          "connectWithGoogle": "连接 Google"
+        },
+        "choiseCalender": "选择日历",
+        "noCalenderFound": "未找到日历",
+        "editWidgetModal": {
+          "title": "编辑 {{widgetName}} 小部件"
+        },
+        "newsEdit": {
+          "chooseSource": "选择您的新闻来源",
+          "title": "新闻来源",
+          "customUrl": "自定义 RSS 链接"
+        },
+        "eventsEdit": {
+          "google": "Google",
+          "ical": "iCal",
+          "microsoft": "Microsoft",
+          "signInGoogle": "使用 Google 登录",
+          "signInMicrosoft": "使用 Microsoft 登录",
+          "noCalendarFound": "未找到日历",
+          "selectACalendar": "请选择一个日历"
+        },
+        "iotEdit": {
+          "deviceSelection": "设备选择",
+          "deviceType": "类型",
+          "deviceRoom": "房间",
+          "noDevices": "未找到设备",
+          "noSelectedDevice": "请至少选择一个设备"
+        },
+        "layout": {
+          "security": "安全",
+          "pinProtection": "PIN 保护",
+          "display": "显示",
+          "fontsizesmall": "小",
+          "fontsizemedium": "中",
+          "fontsizelarge": "大",
+          "background": "背景",
+          "error": {
+            "title": "加载布局时出错"
+          },
+          "enterPin": "输入 PIN"
+        },
+        "widgetList": {
+          "emptyStateTitle": "没有可用小部件",
+          "errorLoading": "加载小部件时出错"
+        },
+        "dateTimeEdit": {
+          "dateFormat": "日期格式",
+          "timezone": "时区",
+          "selectTimezone": "选择您的时区",
+          "timeFormat": "时间格式",
+          "12h": "12 小时制",
+          "24h": "24 小时制",
+          "digital": "数字",
+          "clockType": "时钟类型",
+          "analog": "模拟",
+          "timeSettings": "时间设置",
+          "selectTimeFormat": "选择时间格式",
+          "selectDateFormat": "选择日期格式"
+        },
+        "weatherEdit": {
+          "city": "城市",
+          "cityRequired": "城市为必填项"
+        },
+        "qrcodeEdit": {
+          "qrCodeRequired": "必须至少创建一个二维码。",
+          "encryption": "加密",
+          "noPassword": "无密码",
+          "text": "文本",
+          "url": "URL",
+          "wifi": "WiFi",
+          "type": "类型",
+          "nameRequired": "名称为必填项",
+          "qrCodeList": "二维码列表",
+          "qrCodeListDesc": "以下列表显示您现有的二维码",
+          "createQRCode": "创建新二维码",
+          "createQRCodeDesc": "请填写输入内容",
+          "editQRCode": "编辑二维码"
+        },
+        "displaySection": {
+          "fontsize": "字体大小",
+          "rotation": "旋转",
+          "color": "自定义颜色"
+        },
+        "backgroundSection": {
+          "backgroundanimation": "背景动画",
+          "backgroundblur": "背景模糊",
+          "brightness": "亮度",
+          "backgroundblurDescription": "决定背景显示得多清晰或模糊。",
+          "backgroundanimationDescription": "指定背景是否以动画形式显示。"
+        },
+        "remarksEdit": {
+          "remarksIntervall": "更新间隔",
+          "remarksIntervallDescription": "设置显示引用的间隔",
+          "remarks": "引语",
+          "remarksDescription": "添加新的引语或删除现有的",
+          "remarksEmpty": "至少需要一条记录"
+        },
+        "communication": {
+          "desc": "您可以在此向仪表板发送消息"
+        },
+        "musicEdit": {
+          "login": "连接 Spotify",
+          "description": "您尚未将 Spotify 帐号与 Screen Board 关联",
+          "connected": "已成功连接 Spotify",
+          "connectedMessage": "您已经成功登录 Spotify，现在可以在仪表板上欣赏音乐。",
+          "logout": "登出"
+        },
+        "colorPicker": {
+          "standard": "系统颜色"
+        }
+      },
+      "tabLayout": "布局",
+      "tabWidgets": "小部件",
+      "errors": {
+        "invalidPin": "无效的 PIN"
+      },
+      "toDashboard": "转到仪表板",
+      "title": "设置",
+      "description": "管理小部件、自定义设计、选择背景并集成服务。"
+    },
+    "dashboard": {
+      "components": {
+        "calendar": {
+          "notConfigured": "事件尚未配置。请使用事件小部件进行配置。",
+          "today": "今天",
+          "noEvents": "暂无事件",
+          "allDay": "全天"
+        },
+        "news": {
+          "notConfigured": "您尚未向小部件添加 RSS 链接。请在配置页面添加 RSS。",
+          "error": "无法找到 RSS 链接或链接无效。请检查配置。"
+        },
+        "qrcodeWidget": {
+          "notConfigured": "尚未添加二维码。请前往二维码小部件并添加一个。",
+          "pin": {
+            "enterPin": "输入 PIN"
+          }
+        },
+        "musicWidget": {
+          "title": "音乐",
+          "configFaild": "您尚未在小部件中配置音乐服务。请前往设置并登录服务。",
+          "noPlayerAvailable": "Spotify 播放器不可用",
+          "noPlayerAvailableDesc": "请确保您拥有有效的 Spotify Premium 帐号并重试。",
+          "connectedToSpotify": "已连接 Spotify",
+          "connecting": "正在连接..."
+        },
+        "iot": {
+          "no_devices": "未找到设备",
+          "not_connected": "未连接",
+          "status_available": "已连接",
+          "on": "开",
+          "off": "关",
+          "unknown": "未知",
+          "turn_off": "关闭",
+          "turn_on": "打开",
+          "status": "状态",
+          "no_selected_device": "无可用设备",
+          "command_error": "错误"
+        },
+        "weatherWidget": {
+          "notConfigured": "Error loading the data, please check the settings for this widget"
+        }
+      }
+    },
+    "descriptions": {
+      "config": "配置您的仪表板，自定义小部件等",
+      "dashboard": "始终处于您视线中的当天视图"
+    },
+    "home": {
+      "shortDesc1": "您的日常伙伴",
+      "shortDesc2": "一目了然。",
+      "shortDesc3": "优雅、简洁、高效。",
+      "longDesc": "Screen Board 是一个数字仪表板，帮助您组织一天，提高生产力。一目了然地显示最重要的信息，并支持您实现目标。",
+      "getStarted": "立即了解",
+      "widgetsTitle": "发现我们多功能的小部件",
+      "widgets": {
+        "event": {
+          "title": "事件",
+          "description": "显示即将发生的活动和重要约会。"
+        },
+        "news": {
+          "title": "新闻",
+          "description": "随时关注最新新闻和更新。"
+        },
+        "weather": {
+          "title": "天气",
+          "description": "一目了然地显示天气预报和当前状况。"
+        },
+        "qr": {
+          "title": "二维码",
+          "description": "通过可扫描的二维码快速、轻松分享信息。"
+        },
+        "music": {
+          "title": "音乐播放器",
+          "description": "集成 Spotify 的音乐播放器，聆听您喜爱的音乐。"
+        },
+        "video": {
+          "title": "视频流",
+          "description": "集成直播视频或录制内容。"
+        },
+        "clock": {
+          "title": "日期与时间",
+          "description": "显示不同时区的当前日期和时间。"
+        },
+        "quote": {
+          "title": "引语与名言",
+          "description": "以每日引语或励志名言激励他人。"
+        },
+        "note": {
+          "title": "笔记",
+          "description": "为团队留下重要消息或提醒。"
+        },
+        "liveMessage": "直接向您的仪表板发送直播消息，并让所有人保持更新！",
+        "getStarted": "发送实时消息"
+      },
+      "integrations": {
+        "title": "与领先服务集成。"
+      }
+    },
+    "footer": {
+      "allRightsReserved": "版权所有"
+    },
+    "liveInteraction": {
+      "title": "实时互动",
+      "noDashboards": "无仪表板",
+      "loading": "正在加载仪表板...",
+      "selectDashboard": "选择一个仪表板",
+      "lastMessage": "最后一条消息",
+      "messageInput": "输入您的消息"
+    },
+    "spotifyCallback": {
+      "title": "Spotify 登录",
+      "success": "登录成功！",
+      "successMessage": "您已成功登录 Spotify，现在可以在仪表板上使用音乐小部件。",
+      "goToDashboard": "前往仪表板",
+      "goToHome": "返回首页",
+      "notLoggedIn": "您未登录 Spotify",
+      "loginPrompt": "请前往音乐小部件设置",
+      "toWidgets": "到小部件"
+    },
+    "dashboards": {
+      "title": "仪表板",
+      "pluralTitle": "仪表板",
+      "singularTitle": "仪表板",
+      "available": "可用",
+      "editDashboard": "编辑仪表板",
+      "dashboardNewName": "新名称",
+      "createDashboard": "创建仪表板",
+      "dashboardName": "仪表板名称",
+      "noDashboards": "未找到仪表板",
+      "noDashboardsDescription": "创建您的第一个仪表板以可视化小部件。",
+      "errorLoading": "加载仪表板时出错",
+      "components": {
+        "dashboardItem": {
+          "settings": "设置"
+        }
+      }
+    }
+  },
+  "components": {
+    "navLayout": {
+      "singedAs": "以…身份登录",
+      "mysettings": "我的设置",
+      "signedAs": "以…身份登录",
+      "liveInteractionDesc": "发送实时消息",
+      "profileSettings": "个人资料设置"
+    },
+    "profileSettings": {
+      "subtitle": "管理您的个人资料和应用设置",
+      "userInfo": "用户信息",
+      "language": "语言",
+      "languageDescription": "选择您的首选语言",
+      "theme": "主题",
+      "darkMode": "深色模式",
+      "darkModeDescription": "启用深色模式以在夜间获得更舒适的视图"
+    },
+    "notConfiguredMessage": {
+      "configureNow": "立即配置小部件"
+    },
+    "errorWidget": {
+      "errorTitle": "Error when loading the widget: {{Widgetname}}",
+      "errorMessage": "Please make sure that the configuration is correct. \nTry it again. \nIf the error still exists, please contact support."
+    }
+  },
+  "domain": {
+    "widget": {
+      "news": "新闻",
+      "weather": "天气",
+      "calendar": "日历",
+      "events": "事件",
+      "datetime": "日期与时间",
+      "remarks": "引语",
+      "qrcodes": "二维码",
+      "music": "音乐",
+      "notes ": "笔记",
+      "iot": "IoT",
+      "notes": "笔记"
+    }
+  },
+  "hooks": {
+    "dashboard": {
+      "useNext5DaysWeather": {
+        "today": "今天"
+      }
+    }
+  },
+  "common": {
+    "all": "全部"
+  }
+}

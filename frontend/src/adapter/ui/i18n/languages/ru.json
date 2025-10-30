@@ -1,0 +1,359 @@
+{
+  "actions": {
+    "save": "Сохранить",
+    "cancel": "Отменить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "add": "Добавить",
+    "close": "Закрыть",
+    "back": "Назад",
+    "next": "Далее",
+    "finish": "Завершить",
+    "logout": "Выйти",
+    "login": "Войти",
+    "deactive": "Отключить",
+    "active": "Активировать",
+    "create": "Создать",
+    "open": "Открыть",
+    "send": "Отправить",
+    "refresh": "Обновить",
+    "tryAgain": "Попробуйте еще раз"
+  },
+  "sites": {
+    "aboutus": {
+      "title": "О нас",
+      "name": "Дьяа Кассома",
+      "profession": "Музыкант и Fullstack‑разработчик",
+      "bio": {
+        "part1": "Рождён в Дамаске, Сирия, мои корни — в городе с богатой историей и культурой. Сейчас я живу в Германии и объединяю разнообразие двух миров в своей работе.",
+        "part2": "Как страстный Fullstack‑разработчик с увлечением фронтендом и UX, я создал Screen Board. Идея возникла после лёгкой ссоры с моей девушкой, которая часто не знала о моих встречах. Так я разработал платформу для лёгкого обмена важной информацией.",
+        "part3": "Помимо программирования, моя большая страсть — музыка. В свободное время я создаю собственные треки, и это помогает мне уравновесить работу за компьютером. Это творчество также отражается в моей разработке и помогает находить инновационные решения."
+      },
+      "imageAlt": "Портрет Дьяа Кассома"
+    },
+    "notfound": {
+      "infoTitle": "Страница не найдена",
+      "infoText": "Страница не найдена. Возможно, она была перемещена или удалена.",
+      "returnToHomeText": "Вернуться на главную"
+    },
+    "names": {
+      "dashboards": "Панели",
+      "config": "Настройки",
+      "home": "Главная",
+      "price": "Цена",
+      "aboutus": "О нас",
+      "privacyPolicy": "Политика конфиденциальности",
+      "imprint": "Импринт"
+    },
+    "config": {
+      "components": {
+        "eventEdit": {
+          "connectWithGoogle": "Подключиться к Google"
+        },
+        "choiseCalender": "Выбрать календарь",
+        "noCalenderFound": "Календари не найдены",
+        "editWidgetModal": {
+          "title": "Редактирование виджета {{widgetName}}"
+        },
+        "newsEdit": {
+          "chooseSource": "Выберите источник новостей",
+          "title": "Источник новостей",
+          "customUrl": "Пользовательская RSS‑ссылка"
+        },
+        "eventsEdit": {
+          "google": "Google",
+          "ical": "iCal",
+          "microsoft": "Microsoft",
+          "signInGoogle": "Войти через Google",
+          "signInMicrosoft": "Войти через Microsoft",
+          "noCalendarFound": "Календари не найдены",
+          "selectACalendar": "Пожалуйста, выберите календарь"
+        },
+        "iotEdit": {
+          "deviceSelection": "Выбор устройства",
+          "deviceType": "Тип",
+          "deviceRoom": "Комната",
+          "noDevices": "Устройства не найдены",
+          "noSelectedDevice": "Пожалуйста, выберите хотя бы одно устройство"
+        },
+        "layout": {
+          "security": "Безопасность",
+          "pinProtection": "Защита PIN",
+          "display": "Отображение",
+          "fontsizesmall": "Маленький",
+          "fontsizemedium": "Средний",
+          "fontsizelarge": "Большой",
+          "background": "Фон",
+          "error": {
+            "title": "Ошибка загрузки макета"
+          },
+          "enterPin": "Введите PIN"
+        },
+        "widgetList": {
+          "emptyStateTitle": "Нет виджетов",
+          "errorLoading": "Ошибка загрузки виджетов"
+        },
+        "dateTimeEdit": {
+          "dateFormat": "Формат даты",
+          "timezone": "Часовой пояс",
+          "selectTimezone": "Выберите ваш часовой пояс",
+          "timeFormat": "Формат времени",
+          "12h": "12‑часовой",
+          "24h": "24‑часовой",
+          "digital": "Цифровой",
+          "clockType": "Тип часов",
+          "analog": "Аналоговый",
+          "timeSettings": "Настройки времени",
+          "selectTimeFormat": "Выберите формат времени.",
+          "selectDateFormat": "Выберите формат даты."
+        },
+        "weatherEdit": {
+          "city": "Город",
+          "cityRequired": "Город обязателен"
+        },
+        "qrcodeEdit": {
+          "qrCodeRequired": "Необходимо создать как минимум один QR‑код.",
+          "encryption": "Шифрование",
+          "noPassword": "без пароля",
+          "text": "Текст",
+          "url": "URL",
+          "wifi": "WiFi",
+          "type": "Тип",
+          "nameRequired": "Имя обязательно",
+          "qrCodeList": "Список QR‑кодов",
+          "qrCodeListDesc": "Следующий список показывает ваши существующие QR‑коды",
+          "createQRCode": "Создать новый QR‑код",
+          "createQRCodeDesc": "Пожалуйста, заполните форму",
+          "editQRCode": "Редактировать QR‑код"
+        },
+        "displaySection": {
+          "fontsize": "Размер шрифта",
+          "rotation": "Поворот",
+          "color": "Пользовательский цвет"
+        },
+        "backgroundSection": {
+          "backgroundanimation": "Анимация фона",
+          "backgroundblur": "Размытие фона",
+          "brightness": "Яркость",
+          "backgroundblurDescription": "Определяет, насколько четко или размыто отображается фон.",
+          "backgroundanimationDescription": "Указывает, отображается ли фон как анимация."
+        },
+        "remarksEdit": {
+          "remarksIntervall": "Интервал обновления",
+          "remarksIntervallDescription": "Установите интервал для отображения цитат",
+          "remarks": "Цитаты",
+          "remarksDescription": "Добавьте новые цитаты или удалите существующие",
+          "remarksEmpty": "Требуется хотя бы одна запись"
+        },
+        "communication": {
+          "desc": "Вы можете отправлять сообщения на вашу панель здесь"
+        },
+        "musicEdit": {
+          "login": "Подключиться к Spotify",
+          "description": "Вы ещё не связали ваш аккаунт Spotify с Screen Board",
+          "connected": "Успешно подключено к Spotify",
+          "connectedMessage": "Вы успешно вошли в Spotify и теперь можете наслаждаться музыкой на своей панели.",
+          "logout": "Выйти"
+        },
+        "colorPicker": {
+          "standard": "Цвет системы"
+        }
+      },
+      "tabLayout": "Макет",
+      "tabWidgets": "Виджеты",
+      "errors": {
+        "invalidPin": "PIN недействителен"
+      },
+      "toDashboard": "Перейти к панели",
+      "title": "Настройки",
+      "description": "Управляйте виджетами, настройкой дизайна, выбором фонов и интеграцией сервисов."
+    },
+    "dashboard": {
+      "components": {
+        "calendar": {
+          "notConfigured": "События ещё не настроены. Пожалуйста, используйте виджет «События» для настройки.",
+          "today": "Сегодня",
+          "noEvents": "Нет событий",
+          "allDay": "весь день"
+        },
+        "news": {
+          "notConfigured": "Вы ещё не добавили RSS‑ссылку в ваш виджет. Пожалуйста, добавьте её на странице настроек.",
+          "error": "Не удалось найти RSS‑ссылку или она недействительна. Пожалуйста, проверьте настройки."
+        },
+        "qrcodeWidget": {
+          "notConfigured": "QR‑код ещё не добавлен. Пожалуйста, перейдите в виджет QR‑код и добавьте его."
+        },
+        "pin": {
+          "enterPin": "Введите PIN"
+        },
+        "musicWidget": {
+          "title": "Музыка",
+          "configFaild": "Вы ещё не настроили музыкальный сервис в виджете. Пожалуйста, перейдите в настройки и войдите в сервис.",
+          "noPlayerAvailable": "Spotify‑проигрыватель недоступен",
+          "noPlayerAvailableDesc": "Пожалуйста, убедитесь, что у вас активна подписка Spotify Premium и попробуйте снова.",
+          "connectedToSpotify": "Подключено к Spotify",
+          "connecting": "Подключение..."
+        },
+        "iot": {
+          "no_devices": "Нет устройств",
+          "not_connected": "Не подключено",
+          "status_available": "Подключено",
+          "on": "Включено",
+          "off": "Выключено",
+          "unknown": "Неизвестно",
+          "turn_off": "Выключить",
+          "turn_on": "Включить",
+          "status": "Статус",
+          "no_selected_device": "Нет доступных устройств",
+          "command_error": "Ошибка"
+        },
+        "weatherWidget": {
+          "notConfigured": "Ошибка загрузки данных, пожалуйста, проверьте настройки этого виджета"
+        }
+      }
+    },
+    "descriptions": {
+      "config": "Настройка панели, виджетов и многое другое",
+      "dashboard": "Просмотр вашего ежедневного расписания, всегда под рукой"
+    },
+    "home": {
+      "shortDesc1": "Ваш ежедневный помощник",
+      "shortDesc2": "в одном взгляде.",
+      "shortDesc3": "Элегантно, просто и эффективно.",
+      "longDesc": "Screen Board — это цифровая панель управления, которая помогает организовать ваш день и повысить продуктивность. Она показывает самую важную информацию на одном экране и поддерживает вас в достижении целей.",
+      "getStarted": "Начать сейчас",
+      "widgetsTitle": "Откройте для себя наши многофункциональные виджеты",
+      "widgets": {
+        "event": {
+          "title": "События",
+          "description": "Показывает предстоящие мероприятия и важные встречи."
+        },
+        "news": {
+          "title": "Новости",
+          "description": "Будьте в курсе последних новостей и обновлений."
+        },
+        "weather": {
+          "title": "Погода",
+          "description": "Актуальные прогнозы погоды и состояние."
+        },
+        "qr": {
+          "title": "QR‑коды",
+          "description": "Легко делитесь информацией с помощью сканируемых QR‑кодов."
+        },
+        "music": {
+          "title": "Музыкальный плеер",
+          "description": "Плеер для вашей любимой музыки с интеграцией Spotify."
+        },
+        "video": {
+          "title": "Видео‑стримы",
+          "description": "Интегрируйте прямые видео‑потоки или записанный контент."
+        },
+        "clock": {
+          "title": "Дата и время",
+          "description": "Показывает текущее время и дату в разных часовых поясах."
+        },
+        "quote": {
+          "title": "Цитаты и высказывания",
+          "description": "Вдохновляйте ежедневными цитатами или мотивационными высказываниями."
+        },
+        "note": {
+          "title": "Заметки",
+          "description": "Оставьте важные сообщения или напоминания для вашей команды."
+        },
+        "liveMessage": "Отправляйте сообщения прямо на вашу панель и держите всех в курсе!",
+        "getStarted": "Отправить сообщение"
+      },
+      "integrations": {
+        "title": "Интеграция с ведущими сервисами."
+      }
+    },
+    "footer": {
+      "allRightsReserved": "Все права защищены"
+    },
+    "liveInteraction": {
+      "title": "Живое взаимодействие",
+      "noDashboards": "Нет панелей",
+      "loading": "Загрузка панелей...",
+      "selectDashboard": "Выберите панель",
+      "lastMessage": "Последнее сообщение",
+      "messageInput": "Введите ваше сообщение"
+    },
+    "spotifyCallback": {
+      "title": "Вход через Spotify",
+      "success": "Успешный вход!",
+      "successMessage": "Вы успешно вошли в Spotify и теперь можете использовать музыкальный виджет на панели.",
+      "goToDashboard": "Перейти к панели",
+      "goToHome": "На главную страницу",
+      "notLoggedIn": "Вы не вошли в Spotify",
+      "loginPrompt": "Пожалуйста, перейдите к настройке музыкального виджета",
+      "toWidgets": "К виджетам"
+    },
+    "dashboards": {
+      "title": "Панели",
+      "pluralTitle": "Панели",
+      "singularTitle": "Панель",
+      "available": "доступно",
+      "editDashboard": "Редактировать панель",
+      "dashboardNewName": "Новое имя",
+      "createDashboard": "Создать панель",
+      "dashboardName": "Имя панели",
+      "noDashboards": "Панели не найдены",
+      "noDashboardsDescription": "Создайте первую панель для отображения ваших виджетов.",
+      "errorLoading": "Ошибка загрузки панелей",
+      "components": {
+        "dashboardItem": {
+          "settings": "Настройки"
+        }
+      }
+    }
+  },
+  "components": {
+    "navLayout": {
+      "singedAs": "вошёл как",
+      "mysettings": "Мои настройки",
+      "signedAs": "вошёл как",
+      "liveInteractionDesc": "Отправка мгновенных сообщений",
+      "profileSettings": "Настройки профиля"
+    },
+    "profileSettings": {
+      "subtitle": "Управление настройками профиля и приложения",
+      "userInfo": "Информация о пользователе",
+      "language": "Язык",
+      "languageDescription": "Выберите предпочитаемый язык",
+      "theme": "Тема",
+      "darkMode": "Тёмный режим",
+      "darkModeDescription": "Включите тёмный режим для более комфортного просмотра ночью"
+    },
+    "notConfiguredMessage": {
+      "configureNow": "Настроить виджеты сейчас"
+    },
+    "errorWidget": {
+      "errorTitle": "Ошибка при загрузке виджета: {{widgetName}}",
+      "errorMessage": "Пожалуйста, убедитесь, что конфигурация верна. Попробуйте еще раз. Если ошибка все еще существует, свяжитесь с поддержкой."
+    }
+  },
+  "domain": {
+    "widget": {
+      "news": "Новости",
+      "weather": "Погода",
+      "calendar": "Календарь",
+      "events": "События",
+      "datetime": "Дата и время",
+      "remarks": "Цитаты",
+      "qrcodes": "QR‑коды",
+      "music": "Музыка",
+      "notes ": "Заметки",
+      "iot": "IoT"
+    }
+  },
+  "hooks": {
+    "dashboard": {
+      "useNext5DaysWeather": {
+        "today": "Сегодня"
+      }
+    }
+  },
+  "common": {
+    "all": "Все"
+  }
+}
