@@ -9,12 +9,12 @@ export class SpotifyAdapter implements SpotifyRepository {
   private redirectUri: string;
 
   constructor() {
-    this.clientId = process.env.SPOTIFY_CLIENT_ID!;
-    this.clientSecret = process.env.SPOTIFY_CLIENT_SECRET!;
-    this.redirectUri = process.env.SPOTIFY_REDIRECT_URI!;
+    this.clientId = process.env.SPOTIFY_CLIENT_ID || '';
+    this.clientSecret = process.env.SPOTIFY_CLIENT_SECRET || '';
+    this.redirectUri = process.env.SPOTIFY_REDIRECT_URI || '';
 
     if (!this.clientId || !this.clientSecret || !this.redirectUri) {
-      throw new Error("Spotify environment variables are not set correctly");
+      console.warn("Spotify environment variables are not set correctly. Spotify integration will not work.");
     }
   }
 

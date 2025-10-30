@@ -14,7 +14,7 @@ export class SmartThingsAdapter implements SmartThingsRepository {
         this.clientSecret = process.env.CLIENT_SECRET_SMARTTHINGS
 
         if (!this.clientId || !this.clientSecret) {
-            throw new Error("Client ID or Secret is not defined in environment variables")
+            logger.warn("SmartThings Client ID or Secret is not defined in environment variables. SmartThings integration will not work.")
         }
     }
 

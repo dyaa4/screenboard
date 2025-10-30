@@ -17,8 +17,8 @@ export class GoogleAdapter implements GoogleRepository {
     this.clientSecret = process.env.CLIENT_SCRET_GOOGLE_KALENDER
 
     if (!this.clientId || !this.clientSecret) {
-      throw new Error(
-        "Client ID or Secret is not defined in environment variables"
+      console.warn(
+        "Google Calendar Client ID or Secret is not defined in environment variables. Google Calendar integration will not work."
       )
     }
   }
