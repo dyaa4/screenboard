@@ -47,7 +47,7 @@ export class Server {
     const publicPath = path.join(process.cwd(), 'backend', 'public');
     this.app.use(express.static(publicPath))
 
-    this.app.get('*', (_req, res) => {
+    this.app.get(/^\/(?!api).*/, (_req, res) => {
       console.log('🟢 Frontend route requested:', _req.path);
       res.sendFile(path.join(publicPath, 'index.html'));
     });

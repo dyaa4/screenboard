@@ -89,13 +89,14 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
       theme === 'dark',
     );
     return (
-      <Chip
+      <Card
         key={event.id}
         className={`${getFontSizeClass(layout?.fontSize)} w-full mb-1 justify-start`}
         style={{ backgroundColor }}
-        variant="flat"
+        shadow='sm'
       >
-        <div className="w-full text-left">
+
+        <div className="w-full text-left p-2">
           <div
             title={event.summary}
             className="font-bold truncate"
@@ -114,7 +115,7 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
             {event.end?.date && t('sites.dashboard.components.calendar.allDay')}
           </div>
         </div>
-      </Chip>
+      </Card>
     );
   };
 
