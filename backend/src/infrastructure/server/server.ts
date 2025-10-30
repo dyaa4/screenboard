@@ -45,8 +45,7 @@ export class Server {
 
     // statische Dateien (Frontend build)
     const publicPath = path.join(process.cwd(), 'backend', 'public');
-
-    this.app.use(express.static(publicPath));
+    this.app.use(express.static(publicPath))
 
     this.app.get('*', (_req, res) => {
       console.log('🟢 Frontend route requested:', _req.path);
