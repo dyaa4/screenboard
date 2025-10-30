@@ -6,7 +6,7 @@ import { config } from '../../config/config';
 import axios from 'axios';
 
 export const setupMiddleware = (app: Express): void => {
-  const allowedOrigins = ['https://screen-board.com', "https://www.screen-board.com", "http://localhost:5000"];
+  const allowedOrigins = ['https://screen-board.com', "https://www.screen-board.com", "http://localhost:3000"];
 
   // CORS konfigurieren
   const corsOptions = {
