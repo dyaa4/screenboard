@@ -6,27 +6,18 @@ import { config } from '../../config/config';
 import axios from 'axios';
 
 export const setupMiddleware = (app: Express): void => {
-  const allowedOrigins = [
-    'https://screen-board.com',
-    'http://localhost:5000',
-    'http://localhost:5173',
-  ];
+  const allowedOrigins = ['https://screen-board.com', "https://www.screen-board.com"];
 
   app.use(cors({
     origin: (origin, callback) => {
-      // Wenn kein Origin (z.B. Postman/Bruno) oder erlaubte Origin
+      // Wenn kein Origin (z.B. Postman) oder erlaubte Origin
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
-      } else if (origin && (origin.includes('.replit.dev') || origin.includes('.repl.co') || origin.includes('.replit.app'))) {
-        // Replit-Domains automatisch erlauben
-        callback(null, true);
       } else {
-        console.warn('CORS blocked origin:', origin);
         callback(new Error('Not allowed by CORS'));
       }
     },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   }));
 

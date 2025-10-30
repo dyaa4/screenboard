@@ -38,10 +38,10 @@ export class Server {
 
   private async setupServer(): Promise<void> {
     setupMiddleware(this.app);
+    setupProxy(this.app);
     setupRoutes(this.app);
     setupSocketIO(this.httpServer);
     setupErrorHandlers(this.app);
-    setupProxy(this.app);
 
     // statische Dateien (Frontend build)
     const publicPath = path.join(process.cwd(), 'backend', 'public');
