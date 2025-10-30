@@ -8,21 +8,23 @@ import axios from 'axios';
 export const setupMiddleware = (app: Express): void => {
   const allowedOrigins = ['https://screen-board.com', "https://www.screen-board.com", "http://localhost:5000"];
 
-  app.use(cors({
+  app.use('/api', cors({
     origin: (origin, callback) => {
       // Wenn kein Origin (z.B. Postman) oder erlaubte Origin
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.warn('CORS blocked origin:', origin);
         callback(new Error('Not allowed by CORS'));
       }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true
   }));
 
-  // Preflight-Optionen für alle Routen
-  app.options('*', cors());
+  // Preflight-Optionen für /api
+  app.options('/api/*', cors());
 
 
   app.use(express.json());
