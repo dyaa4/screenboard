@@ -174,6 +174,25 @@ export default class SmartThingsAdapter implements SmartThingsRepository {
     }
   }
 
+  async completeAuth(code: string, state: string): Promise<void> {
+    const appToken = await this.getAppToken();
+    try {
+      await axios.post(
+        `${getApiUrl(`/api/auth/smartthings/complete`)}`,
+        { code, state },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${appToken}`,
+          },
+        },
+      );
+    } catch (error) {
+      console.error('Error completing SmartThings auth:', error);
+      throw new Error('Failed to complete SmartThings auth');
+    }
+  }
+
   async subscribeToDeviceEvents(
     dashboardId: string,
     deviceId: string,

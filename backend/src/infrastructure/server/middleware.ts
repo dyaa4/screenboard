@@ -53,7 +53,6 @@ export const setupMiddleware = (app: Express): void => {
     const excludedPaths = [
       '/google/calendar/webhook',
       '/auth/smartthings/webhook',
-      '/auth/smartthings/callback',
     ];
     console.log("Incoming path:", req.path);
     if (excludedPaths.some(path => req.path.startsWith(path))) {

@@ -4,42 +4,43 @@ import { SmartThingsService } from "../../../../application/services/SmartThings
 export class SmartThingsController {
     constructor(private readonly smartThingsService: SmartThingsService) { }
 
-    async handleCallback(req: Request, res: Response) {
+    /**
+     * Handler for client-side callback POST. The popup can POST code and state
+     * directly to this endpoint. The state is base64 encoded JSON containing
+     * dashboardId and userId (same as server-side flow). Returns JSON success.
+     */
+    async handleClientCallback(req: Request, res: Response) {
         try {
-            const { code, state } = req.query;
+            const { code, state } = req.body;
             if (!code) {
-                return res.status(400).json({
-                    message: `Code parameters are required`
-                });
+                return res.status(400).json({ message: `Code is required` });
             }
             if (!state) {
-                return res.status(400).json({
-                    message: `State parameters are required`
-                });
+                return res.status(400).json({ message: `State is required` });
             }
-            // State-Parameter dekodieren
+
             let stateData;
             try {
                 stateData = JSON.parse(Buffer.from(state as string, 'base64').toString());
             } catch (e) {
-                return res.status(400).json({ message: "Ungültiger State-Parameter" });
+                return res.status(400).json({ message: "Invalid state parameter" });
             }
 
             const { dashboardId, userId } = stateData;
-
             if (!dashboardId || !userId) {
-                return res.status(400).json({ message: "Dashboard ID, userId fehlt im State-Parameter" });
+                return res.status(400).json({ message: "dashboardId or userId missing in state" });
             }
-
 
             await this.smartThingsService.handleAuthCallback(
                 userId,
                 dashboardId,
                 code as string
-            )
-            res.redirect(`https://screen-board.com/smartthings/callback`);
+            );
+
+            return res.json({ success: true });
         } catch (error: any) {
-            res.status(500).json({ error: error.message })
+            console.error('handleClientCallback error', error);
+            res.status(500).json({ error: error.message });
         }
     }
 

@@ -11,4 +11,9 @@ export interface SmartThingsRepository {
     command: DeviceCommand,
   ): Promise<void>;
   getDeviceStatus(dashboardId: string, deviceId: string): Promise<any>;
+  /**
+   * Completes the OAuth flow by sending the authorization code and state
+   * (base64 encoded) to the backend for token exchange and storage.
+   */
+  completeAuth(code: string, state: string): Promise<void>;
 }

@@ -18,6 +18,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSmartThingsCallback } from '@hooks/sites/smartthings/useSmartThingsCallback';
 
 export const SmartThingsCallback: React.FC = () => {
   const { t } = useTranslation();
@@ -34,35 +35,57 @@ export const SmartThingsCallback: React.FC = () => {
 
     // Nachricht an das öffnende Fenster senden
     if (window.opener) {
-      // Dashboard ID aus URL extrahieren (falls vorhanden)
-      const urlParams = new URLSearchParams(location.search);
-      const state = urlParams.get('state');
-      let extractedDashboardId = undefined;
+      // Dashboard ID / code / state aus URL extrahieren und an Backend schicken
+      const { processCallback } = useSmartThingsCallback();
 
-      if (state) {
+      (async () => {
+        // Versuche, code & state zu verarbeiten (send to backend)
+        const success = await processCallback(location.search);
+
+        // Extrahiere dashboardId aus state für navigation buttons
+        let extractedDashboardId = undefined;
         try {
-          const decodedState = JSON.parse(atob(state));
-          extractedDashboardId = decodedState.dashboardId;
-          setDashboardId(extractedDashboardId);
+          const params = new URLSearchParams(location.search);
+          const state = params.get('state');
+          if (state) {
+            const decoded = JSON.parse(atob(state));
+            extractedDashboardId = decoded.dashboardId;
+            setDashboardId(extractedDashboardId);
+          }
         } catch (error) {
           console.error('Fehler beim Decodieren des State-Parameters:', error);
         }
-      }
 
-      // Erfolgsnachricht mit dashboardId senden, damit das Hauptfenster weiß,
-      // für welches Dashboard die Geräte aktualisiert werden müssen
-      window.opener.postMessage(
-        {
-          type: 'smartthings-auth-success',
-          dashboardId: extractedDashboardId,
-        },
-        window.location.origin,
-      );
+        if (success) {
+          // Sende Nachricht an das Hauptfenster mit code/state damit es ggf. nachladen kann
+          const params = new URLSearchParams(location.search);
+          const code = params.get('code');
+          const state = params.get('state');
 
-      setIsSuccess(true);
+          window.opener.postMessage(
+            {
+              type: 'smartthings-auth-success',
+              dashboardId: extractedDashboardId,
+              code,
+              state,
+            },
+            window.location.origin,
+          );
 
-      // Fenster nach kurzer Verzögerung schließen (damit Nutzer die Erfolgsmeldung sieht)
-      setTimeout(() => window.close(), 2000);
+          setIsSuccess(true);
+          // Fenster nach kurzer Verzögerung schließen (damit Nutzer die Erfolgsmeldung sieht)
+          setTimeout(() => window.close(), 1200);
+        } else {
+          window.opener.postMessage(
+            {
+              type: 'smartthings-auth-error',
+              error: 'Failed to complete auth',
+            },
+            window.location.origin,
+          );
+          setIsSuccess(false);
+        }
+      })();
     }
   }, [isAuthenticated, location.search]);
 

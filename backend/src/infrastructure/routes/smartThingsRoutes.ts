@@ -19,8 +19,11 @@ const smartThingsService = new SmartThingsService(smartThingsAdapter, tokenRepos
 const smartThingsController = new SmartThingsController(smartThingsService);
 
 // Auth & Token Management
-router.all("/auth/smartthings/callback", (req, res) =>
-    smartThingsController.handleCallback(req, res));
+// (server-side redirect callback removed - client popup now posts to /auth/smartthings/complete)
+// Note: the controller still contains `handleCallback` for compatibility if needed elsewhere.
+// Client-popup posts code/state to complete the auth flow (no redirect)
+router.post('/auth/smartthings/complete', (req, res) =>
+    smartThingsController.handleClientCallback(req, res));
 
 router.get("/auth/smartthings/login", (_req, res) =>
     smartThingsController.initiateLogin(_req, res));
