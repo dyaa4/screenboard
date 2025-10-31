@@ -19,7 +19,7 @@ const smartThingsService = new SmartThingsService(smartThingsAdapter, tokenRepos
 const smartThingsController = new SmartThingsController(smartThingsService);
 
 // Auth & Token Management
-router.get("/auth/smartthings/callback", (req, res) =>
+router.all("/auth/smartthings/callback", (req, res) =>
     smartThingsController.handleCallback(req, res));
 
 router.get("/auth/smartthings/login", (_req, res) =>
