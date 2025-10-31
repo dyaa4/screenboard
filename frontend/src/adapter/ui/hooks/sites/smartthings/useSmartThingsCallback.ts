@@ -1,5 +1,6 @@
 import { SMARTTHINGS_REPOSITORY_NAME } from '@common/constants';
 import { container } from 'tsyringe';
+import { SmartThingsRepository } from '../../../../../application/repositories/smartThingsRepository';
 
 /**
  * Hook to process the SmartThings OAuth callback in the popup window.
@@ -17,7 +18,7 @@ export const useSmartThingsCallback = () => {
                 throw new Error('Missing code or state in callback URL');
             }
 
-            const repo = container.resolve<any>(SMARTTHINGS_REPOSITORY_NAME);
+            const repo = container.resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME);
             if (!repo || typeof repo.completeAuth !== 'function') {
                 throw new Error('SmartThings repository is not available or does not implement completeAuth');
             }
