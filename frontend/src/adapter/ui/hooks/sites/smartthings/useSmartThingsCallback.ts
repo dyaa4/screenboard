@@ -13,7 +13,7 @@ export const useSmartThingsCallback = () => {
             const params = new URLSearchParams(search.startsWith('?') ? search : search.replace(/^\?/, '?'));
             const code = params.get('code');
             const state = params.get('state');
-
+            console.log('SmartThings Callback Params:', { code, state });
             if (!code || !state) {
                 throw new Error('Missing code or state in callback URL');
             }
@@ -22,7 +22,7 @@ export const useSmartThingsCallback = () => {
             if (!repo || typeof repo.completeAuth !== 'function') {
                 throw new Error('SmartThings repository is not available or does not implement completeAuth');
             }
-
+            console.log('Completing SmartThings auth with code and state');
             await repo.completeAuth(code, state);
             return true;
         } catch (error) {
