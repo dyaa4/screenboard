@@ -6,18 +6,14 @@ import NewWidgetAdapter from '@adapter/api/NewsWidgetAdapter';
 import SmartThingsAdapter from '@adapter/api/SmartthingsAdapter';
 import SpotifyAdapter from '@adapter/api/SpotifyAdapter';
 import { WidgetsAdapter } from '@adapter/api/WidgetsAdapter';
-import SmartThingsAuthAdapter from '@adapter/api/SmartThingsAuthAdapter';
 import { CommunicationRepository } from '@application/repositories/communicationRepository';
 import { WidgetRepository } from '@application/repositories/widgetRepository';
 
 import FetchAccessTokenUseCase from '@application/useCases/app/fetchAccessTokenUseCase/FetchAccessTokenUseCase';
-import { CompleteSmartThingsAuthUseCase } from '@application/useCases/app/completeSmartThingsAuthUseCase/CompleteSmartThingsAuthUseCase';
 import { FetchNewsRssFeedsUseCase } from '@application/useCases/fetchNewsRssFeeds/FetchNewsRssFeedsUseCase';
 
 import {
   COMMUNICATION_REPOSITORY_NAME,
-  COMPLETE_SMARTTHINGS_AUTH_INPUT_PORT,
-  COMPLETE_SMARTTHINGS_AUTH_OUTPUT_PORT,
   DASHBOARD_REPOSITORY_NAME,
   FETCH_ACCESS_TOKEN_INPUT_PORT,
   FETCH_NEWS_RSS_FEEDS_INPUT_PORT,
@@ -48,14 +44,6 @@ export function registerDi() {
 
     container.register(DASHBOARD_REPOSITORY_NAME, {
       useClass: DashboardAdapter,
-    });
-
-    // SmartThings Auth
-    container.register(COMPLETE_SMARTTHINGS_AUTH_OUTPUT_PORT, {
-      useClass: SmartThingsAuthAdapter,
-    });
-    container.register(COMPLETE_SMARTTHINGS_AUTH_INPUT_PORT, {
-      useClass: CompleteSmartThingsAuthUseCase,
     });
 
     container.register(GOOGLE_REPOSITORY_NAME, {

@@ -19,7 +19,3 @@ export const FETCH_NEWS_RSS_FEEDS_OUTPUT_PORT = 'FetchNewsRssFeedsOutputPort';
 
 export const FETCH_ACCESS_TOKEN_INPUT_PORT = 'FetchAccessTokenInputPort';
 export const FETCH_ACCESS_TOKEN_OUTPUT_PORT = 'FetchAccessTokenOutputPort';
-
-// SmartThings Auth UseCase
-export const COMPLETE_SMARTTHINGS_AUTH_INPUT_PORT = 'CompleteSmartThingsAuthInputPort';
-export const COMPLETE_SMARTTHINGS_AUTH_OUTPUT_PORT = 'CompleteSmartThingsAuthOutputPort';
