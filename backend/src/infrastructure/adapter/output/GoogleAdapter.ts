@@ -276,7 +276,7 @@ export class GoogleAdapter implements GoogleRepository {
       })
 
       const { access_token, refresh_token: new_refresh_token, expires_in } = response.data
-      
+
       return {
         accessToken: access_token,
         refreshToken: new_refresh_token || refreshToken,
