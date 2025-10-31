@@ -43,6 +43,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [getAccessTokenSilently]);
 
+  // Register Auth0 adapter for access token fetching
+  useEffect(() => {
+    const auth0AccessTokenAdapter = new Auth0FetchAccessTokenAdapter(getAccessTokenSilently);
+    container.register<FetchAccessTokenOutputPort>(FETCH_ACCESS_TOKEN_OUTPUT_PORT, {
+      useValue: auth0AccessTokenAdapter
+    });
+  }, [getAccessTokenSilently]);
+
   const handleLogout = useCallback(async () => {
     auth0Logout({
       logoutParams: { returnTo: import.meta.env.VITE_LOGUT_REDIRECT_URI },

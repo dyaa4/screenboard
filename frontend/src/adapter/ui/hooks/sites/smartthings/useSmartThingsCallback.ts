@@ -19,9 +19,7 @@ export const useSmartThingsCallback = () => {
             }
 
             const repo = container.resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME);
-            if (!repo || typeof repo.completeAuth !== 'function') {
-                throw new Error('SmartThings repository is not available or does not implement completeAuth');
-            }
+
             console.log('Completing SmartThings auth with code and state');
             await repo.completeAuth(code, state);
             return true;
