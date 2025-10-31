@@ -1,6 +1,6 @@
-import { SMARTTHINGS_REPOSITORY_NAME } from '@common/constants';
 import { container } from 'tsyringe';
-import { SmartThingsRepository } from '../../../../../application/repositories/smartThingsRepository';
+import { COMPLETE_SMARTTHINGS_AUTH_INPUT_PORT } from '@common/constants';
+import type { CompleteAuthInput } from '../../../../../application/useCases/app/completeSmartThingsAuthUseCase/ports/inputs';
 
 /**
  * Hook to process the SmartThings OAuth callback in the popup window.
@@ -18,10 +18,10 @@ export const useSmartThingsCallback = () => {
                 throw new Error('Missing code or state in callback URL');
             }
 
-            const repo = container.resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME);
+            const useCase = container.resolve<CompleteAuthInput>(COMPLETE_SMARTTHINGS_AUTH_INPUT_PORT);
 
             console.log('Completing SmartThings auth with code and state');
-            await repo.completeAuth(code, state);
+            await useCase.execute(code, state);
             return true;
         } catch (error) {
             console.error('Error processing SmartThings callback:', error);
