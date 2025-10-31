@@ -41,8 +41,9 @@ import SmartThingsDone from '@sites/SmartThingsCallback/SmartThingsCallback';
 const LayoutWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isDashboardRoute = location.pathname.startsWith(ROUTE_DASHBOARD);
+  const isSmartThingsCallbackRoute = location.pathname === ROUTE_SMARTTHINGS_CALLBACK;
 
-  return isDashboardRoute ? children : <Layout>{children}</Layout>;
+  return isDashboardRoute || isSmartThingsCallbackRoute ? children : <Layout>{children}</Layout>;
 };
 
 const Root = () => {
@@ -99,14 +100,7 @@ const Root = () => {
             }
           />
 
-          <Route
-            path={ROUTE_SMARTTHINGS_CALLBACK}
-            element={
-              <ProtectedRoute>
-                <SmartThingsDone />
-              </ProtectedRoute>
-            }
-          />
+          <Route path={ROUTE_SMARTTHINGS_CALLBACK} element={<SmartThingsDone />} />
 
           <Route path={ROUTE_PRICE} element={<Price />} />
           <Route path={ROUTE_PRIVACY_POLICY} element={<PrivacyPolicy />} />

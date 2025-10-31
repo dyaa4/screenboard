@@ -44,16 +44,22 @@ export class Server {
     setupErrorHandlers(this.app);
 
     // statische Dateien (Frontend build)
-    const publicPath = path.join(process.cwd(), 'backend', 'public');
-    this.app.use(express.static(publicPath))
+    this.setupStaticAssets();
+  }
 
+  /**
+   * Serve frontend static files from backend/public and fall back to index.html
+   */
+  private setupStaticAssets(): void {
+    const publicPath = path.join(process.cwd(), 'backend', 'public');
+    this.app.use(express.static(publicPath));
+
+    // Fall back: if route is not /api, serve index.html to let the frontend router handle it
     this.app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api')) return next();
       console.log('🟢 Frontend route requested:', req.path);
       res.sendFile(path.join(publicPath, 'index.html'));
     });
-
-
   }
 
   public getHttpServer(): http.Server {

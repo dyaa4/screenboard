@@ -1,101 +1,87 @@
-import { useAuth } from '@adapter/ui/contexts/AuthContext';
-import { replaceDashboardId } from '@common/helpers/objectHelper';
-import {
-  ROUTE_CONFIG_WIDGETS,
-  ROUTE_DASHBOARD,
-  ROUTE_DASHBOARD_ID,
-  ROUTE_HOME,
-} from '@common/routes';
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  Divider,
-  Spinner,
-} from '@heroui/react';
+import { Button, Card, CardBody, CardHeader, Divider, CardFooter } from '@heroui/react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSmartThingsCallback } from '@hooks/sites/smartthings/useSmartThingsCallback';
+import { ROUTE_DASHBOARD, ROUTE_HOME, ROUTE_DASHBOARD_ID, ROUTE_CONFIG_WIDGETS } from '@common/routes';
+import { replaceDashboardId } from '@common/helpers/objectHelper';
 
 export const SmartThingsCallback: React.FC = () => {
   const { t } = useTranslation();
-  const [dashboardId, setDashboardId] = useState<string | undefined>(undefined);
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [dashboardId, setDashboardId] = useState<string | undefined>();
+  const [isProcessing, setIsProcessing] = useState(true);
+  const isPopup = window.opener !== null;
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
+    const { processCallback } = useSmartThingsCallback();
 
-    // Nachricht an das öffnende Fenster senden
-    if (window.opener) {
-      // Dashboard ID / code / state aus URL extrahieren und an Backend schicken
-      const { processCallback } = useSmartThingsCallback();
+    const extractDashboardId = () => {
+      try {
+        const params = new URLSearchParams(location.search);
+        const state = params.get('state');
+        if (state) {
+          const decoded = JSON.parse(atob(state));
+          return decoded.dashboardId;
+        }
+      } catch (error) {
+        console.error('Error decoding state parameter:', error);
+      }
+      return undefined;
+    };
 
-      (async () => {
-        // Versuche, code & state zu verarbeiten (send to backend)
+    const processAuth = async () => {
+      try {
+        setIsProcessing(true);
         const success = await processCallback(location.search);
+        setIsSuccess(success);
 
-        // Extrahiere dashboardId aus state für navigation buttons
-        let extractedDashboardId = undefined;
-        try {
-          const params = new URLSearchParams(location.search);
-          const state = params.get('state');
-          if (state) {
-            const decoded = JSON.parse(atob(state));
-            extractedDashboardId = decoded.dashboardId;
-            setDashboardId(extractedDashboardId);
+        const extractedDashboardId = extractDashboardId();
+        setDashboardId(extractedDashboardId);
+
+        if (window.opener) {
+          if (success) {
+            // Send message to main window with code/state for potential reload
+            const params = new URLSearchParams(location.search);
+            const code = params.get('code');
+            const state = params.get('state');
+
+            window.opener.postMessage(
+              {
+                type: 'smartthings-auth-success',
+                dashboardId: extractedDashboardId,
+                code,
+                state,
+              },
+              window.location.origin,
+            );
+
+            // Close window after a short delay (so user sees success message)
+            setTimeout(() => window.close(), 1200);
+          } else {
+            window.opener.postMessage(
+              {
+                type: 'smartthings-auth-error',
+                error: 'Failed to complete auth',
+              },
+              window.location.origin,
+            );
           }
-        } catch (error) {
-          console.error('Fehler beim Decodieren des State-Parameters:', error);
         }
+      } catch (error) {
+        console.error('Error processing callback:', error);
+        setIsSuccess(false);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
 
-        if (success) {
-          // Sende Nachricht an das Hauptfenster mit code/state damit es ggf. nachladen kann
-          const params = new URLSearchParams(location.search);
-          const code = params.get('code');
-          const state = params.get('state');
+    processAuth();
+  }, [location.search]);
 
-          window.opener.postMessage(
-            {
-              type: 'smartthings-auth-success',
-              dashboardId: extractedDashboardId,
-              code,
-              state,
-            },
-            window.location.origin,
-          );
-
-          setIsSuccess(true);
-          // Fenster nach kurzer Verzögerung schließen (damit Nutzer die Erfolgsmeldung sieht)
-          setTimeout(() => window.close(), 1200);
-        } else {
-          window.opener.postMessage(
-            {
-              type: 'smartthings-auth-error',
-              error: 'Failed to complete auth',
-            },
-            window.location.origin,
-          );
-          setIsSuccess(false);
-        }
-      })();
-    }
-  }, [isAuthenticated, location.search]);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Spinner color="primary" />
-      </div>
-    );
-  }
+  // Always show UI; the hook/process controls success state and window closing.
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -112,7 +98,19 @@ export const SmartThingsCallback: React.FC = () => {
           <div className="flex items-center justify-center mb-4">
             <i className="fas fa-home-alt text-6xl text-blue-500"></i>
           </div>
-          {isSuccess ? (
+          {isProcessing ? (
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2 text-blue-500">
+                {t('sites.smartThings.processing', 'Wird verarbeitet...')}
+              </h2>
+              <p className="text-center">
+                {t(
+                  'sites.smartThings.processingMessage',
+                  'Deine SmartThings-Verbindung wird hergestellt...',
+                )}
+              </p>
+            </div>
+          ) : isSuccess ? (
             <>
               <h2 className="text-2xl font-bold text-center mb-2 text-green-500">
                 {t('sites.smartThings.success', 'Autorisierung erfolgreich')}
@@ -140,55 +138,63 @@ export const SmartThingsCallback: React.FC = () => {
         </CardBody>
         <Divider />
         <CardFooter className="justify-center flex gap-2">
-          {isSuccess ? (
+          {!isProcessing && (
             <>
-              <Button
-                color="secondary"
-                variant="shadow"
-                onPress={() => navigate(ROUTE_HOME)}
-              >
-                {t('sites.smartThings.goToHome', 'Zur Startseite')}
-              </Button>
-              {dashboardId && (
+              {isSuccess ? (
+                <>
+                  {!isPopup && (
+                    <>
+                      <Button
+                        variant="bordered"
+                        onClick={() => navigate(ROUTE_HOME)}
+                      >
+                        {t('sites.smartThings.goToHome', 'Zur Startseite')}
+                      </Button>
+                      {dashboardId && (
+                        <Button
+                          variant="solid"
+                          onClick={() =>
+                            navigate(
+                              replaceDashboardId(
+                                ROUTE_DASHBOARD + ROUTE_DASHBOARD_ID,
+                                dashboardId,
+                              ),
+                            )
+                          }
+                        >
+                          {t('sites.smartThings.goToDashboard', 'Zum Dashboard')}
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {!isPopup && (
+                    <Button
+                      variant="solid"
+                      onPress={() =>
+                        navigate(
+                          dashboardId
+                            ? replaceDashboardId(ROUTE_CONFIG_WIDGETS, dashboardId)
+                            : ROUTE_HOME,
+                        )
+                      }
+                    >
+                      {t('sites.smartThings.retry', 'Erneut versuchen')}
+                    </Button>
+                  )}
+                </>
+              )}
+              {isPopup && (
                 <Button
-                  color="primary"
-                  variant="shadow"
-                  onPress={() =>
-                    navigate(
-                      replaceDashboardId(
-                        ROUTE_DASHBOARD + ROUTE_DASHBOARD_ID,
-                        dashboardId,
-                      ),
-                    )
-                  }
+                  variant="ghost"
+                  onPress={() => window.close()}
                 >
-                  {t('sites.smartThings.goToDashboard', 'Zum Dashboard')}
+                  {t('sites.smartThings.close', 'Fenster schließen')}
                 </Button>
               )}
             </>
-          ) : (
-            <Button
-              color="primary"
-              variant="shadow"
-              onPress={() =>
-                navigate(
-                  dashboardId
-                    ? replaceDashboardId(ROUTE_CONFIG_WIDGETS, dashboardId)
-                    : ROUTE_HOME,
-                )
-              }
-            >
-              {t('sites.smartThings.retry', 'Erneut versuchen')}
-            </Button>
-          )}
-          {window.opener && (
-            <Button
-              color="default"
-              variant="light"
-              onPress={() => window.close()}
-            >
-              {t('sites.smartThings.close', 'Fenster schließen')}
-            </Button>
           )}
         </CardFooter>
       </Card>

@@ -175,18 +175,14 @@ export default class SmartThingsAdapter implements SmartThingsRepository {
   }
 
   async completeAuth(code: string, state: string): Promise<void> {
-    const appToken = await this.getAppToken();
+    // The popup window may not have the app-level auth token available (Auth0
+    // initialization may not have run). The backend `handleClientCallback`
+    // does not require user auth, so call the endpoint without Authorization
+    // so the popup can complete the flow regardless of the frontend auth state.
     try {
-      await axios.post(
-        `${getApiUrl(`/api/auth/smartthings/complete`)}`,
-        { code, state },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${appToken}`,
-          },
-        },
-      );
+      await axios.post(`${getApiUrl(`/api/auth/smartthings/complete`)}`, { code, state }, {
+        headers: { 'Content-Type': 'application/json' },
+      });
     } catch (error) {
       console.error('Error completing SmartThings auth:', error);
       throw new Error('Failed to complete SmartThings auth');
