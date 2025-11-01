@@ -40,6 +40,8 @@ const IoTEdit = ({
     isLoggedIn,
   } = useSmartThings(widget.dashboardId);
 
+
+
   // Kombiniere die vorhandenen Einstellungen mit den Standardeinstellungen
   const mergedSettings = { ...DEFAULT_SETTINGS, ...settings };
 
@@ -154,11 +156,10 @@ const IoTEdit = ({
                   <ListboxItem
                     key={device.deviceId}
                     startContent={<i className={getDeviceIcon(device)} />}
-                    description={`${t('sites.config.components.iotEdit.deviceType')}: ${device.name}${
-                      device.roomName
-                        ? ` | ${t('sites.config.components.iotEdit.deviceRoom')}: ${device.roomName}`
-                        : ''
-                    }`}
+                    description={`${t('sites.config.components.iotEdit.deviceType')}: ${device.name}${device.roomName
+                      ? ` | ${t('sites.config.components.iotEdit.deviceRoom')}: ${device.roomName}`
+                      : ''
+                      }`}
                     className="py-2"
                   >
                     {device.label || device.name}

@@ -3,7 +3,6 @@ import { SMARTTHINGS_REPOSITORY_NAME } from '@common/constants';
 import { IoTDevice, IoTProvider } from '../../../../domain/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { container } from 'tsyringe';
-
 interface UseSmartThingsReturn {
   user: { name: string; picture?: string } | null;
   devices: IoTDevice[];
@@ -24,6 +23,8 @@ export const useSmartThings = (
   const [user, setUser] = useState<{ name: string; picture?: string } | null>(
     null,
   );
+
+
   const [devices, setDevices] = useState<IoTDevice[]>([]);
   const [initialLoading, setInitialLoading] = useState<boolean>(true); // Geändert: Für Login und initiale Datenladung
   const [deviceLoading, setDeviceLoading] = useState<Record<string, boolean>>(
@@ -34,6 +35,46 @@ export const useSmartThings = (
   );
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleAuthMessage = async (event: MessageEvent) => {
+      // Sicherstellen, dass Nachricht vom eigenen Ursprung kommt
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data?.type === 'smartthings-auth-success') {
+        const { code, state } = event.data;
+        console.log('Received SmartThings auth:', code, state);
+
+        try {
+          setInitialLoading(true);
+
+          // Backend aufrufen, um Code + State zu tauschen
+          const smartThingsRepository = container.resolve<SmartThingsRepository>(
+            SMARTTHINGS_REPOSITORY_NAME,
+          );
+          await smartThingsRepository.completeAuth(code, state);
+
+          // Login-Status checken und Geräte laden
+          const loggedIn = await checkLoginStatus();
+          if (loggedIn) {
+            await loadUserAndDevices();
+          }
+        } catch (err) {
+          console.error('Fehler beim Token-Austausch:', err);
+          setError('Login fehlgeschlagen beim Token-Austausch');
+        } finally {
+          setInitialLoading(false);
+        }
+      } else if (event.data?.type === 'smartthings-auth-error') {
+        setError('Login fehlgeschlagen: ' + (event.data.error || 'Unbekannter Fehler'));
+        setInitialLoading(false);
+      }
+    };
+
+    window.addEventListener('message', handleAuthMessage);
+
+    return () => window.removeEventListener('message', handleAuthMessage);
+  }, []);
 
   // Debounce-Timer für UI-Updates
   const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);

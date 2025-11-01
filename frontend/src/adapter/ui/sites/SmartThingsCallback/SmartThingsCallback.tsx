@@ -1,10 +1,9 @@
-import { Button, Card, CardBody, CardHeader, Divider, CardFooter } from '@heroui/react';
+import { replaceDashboardId } from '@common/helpers/objectHelper';
+import { ROUTE_CONFIG_WIDGETS, ROUTE_DASHBOARD, ROUTE_DASHBOARD_ID, ROUTE_HOME } from '@common/routes';
+import { Button, Card, CardBody, CardFooter, CardHeader, Divider } from '@heroui/react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSmartThingsCallback } from '@hooks/sites/smartthings/useSmartThingsCallback';
-import { ROUTE_DASHBOARD, ROUTE_HOME, ROUTE_DASHBOARD_ID, ROUTE_CONFIG_WIDGETS } from '@common/routes';
-import { replaceDashboardId } from '@common/helpers/objectHelper';
 
 export const SmartThingsCallback: React.FC = () => {
   const { t } = useTranslation();
@@ -16,7 +15,6 @@ export const SmartThingsCallback: React.FC = () => {
   const isPopup = window.opener !== null;
 
   useEffect(() => {
-    const { processCallback } = useSmartThingsCallback();
 
     const extractDashboardId = () => {
       try {
@@ -35,41 +33,41 @@ export const SmartThingsCallback: React.FC = () => {
     const processAuth = async () => {
       try {
         setIsProcessing(true);
-        const success = await processCallback(location.search);
-        setIsSuccess(success);
+
 
         const extractedDashboardId = extractDashboardId();
         setDashboardId(extractedDashboardId);
 
         if (window.opener) {
-          if (success) {
-            // Send message to main window with code/state for potential reload
-            const params = new URLSearchParams(location.search);
-            const code = params.get('code');
-            const state = params.get('state');
 
-            window.opener.postMessage(
-              {
-                type: 'smartthings-auth-success',
-                dashboardId: extractedDashboardId,
-                code,
-                state,
-              },
-              window.location.origin,
-            );
+          // Send message to main window with code/state for potential reload
+          const params = new URLSearchParams(location.search);
+          const code = params.get('code');
+          const state = params.get('state');
 
-            // Close window after a short delay (so user sees success message)
-            setTimeout(() => window.close(), 1200);
-          } else {
-            window.opener.postMessage(
-              {
-                type: 'smartthings-auth-error',
-                error: 'Failed to complete auth',
-              },
-              window.location.origin,
-            );
-          }
+          window.opener.postMessage(
+            {
+              type: 'smartthings-auth-success',
+              dashboardId: extractedDashboardId,
+              code,
+              state,
+            },
+            window.location.origin,
+          );
+
+          // Close window after a short delay (so user sees success message)
+          setTimeout(() => window.close(), 1200);
+
+        } else {
+          window.opener.postMessage(
+            {
+              type: 'smartthings-auth-error',
+              error: 'Failed to complete auth',
+            },
+            window.location.origin,
+          );
         }
+
       } catch (error) {
         console.error('Error processing callback:', error);
         setIsSuccess(false);
