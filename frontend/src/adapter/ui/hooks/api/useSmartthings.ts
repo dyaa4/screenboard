@@ -294,12 +294,24 @@ export const useSmartThings = (
       }
 
       if (event.data?.type === 'smartthings-auth-success') {
-        const { code, state } = event.data;
-        console.log('Received auth success:', code, state);
+        const { code, state } = event.data as { code?: string; state?: string };
+        console.log('Received auth success (main window):', { code, state });
+
+        if (!code || !state) {
+          console.warn('SmartThings auth message missing code or state');
+          setError('Login fehlgeschlagen: Ungültige Rückmeldedaten');
+          setInitialLoading(false);
+          return;
+        }
 
         try {
+          // Reiche Code/State an Backend weiter (Token wird im Adapter angehängt)
+          await container
+            .resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME)
+            .completeAuth(code, state);
+
           // Warte kurz, um sicherzustellen, dass Backend-Verarbeitung abgeschlossen ist
-          await new Promise((resolve) => setTimeout(resolve, 800));
+          await new Promise((resolve) => setTimeout(resolve, 400));
 
           // Login-Status aktualisieren und Geräte laden
           const isLoggedIn = await checkLoginStatus();
