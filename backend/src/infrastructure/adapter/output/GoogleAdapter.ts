@@ -179,6 +179,19 @@ export class GoogleAdapter implements GoogleRepository {
     }
   }
 
+  /**
+   * Stop a subscription with the given resourceId
+   * This is a public wrapper for stopSubscription to be used externally
+   */
+  async stopSubscriptionPublic(
+    accessToken: string,
+    resourceId: string,
+    userId: string,
+    dashboardId: string
+  ): Promise<void> {
+    return this.stopSubscription(accessToken, resourceId, userId, dashboardId);
+  }
+
 
 
   /**

@@ -34,6 +34,13 @@ export interface GoogleRepository {
     existingResourceId: string
   ): Promise<GoogleSubscriptionDTO>;
 
+  stopSubscriptionPublic(
+    accessToken: string,
+    resourceId: string,
+    userId: string,
+    dashboardId: string
+  ): Promise<void>;
+
   fetchEvent(
     accessToken: string,
     calendarId: string,

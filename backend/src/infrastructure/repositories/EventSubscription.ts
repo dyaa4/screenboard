@@ -16,7 +16,6 @@ export class EventSubscriptionRepository implements IEventSubscriptionRepository
         return await doc.save();
     }
 
-
     async deleteByResourceId(resourceId: string): Promise<void> {
         await EventSubscriptionModel.deleteOne({ resourceId });
     }
@@ -29,5 +28,9 @@ export class EventSubscriptionRepository implements IEventSubscriptionRepository
 
     async deleteAllForUserDashboard(userId: string, dashboardId: string): Promise<void> {
         await EventSubscriptionModel.deleteMany({ userId, dashboardId });
+    }
+
+    async findByUserAndDashboard(userId: string, dashboardId: string): Promise<IEventSubscriptionData[]> {
+        return await EventSubscriptionModel.find({ userId, dashboardId });
     }
 }

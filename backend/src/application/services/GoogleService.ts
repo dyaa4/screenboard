@@ -6,6 +6,7 @@ import {
 } from "../../infrastructure/dtos/GoogleEventDTO"
 import { GoogleCalendarListDto } from "../../infrastructure/dtos/GoogleCalendarListDTO"
 import { TokenRepository } from "../../infrastructure/repositories/TokenRepository"
+import { EventSubscriptionRepository } from "../../infrastructure/repositories/EventSubscription"
 import { SERVICES } from "../../domain/valueObjects/serviceToken"
 import { IGoogleToken } from "../../domain/types/IGoogleToken"
 import { ITokenDocument } from "../../domain/types/ITokenDocument"
@@ -16,6 +17,7 @@ export class GoogleService {
   constructor(
     private googleRepository: GoogleRepository,
     private tokenRepository: TokenRepository,
+    private eventSubscriptionRepository: EventSubscriptionRepository,
   ) { }
   private subscriptionRenewalJobs: Map<string, NodeJS.Timeout> = new Map();
   // Konstante für die Erneuerungszeit (z.B. 6 Tage in ms, da Google maximal 7 Tage erlaubt)
@@ -193,7 +195,48 @@ export class GoogleService {
   }
 
   async logout(userId: string, dashboardId: string): Promise<void> {
+    try {
+      // Hole den aktuellen Token, um damit Google zu benachrichtigen
+      const token = await this.tokenRepository.findToken(
+        userId,
+        dashboardId,
+        SERVICES.GOOGLE
+      )
+
+      if (token && token.accessToken) {
+        // Hole alle Subscriptions für dieses Dashboard
+        const subscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(userId, dashboardId)
+
+        // Stoppe alle Subscriptions bei Google
+        for (const subscription of subscriptions) {
+          if (subscription.resourceId) {
+            try {
+              await this.googleRepository.stopSubscriptionPublic(
+                token.accessToken,
+                subscription.resourceId,
+                userId,
+                dashboardId
+              )
+            } catch (error) {
+              console.error('Error stopping subscription at Google:', error)
+              // Continue, um alle zu stoppen, auch wenn eine fehlschlägt
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error during logout subscription cleanup:', error)
+      // Continue with deletion even if stopping fails
+    }
+
+    // Lösche den Token aus unserer DB
     await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.GOOGLE)
+
+    // Lösche alle Subscriptions aus unserer DB
+    await this.eventSubscriptionRepository.deleteAllForUserDashboard(userId, dashboardId)
+
+    // Räume Renewal Jobs auf
+    await this.cleanup(userId, dashboardId)
   }
 
   // Methode, um sicherzustellen, dass das Access Token gültig ist
