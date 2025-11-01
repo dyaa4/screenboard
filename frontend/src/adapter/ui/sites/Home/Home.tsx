@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, CardHeader, Chip, Divider, Image } from '@heroui/react';
+import { Button, Card, CardBody, CardHeader, Chip, Divider } from '@heroui/react';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,42 +45,63 @@ interface IntegrationLogoProps {
 }
 
 const IntegrationLogo: React.FC<IntegrationLogoProps> = ({ name, link }) => (
-  <div className="flex flex-col items-center gap-3">
-    <Card className="w-40 h-40 p-4 shadow-md hover:shadow-xl transition-shadow duration-300">
+  <motion.div
+    className="flex flex-col items-center gap-3"
+    whileHover={{ y: -8 }}
+    transition={{ duration: 0.3 }}
+  >
+    <Card className="w-32 h-32 p-4 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-default-100/50 to-default-50/50 border border-primary/10 hover:border-primary/30 dark:from-default-100/20 dark:to-default-200/20">
       <CardBody className="p-0 flex items-center justify-center">
         <img
           src={link}
           alt={`${name} logo`}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain opacity-80 hover:opacity-100 transition-opacity"
         />
       </CardBody>
     </Card>
-    <span className="text-sm text-default-600 font-medium">{name}</span>
-  </div>
+    <span className="text-xs text-default-600 font-semibold uppercase tracking-wide">{name}</span>
+  </motion.div>
 );
 
 const IntegrationsBar: React.FC = () => {
   const { t } = useTranslation();
-  
+
   return (
-    <div className="w-full bg-default-50/50 dark:bg-default-100/30 py-16">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-3">
+    <div className="w-full relative py-20 overflow-hidden">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl opacity-40 pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-40 pointer-events-none" />
+
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <h3 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-4">
             {t('sites.home.integrations.title')}
           </h3>
-          <p className="text-default-600 text-lg">
+          <p className="text-default-600 text-lg max-w-2xl mx-auto">
             {t('sites.home.integrations.subtitle')}
           </p>
-        </div>
+        </motion.div>
 
         <div className="flex justify-center items-center">
-          <div className="flex flex-row flex-wrap justify-center gap-8">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, staggerChildren: 0.1 }}
+          >
             <IntegrationLogo name={t('sites.home.integrations.googleCalendar')} link="./images/google.png" />
             <IntegrationLogo name={t('sites.home.integrations.spotify')} link="./images/spotify.png" />
             <IntegrationLogo name={t('sites.home.integrations.microsoft')} link="./images/microsoft.png" />
             <IntegrationLogo name={t('sites.home.integrations.smartthings')} link="./images/smartthings.png" />
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
@@ -100,12 +121,12 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <style>{`
-        @keyframes shimmer {
+        @keyframes shimmerGradient {
           0% {
-            left: -150%;
+            background-position: -200% 0;
           }
           100% {
-            left: 150%;
+            background-position: 200% 0;
           }
         }
         
@@ -119,32 +140,26 @@ export default function Home() {
         }
         
         .shimmer-text {
-          position: relative;
-          display: inline-block;
-        }
-        
-        .shimmer-text::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -150%;
-          width: 50%;
-          height: 100%;
           background: linear-gradient(
             90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.3) 50%,
-            transparent 100%
+            #964ED8 0%,
+            #40BFF8 25%,
+            #964ED8 50%,
+            #40BFF8 75%,
+            #964ED8 100%
           );
-          animation: shimmer 3s ease-in-out infinite;
-          pointer-events: none;
+          background-size: 200% auto;
+          background-clip: text;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: shimmerGradient 8s linear infinite;
         }
         
         .float-animation {
           animation: float 6s ease-in-out infinite;
         }
       `}</style>
-      
+
       {/* Hero Section */}
       <div className="relative min-h-screen flex items-center bg-gradient-to-br from-background via-default-50 to-default-100 dark:from-background dark:via-default-100 dark:to-default-200 py-12 overflow-hidden">
         {/* Decorative Elements */}
@@ -218,20 +233,69 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              className="flex-1 flex justify-center"
+              className="flex-1 flex justify-center relative"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <Card className="max-w-md shadow-2xl border-4 border-primary/20 float-animation">
-                <CardBody className="p-0">
-                  <Image
-                    src="/images/start.png"
-                    alt="Screen Board Dashboard Vorschau"
-                    className="w-full h-auto"
-                  />
-                </CardBody>
-              </Card>
+              {/* Glow Effect Background */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-3xl blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+
+              {/* Display Frame Container */}
+              <div className="relative z-10 p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-2xl float-animation" style={{
+                boxShadow: '0 0 60px rgba(150, 78, 216, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+                maxWidth: '380px',
+              }}>
+                {/* Display Bezel */}
+                <div className="relative rounded-xl overflow-hidden bg-black p-1 shadow-inner">
+
+                  {/* Screen Gloss Effect */}
+                  <div className="absolute inset-0 z-30 pointer-events-none rounded-xl bg-gradient-to-b from-white/10 via-transparent to-transparent" />
+
+                  <Card className="relative z-10 rounded-lg overflow-hidden border-0 bg-black shadow-none">
+                    <CardBody className="p-0 relative">
+                      {/* Shine Effect Overlay */}
+                      <div className="absolute inset-0 z-20 pointer-events-none">
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                          animate={{
+                            x: ['0%', '100%'],
+                          }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: 'linear',
+                          }}
+                        />
+                      </div>
+
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-auto"
+                        style={{
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          width: '100%',
+                          height: 'auto',
+                          maxWidth: '100%',
+                          display: 'block',
+                        }}
+                      >
+                        <source src="/videos/preview.mp4" type="video/mp4; codecs=avc1" />
+                      </video>
+                    </CardBody>
+                  </Card>
+                </div>
+
+                {/* Display Logo on Bezel Bottom */}
+                <div className="mx-auto mt-2 w-full flex flex-col items-center gap-1.5">
+                  <img src="/images/logo-white.png" alt="ScreenBoard Logo" className="h-3 opacity-60 hover:opacity-80 transition-opacity" />
+                  <div className="w-1/2 h-1 bg-gradient-to-b from-slate-700 to-slate-900 rounded-full shadow-lg" />
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
