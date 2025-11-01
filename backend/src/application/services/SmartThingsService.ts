@@ -1,6 +1,7 @@
 import { SmartThingsRepository } from "../../domain/repositories/SmartThingsRepository";
 import { SERVICES } from "../../domain/valueObjects/serviceToken";
 import { TokenRepository } from "../../infrastructure/repositories/TokenRepository";
+import { EventSubscriptionRepository } from "../../infrastructure/repositories/EventSubscription";
 
 import { Token } from "../../domain/entities/Token";
 import { ITokenDocument } from "../../domain/types/ITokenDocument";
@@ -20,7 +21,8 @@ export class SmartThingsService {
   constructor(
     private smartThingsRepository: SmartThingsRepository,
     private tokenRepository: TokenRepository,
-    private eventSubscriptionService: EventSubscriptionService
+    private eventSubscriptionService: EventSubscriptionService,
+    private eventSubscriptionRepository: EventSubscriptionRepository
   ) { }
 
   private subscriptionRenewalJobs: Map<string, NodeJS.Timeout> = new Map();
@@ -290,11 +292,51 @@ export class SmartThingsService {
    * @param dashboardId the current dashboard ID
    */
   async logout(userId: string, dashboardId: string): Promise<void> {
+    try {
+      // Hole den aktuellen Token
+      const token = await this.tokenRepository.findToken(
+        userId,
+        dashboardId,
+        SERVICES.SMARTTHINGS
+      );
+
+      if (token && token.accessToken) {
+        // Hole alle Subscriptions für dieses Dashboard
+        const subscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(userId, dashboardId);
+
+        // Stoppe alle Subscriptions bei SmartThings
+        for (const subscription of subscriptions) {
+          if (subscription.resourceId) {
+            try {
+              await this.smartThingsRepository.deleteDeviceSubscription(
+                token.accessToken,
+                subscription.resourceId,
+                token.installedAppId!
+              );
+            } catch (error) {
+              console.error('Error stopping SmartThings subscription:', error);
+              // Continue, um alle zu stoppen, auch wenn eine fehlschlägt
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error during logout subscription cleanup:', error);
+      // Continue with deletion even if stopping fails
+    }
+
+    // Lösche den Token aus unserer DB
     await this.tokenRepository.deleteToken(
       userId,
       dashboardId,
       SERVICES.SMARTTHINGS
     );
+
+    // Lösche alle Subscriptions aus unserer DB
+    await this.eventSubscriptionRepository.deleteAllForUserDashboard(userId, dashboardId);
+
+    // Räume Renewal Jobs auf
+    await this.cleanup(userId, dashboardId);
   }
 
   /**

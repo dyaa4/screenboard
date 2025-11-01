@@ -11,5 +11,9 @@ export interface SmartThingsRepository {
         deviceId: string,
         installedAppId: string
     ): Promise<SmartThingsSubscriptionDTO>
-
+    deleteDeviceSubscription(
+        accessToken: string,
+        subscriptionId: string,
+        installedAppId: string
+    ): Promise<void>
 }

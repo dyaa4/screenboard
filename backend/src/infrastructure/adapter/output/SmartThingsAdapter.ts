@@ -197,4 +197,22 @@ export class SmartThingsAdapter implements SmartThingsRepository {
         )
     }
 
+    async deleteDeviceSubscription(
+        accessToken: string,
+        subscriptionId: string,
+        installedAppId: string
+    ): Promise<void> {
+        try {
+            await axios.delete(
+                `https://api.smartthings.com/v1/installedapps/${installedAppId}/subscriptions/${subscriptionId}`,
+                {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                }
+            );
+        } catch (error: any) {
+            console.error('Error deleting SmartThings subscription:', error.response?.data || error.message);
+            // Wir werfen hier keinen Fehler, da die Subscription vielleicht schon gelöscht ist
+        }
+    }
+
 }
