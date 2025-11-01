@@ -41,8 +41,9 @@ import SmartThingsDone from '@sites/SmartThingsCallback/SmartThingsCallback';
 const LayoutWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isDashboardRoute = location.pathname.startsWith(ROUTE_DASHBOARD);
+  const isSmartthingsCallback = location.pathname.startsWith(ROUTE_SMARTTHINGS_CALLBACK);
 
-  return isDashboardRoute ? children : <Layout>{children}</Layout>;
+  return isDashboardRoute || isSmartthingsCallback ? children : <Layout>{children}</Layout>;
 };
 
 const Root = () => {

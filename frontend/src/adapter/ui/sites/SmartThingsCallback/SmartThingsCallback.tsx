@@ -34,12 +34,10 @@ export const SmartThingsCallback: React.FC = () => {
       try {
         setIsProcessing(true);
 
-
         const extractedDashboardId = extractDashboardId();
         setDashboardId(extractedDashboardId);
 
         if (window.opener) {
-
           // Send message to main window with code/state for potential reload
           const params = new URLSearchParams(location.search);
           const code = params.get('code');
@@ -55,9 +53,11 @@ export const SmartThingsCallback: React.FC = () => {
             window.location.origin,
           );
 
+          // Mark as success since we sent the message
+          setIsSuccess(true);
+
           // Close window after a short delay (so user sees success message)
           setTimeout(() => window.close(), 1200);
-
         } else {
           window.opener.postMessage(
             {
@@ -66,8 +66,8 @@ export const SmartThingsCallback: React.FC = () => {
             },
             window.location.origin,
           );
+          setIsSuccess(false);
         }
-
       } catch (error) {
         console.error('Error processing callback:', error);
         setIsSuccess(false);
