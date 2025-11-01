@@ -3,6 +3,7 @@ import mongoose, { Schema } from "mongoose";
 import LayoutModel from "./LayoutModel";
 import { WidgetModel } from "./WidgetModel";
 import TokenModel from "./TokenModel";
+import EventSubscriptionModel from "./EventSubscriptionModel";
 
 const DashboardSchema: Schema = new Schema(
     {
@@ -23,9 +24,12 @@ DashboardSchema.pre('findOneAndDelete', async function (next) {
 
             // Lösche alle Widgets, die zu diesem Dashboard gehören
             await WidgetModel.deleteMany({ dashboardId });
+
             // Lösche alle Tokens, die zu diesem Dashboard gehören
             await TokenModel.deleteMany({ dashboardId });
 
+            // Lösche alle EventSubscriptions, die zu diesem Dashboard gehören
+            await EventSubscriptionModel.deleteMany({ dashboardId });
         }
 
         next();
