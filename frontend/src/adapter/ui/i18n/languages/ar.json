@@ -43,7 +43,8 @@
       "price": "السعر",
       "aboutus": "من نحن",
       "privacyPolicy": "سياسة الخصوصية",
-      "imprint": "الإشـعـار"
+      "imprint": "الإشـعـار",
+      "liveInteraction": "التفاعل المباشر"
     },
     "config": {
       "components": {
@@ -292,8 +293,19 @@
       "noDashboards": "لا توجد لوحات قيادة",
       "loading": "جاري تحميل لوحات القيادة ...",
       "selectDashboard": "اختر لوحة قيادة",
+      "selectDashboardPlaceholder": "اختر لوحة قيادة",
       "lastMessage": "آخر رسالة",
-      "messageInput": "اكتب رسالتك"
+      "messageInput": "اكتب رسالتك",
+      "fillAll": "يرجى ملء جميع الحقول المطلوبة",
+      "messageSent": "تم إرسال الرسالة بنجاح",
+      "invalidTimer": "يرجى إدخال مدة صحيحة للمؤقت",
+      "timerFinished": "انتهى المؤقت",
+      "tabs": {
+        "message": "رسالة",
+        "timer": "مؤقت",
+        "alert": "تنبيه",
+        "notification": "إخطار"
+      }
     },
     "spotifyCallback": {
       "title": "دخول Spotify",
@@ -330,7 +342,8 @@
       "mysettings": "إعداداتي",
       "signedAs": "مسجل دخول كـ",
       "liveInteractionDesc": "إرسال رسائل فورية",
-      "profileSettings": "إعدادات الملف الشخصي"
+      "profileSettings": "إعدادات الملف الشخصي",
+      "features": "الميزات"
     },
     "profileSettings": {
       "subtitle": "إدارة إعدادات ملفك الشخصي والتطبيق",

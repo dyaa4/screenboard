@@ -4,6 +4,7 @@ import {
   ROUTE_DASHBOARDS,
   ROUTE_HOME,
   ROUTE_PRICE,
+  ROUTE_LIVE_INTERACTION,
 } from '@common/routes';
 import Footer from '@components/Footer/Footer';
 import ProfileSettingsModal from '@components/ProfileSettingsModal/ProfileSettingsModal';
@@ -27,11 +28,13 @@ import {
 import { useTheme } from 'next-themes';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaSignOutAlt } from 'react-icons/fa';
+import { FaSignOutAlt, FaBullhorn } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -79,6 +82,32 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <Link color="primary" href={ROUTE_DASHBOARDS}>
                   {t('sites.names.dashboards')}
                 </Link>
+              </NavbarItem>
+            )}
+
+            {isAuthenticated && (
+              <NavbarItem>
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button
+                      className="text-foreground cursor-pointer hover:text-primary transition-colors"
+                      variant="light"
+                    >
+                      {t('components.navLayout.features')}
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu aria-label="Features" variant="faded">
+                    <DropdownItem
+                      key="live-interaction"
+                      textValue="Live Interaction"
+                      startContent={<FaBullhorn className="text-primary" size={18} />}
+                      onPress={() => navigate(ROUTE_LIVE_INTERACTION)}
+                      className="text-sm"
+                    >
+                      {t('sites.names.liveInteraction')}
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
               </NavbarItem>
             )}
 
@@ -191,9 +220,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </Navbar>
 
         <main
-          className={`flex flex-col flex-1 overflow-auto ${
-            theme === 'dark' ? 'bg-primary-800' : 'bg-primary-200'
-          }`}
+          className={`flex flex-col flex-1 overflow-auto ${theme === 'dark' ? 'bg-primary-800' : 'bg-primary-200'
+            }`}
         >
           <div className="flex-1">{children}</div>
           <Footer />

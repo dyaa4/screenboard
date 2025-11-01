@@ -43,7 +43,8 @@
       "price": "Цена",
       "aboutus": "О нас",
       "privacyPolicy": "Политика конфиденциальности",
-      "imprint": "Импринт"
+      "imprint": "Импринт",
+      "liveInteraction": "Живое взаимодействие"
     },
     "config": {
       "components": {
@@ -275,8 +276,19 @@
       "noDashboards": "Нет панелей",
       "loading": "Загрузка панелей...",
       "selectDashboard": "Выберите панель",
+      "selectDashboardPlaceholder": "Выберите панель",
       "lastMessage": "Последнее сообщение",
-      "messageInput": "Введите ваше сообщение"
+      "messageInput": "Введите ваше сообщение",
+      "fillAll": "Пожалуйста, заполните все обязательные поля",
+      "messageSent": "Сообщение успешно отправлено",
+      "invalidTimer": "Пожалуйста, введите действительное время таймера",
+      "timerFinished": "Таймер завершён",
+      "tabs": {
+        "message": "Сообщение",
+        "timer": "Таймер",
+        "alert": "Оповещение",
+        "notification": "Уведомление"
+      }
     },
     "spotifyCallback": {
       "title": "Вход через Spotify",
@@ -313,7 +325,8 @@
       "mysettings": "Мои настройки",
       "signedAs": "вошёл как",
       "liveInteractionDesc": "Отправка мгновенных сообщений",
-      "profileSettings": "Настройки профиля"
+      "profileSettings": "Настройки профиля",
+      "features": "Функции"
     },
     "profileSettings": {
       "subtitle": "Управление настройками профиля и приложения",

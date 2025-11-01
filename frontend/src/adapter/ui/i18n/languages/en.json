@@ -43,7 +43,8 @@
       "price": "Price",
       "aboutus": "About Us",
       "privacyPolicy": "Privacy Policy",
-      "imprint": "Imprint"
+      "imprint": "Imprint",
+      "liveInteraction": "Live Interaction"
     },
     "config": {
       "components": {
@@ -292,8 +293,19 @@
       "noDashboards": "No dashboards available",
       "loading": "Loading dashboards...",
       "selectDashboard": "Select a dashboard",
+      "selectDashboardPlaceholder": "Select dashboard",
       "lastMessage": "Last message",
-      "messageInput": "Enter your message"
+      "messageInput": "Enter your message",
+      "fillAll": "Please fill in all required fields",
+      "messageSent": "Message sent successfully",
+      "invalidTimer": "Please enter a valid timer duration",
+      "timerFinished": "Timer finished",
+      "tabs": {
+        "message": "Message",
+        "timer": "Timer",
+        "alert": "Alert",
+        "notification": "Notification"
+      }
     },
     "spotifyCallback": {
       "title": "Spotify Login",
@@ -330,7 +342,8 @@
       "mysettings": "My settings",
       "signedAs": "Signed in as",
       "liveInteractionDesc": "Send real‑time messages",
-      "profileSettings": "Profile settings"
+      "profileSettings": "Profile settings",
+      "features": "Features"
     },
     "profileSettings": {
       "subtitle": "Manage your profile and app settings",

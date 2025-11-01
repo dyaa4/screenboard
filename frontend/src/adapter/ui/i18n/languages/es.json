@@ -43,7 +43,8 @@
       "price": "Precio",
       "aboutus": "Acerca de",
       "privacyPolicy": "Política de privacidad",
-      "imprint": "Aviso legal"
+      "imprint": "Aviso legal",
+      "liveInteraction": "Interacción en vivo"
     },
     "config": {
       "components": {
@@ -275,8 +276,19 @@
       "noDashboards": "No hay tableros",
       "loading": "Cargando tableros...",
       "selectDashboard": "Selecciona un tablero",
+      "selectDashboardPlaceholder": "Selecciona un tablero",
       "lastMessage": "Último mensaje",
-      "messageInput": "Introduce tu mensaje"
+      "messageInput": "Introduce tu mensaje",
+      "fillAll": "Por favor, rellena todos los campos obligatorios",
+      "messageSent": "Mensaje enviado correctamente",
+      "invalidTimer": "Por favor, introduce una duración de temporizador válida",
+      "timerFinished": "Temporizador finalizado",
+      "tabs": {
+        "message": "Mensaje",
+        "timer": "Temporizador",
+        "alert": "Alerta",
+        "notification": "Notificación"
+      }
     },
     "spotifyCallback": {
       "title": "Inicio de sesión con Spotify",
@@ -313,7 +325,8 @@
       "mysettings": "Mis ajustes",
       "signedAs": "conectado como",
       "liveInteractionDesc": "Enviar mensajes en tiempo real",
-      "profileSettings": "Configuración de perfil"
+      "profileSettings": "Configuración de perfil",
+      "features": "Características"
     },
     "profileSettings": {
       "subtitle": "Administra tu perfil y configuración de la aplicación",

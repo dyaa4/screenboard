@@ -43,7 +43,8 @@
       "price": "价格",
       "aboutus": "关于我们",
       "privacyPolicy": "隐私政策",
-      "imprint": "版权信息"
+      "imprint": "版权信息",
+      "liveInteraction": "实时互动"
     },
     "config": {
       "components": {
@@ -275,8 +276,19 @@
       "noDashboards": "无仪表板",
       "loading": "正在加载仪表板...",
       "selectDashboard": "选择一个仪表板",
+      "selectDashboardPlaceholder": "选择仪表板",
       "lastMessage": "最后一条消息",
-      "messageInput": "输入您的消息"
+      "messageInput": "输入您的消息",
+      "fillAll": "请填写所有必需字段",
+      "messageSent": "消息发送成功",
+      "invalidTimer": "请输入有效的计时器时间",
+      "timerFinished": "计时器已完成",
+      "tabs": {
+        "message": "消息",
+        "timer": "计时器",
+        "alert": "提醒",
+        "notification": "通知"
+      }
     },
     "spotifyCallback": {
       "title": "Spotify 登录",
@@ -313,7 +325,8 @@
       "mysettings": "我的设置",
       "signedAs": "以…身份登录",
       "liveInteractionDesc": "发送实时消息",
-      "profileSettings": "个人资料设置"
+      "profileSettings": "个人资料设置",
+      "features": "功能"
     },
     "profileSettings": {
       "subtitle": "管理您的个人资料和应用设置",

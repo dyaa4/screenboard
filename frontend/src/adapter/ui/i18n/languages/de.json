@@ -43,7 +43,8 @@
       "price": "Preis",
       "aboutus": "Über uns",
       "privacyPolicy": "Datenschutzerklärung",
-      "imprint": "Impressum"
+      "imprint": "Impressum",
+      "liveInteraction": "Live-Interaktion"
     },
     "config": {
       "components": {
@@ -292,9 +293,20 @@
       "title": "Live-Interaktion",
       "noDashboards": "Keine Dashboards vorhanden",
       "loading": "Dashboards werden geladen ... ",
-      "selectDashboard": "Wählen Sie ein Dashbaord aus",
+      "selectDashboard": "Wählen Sie ein Dashboard aus",
+      "selectDashboardPlaceholder": "Dashboard auswählen",
       "lastMessage": "Letzte Nachricht",
-      "messageInput": "Geben Sie Ihre Nachricht ein"
+      "messageInput": "Geben Sie Ihre Nachricht ein",
+      "fillAll": "Bitte füllen Sie alle erforderlichen Felder aus",
+      "messageSent": "Nachricht erfolgreich gesendet",
+      "invalidTimer": "Bitte geben Sie eine gültige Timerzeit ein",
+      "timerFinished": "Timer abgelaufen",
+      "tabs": {
+        "message": "Nachricht",
+        "timer": "Timer",
+        "alert": "Warnung",
+        "notification": "Benachrichtigung"
+      }
     },
     "spotifyCallback": {
       "title": "Spotify Login",
@@ -331,7 +343,8 @@
       "mysettings": "Meine Einstellungen",
       "signedAs": "Angemeldet als",
       "liveInteractionDesc": "Echtzeit-Nachrichten senden",
-      "profileSettings": "Profileinstellungen"
+      "profileSettings": "Profileinstellungen",
+      "features": "Features"
     },
     "profileSettings": {
       "subtitle": "Verwalte deine Profil- und App-Einstellungen",
