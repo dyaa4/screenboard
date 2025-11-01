@@ -203,8 +203,9 @@ export class SmartThingsController {
         console.log("Incoming SmartThings webhook:", req.body);
 
         if (req.body.messageType === 'CONFIRMATION') {
-            return res.status(200).send(req.body.confirmationToken);
+            return res.status(200).send(req.body.confirmationData.confirmationUrl);
         }
+
 
         if (req.body.lifecycle === "PING") {
             return res.json({ pingData: { challenge: req.body.pingData.challenge } });
