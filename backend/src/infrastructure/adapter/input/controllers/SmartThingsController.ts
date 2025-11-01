@@ -200,6 +200,8 @@ export class SmartThingsController {
 
 
     async handleWebhook(req: Request, res: Response) {
+        console.log("Incoming SmartThings webhook:", req.body);
+
         if (req.body.messageType === 'CONFIRMATION') {
             return res.status(200).send(req.body.confirmationToken);
         }
