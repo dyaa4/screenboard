@@ -175,9 +175,10 @@ export default class SmartThingsAdapter implements SmartThingsRepository {
   }
 
   async completeAuth(code: string, state: string): Promise<void> {
-    console.log('SmartThingsAdapter.completeAuth called with code and state');
+
     try {
       const appToken = await this.getAppToken();
+      console.log('App Token in completeAuth:', appToken);
       await axios.post(
         `${getApiUrl(`/api/auth/smartthings/complete`)}`,
         { code, state },
