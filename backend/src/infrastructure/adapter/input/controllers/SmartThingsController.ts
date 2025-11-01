@@ -204,6 +204,10 @@ export class SmartThingsController {
             return res.status(200).send(req.body.confirmationToken);
         }
 
+        if (req.body.lifecycle === "PING") {
+            return res.json({ pingData: { challenge: req.body.pingData.challenge } });
+        }
+
         try {
             await this.smartThingsService.handleWebhookEvent(req.body);
             res.status(200).send();

@@ -36,48 +36,10 @@ export const useSmartThings = (
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
-  useEffect(() => {
-    const handleAuthMessage = async (event: MessageEvent) => {
-      // Sicherstellen, dass Nachricht vom eigenen Ursprung kommt
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data?.type === 'smartthings-auth-success') {
-        const { code, state } = event.data;
-        console.log('Received SmartThings auth:', code, state);
-
-        try {
-          setInitialLoading(true);
-
-          // Backend aufrufen, um Code + State zu tauschen
-          const smartThingsRepository = container.resolve<SmartThingsRepository>(
-            SMARTTHINGS_REPOSITORY_NAME,
-          );
-          await smartThingsRepository.completeAuth(code, state);
-
-          // Login-Status checken und Geräte laden
-          const loggedIn = await checkLoginStatus();
-          if (loggedIn) {
-            await loadUserAndDevices();
-          }
-        } catch (err) {
-          console.error('Fehler beim Token-Austausch:', err);
-          setError('Login fehlgeschlagen beim Token-Austausch');
-        } finally {
-          setInitialLoading(false);
-        }
-      } else if (event.data?.type === 'smartthings-auth-error') {
-        setError('Login fehlgeschlagen: ' + (event.data.error || 'Unbekannter Fehler'));
-        setInitialLoading(false);
-      }
-    };
-
-    window.addEventListener('message', handleAuthMessage);
-
-    return () => window.removeEventListener('message', handleAuthMessage);
-  }, []);
-
   // Debounce-Timer für UI-Updates
   const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Prevent double-processing of the SmartThings auth success message
+  const authCompletedRef = useRef<boolean>(false);
 
   const handleApiError = useCallback((error: any) => {
     if (error?.response?.status === 401) {
@@ -294,6 +256,10 @@ export const useSmartThings = (
       }
 
       if (event.data?.type === 'smartthings-auth-success') {
+        if (authCompletedRef.current) {
+          // Ignore duplicate success events
+          return;
+        }
         const { code, state } = event.data as { code?: string; state?: string };
         console.log('Received auth success (main window):', { code, state });
 
@@ -309,6 +275,9 @@ export const useSmartThings = (
           await container
             .resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME)
             .completeAuth(code, state);
+
+          // Mark as completed to avoid re-processing
+          authCompletedRef.current = true;
 
           // Warte kurz, um sicherzustellen, dass Backend-Verarbeitung abgeschlossen ist
           await new Promise((resolve) => setTimeout(resolve, 400));
