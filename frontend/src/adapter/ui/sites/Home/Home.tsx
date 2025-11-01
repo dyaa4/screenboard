@@ -241,19 +241,19 @@ export default function Home() {
               {/* Glow Effect Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-3xl blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
 
-              {/* Display Frame Container */}
-              <div className="relative z-10 p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-2xl float-animation" style={{
-                boxShadow: '0 0 60px rgba(150, 78, 216, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+              {/* Display Frame Container - Premium Black */}
+              <div className="relative z-10 p-5 rounded-3xl bg-black shadow-2xl float-animation border-2 border-slate-800" style={{
+                boxShadow: '0 0 80px rgba(150, 78, 216, 0.4), inset 0 1px 0 rgba(255,255,255,0.05), 0 20px 60px rgba(0,0,0,0.8)',
                 maxWidth: '380px',
               }}>
-                {/* Display Bezel */}
-                <div className="relative rounded-xl overflow-hidden bg-black p-1 shadow-inner">
+                {/* Display Bezel - Thicker black frame */}
+                <div className="relative rounded-2xl overflow-hidden bg-black p-2 shadow-inner border border-slate-900/50">
 
                   {/* Screen Gloss Effect */}
                   <div className="absolute inset-0 z-30 pointer-events-none rounded-xl bg-gradient-to-b from-white/10 via-transparent to-transparent" />
 
                   <Card className="relative z-10 rounded-lg overflow-hidden border-0 bg-black shadow-none">
-                    <CardBody className="p-0 relative">
+                    <CardBody className="p-0 relative overflow-x-hidden">
                       {/* Shine Effect Overlay */}
                       <div className="absolute inset-0 z-20 pointer-events-none">
                         <motion.div
@@ -282,6 +282,7 @@ export default function Home() {
                           height: 'auto',
                           maxWidth: '100%',
                           display: 'block',
+                          overflow: 'hidden',
                         }}
                       >
                         <source src="/videos/preview.mp4" type="video/mp4; codecs=avc1" />
