@@ -1,24 +1,38 @@
 import i18n, { t } from '@adapter/ui/i18n/i18n';
-import { CommunicationRepository } from '../../../../../../application/repositories/communicationRepository';
 import { COMMUNICATION_REPOSITORY_NAME } from '@common/constants';
 import NotConfiguredMessage from '@components/NotConfiguredMessage/NotConfiguredMessage';
-import { Layout } from '../../../../../../domain/entities/Layout';
-import { Widget } from '../../../../../../domain/entities/Widget';
-import { useCalendarEvents } from '@hooks/sites/dashboardSite/useCalendarEvents';
+import { useEvents } from '@hooks/sites/dashboardSite/useEvents';
 import { JSX, useEffect } from 'react';
 import { container } from 'tsyringe';
+import { CommunicationRepository } from '../../../../../../application/repositories/communicationRepository';
+import { Layout } from '../../../../../../domain/entities/Layout';
+import { Widget } from '../../../../../../domain/entities/Widget';
 import MenuSection from '../MenuSection/MenuSection';
-import MonthlyCalendar from './MonthyCalender';
 import WidgetSkeleton from '../WidgetSkeleton/WidgetSkeleton';
+import MonthlyCalendar from './MonthyCalender';
 
 export interface KalenderProps {
   widget: Widget;
   layout: Layout | undefined;
 }
 
+/**
+ * Calendar Widget - Main Component
+ * Hexagonal Architecture - UI Layer (Adapter)
+ * Supports:
+ * - Google Calendar (displays as monthly calendar)
+ * - iCal feeds (displays as event list)
+ * - Microsoft Calendar (displays as event list)
+ */
 function Calendar({ widget, layout }: KalenderProps): JSX.Element {
-  const { events, loading, isNotConfigured, loadEvents } =
-    useCalendarEvents(widget);
+  // Use calendar events hook for Google Calendar (existing)
+  const { events: calendarEvents, loading: calendarLoading, isNotConfigured: calendarNotConfigured, loadEvents: loadCalendarEvents } =
+    useEvents(widget);
+
+  const loading = calendarLoading;
+  const isNotConfigured = calendarNotConfigured;
+  const events = calendarEvents;
+  const loadEvents = loadCalendarEvents;
 
   useEffect(() => {
     const communicationService = container.resolve<CommunicationRepository>(
@@ -26,17 +40,16 @@ function Calendar({ widget, layout }: KalenderProps): JSX.Element {
     );
 
     const messageHandler = () => {
-      loadEvents(false);
+      loadEvents();
     };
 
     communicationService.receiveGoogleCalendarMessage(messageHandler);
-
-    communicationService.connect(widget.dashboardId); // Type cast wegen Interface
+    communicationService.connect(widget.dashboardId);
 
     return () => {
       communicationService.abmelden('google-calendar-event');
     };
-  }, [widget.dashboardId]); // Korrekte Dependencies
+  }, [widget.dashboardId, loadEvents]);
 
   return (
     <MenuSection
@@ -58,6 +71,7 @@ function Calendar({ widget, layout }: KalenderProps): JSX.Element {
               layout={layout}
             />
           ) : (
+            // All event types use MonthlyCalendar view with swipe navigation
             <MonthlyCalendar
               events={events}
               daysToShow={30}

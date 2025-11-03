@@ -81,9 +81,11 @@
           "security": "Seguridad",
           "pinProtection": "Protección PIN",
           "display": "Pantalla",
+          "fontsizeextrasmall": "Muy Pequeño",
           "fontsizesmall": "Pequeño",
           "fontsizemedium": "Mediano",
           "fontsizelarge": "Grande",
+          "fontsizeextralarge": "Muy Grande",
           "background": "Fondo",
           "error": {
             "title": "Error al cargar el diseño"
@@ -175,7 +177,8 @@
           "notConfigured": "Los eventos aún no están configurados. Por favor usa el widget de eventos para configurarlos.",
           "today": "Hoy",
           "noEvents": "No hay eventos",
-          "allDay": "todo el día"
+          "allDay": "todo el día",
+          "unnamedEvent": "Sin nombre"
         },
         "news": {
           "notConfigured": "Aún no has añadido un enlace RSS a tu widget. Por favor agrégalo en la página de configuración.",

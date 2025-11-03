@@ -7,7 +7,6 @@ import {
   addDays,
   eachDayOfInterval,
   format,
-  isSameDay,
   isToday,
   startOfDay,
 } from 'date-fns';
@@ -16,7 +15,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaCheck } from 'react-icons/fa';
 import { getColorTermine } from './helper';
-import { Card, CardBody, CardHeader, Chip } from '@heroui/react';
+import { Card, CardBody, CardHeader } from '@heroui/react';
 
 interface MonthlyCalendarProps {
   events: SimpleEventDto[];
@@ -35,10 +34,7 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
   const { t } = useTranslation();
   const locale = getLocale(currentLang);
 
-  // State für die anzuzeigenden Tage
   const [visibleDays, setVisibleDays] = useState<Date[]>([]);
-
-  // Initialisierung und Update der Tage
   useEffect(() => {
     const updateDays = () => {
       const currentStart = startOfDay(new Date());
@@ -74,12 +70,20 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
   }, [daysToShow]);
 
   const getEventsForDay = (day: Date) => {
-    return events.filter((event) => {
-      const eventDate = event.start.date
-        ? new Date(event.start.date)
-        : new Date(event.start.dateTime || '');
+    const dayString = format(day, 'yyyy-MM-dd');
 
-      return isSameDay(day, eventDate);
+    return events.filter((event) => {
+      // Use event.start.date if available (all-day events)
+      if (event.start.date) {
+        return event.start.date === dayString;
+      }
+
+      // Otherwise use dateTime
+      if (event.start.dateTime) {
+        return format(new Date(event.start.dateTime), 'yyyy-MM-dd') === dayString;
+      }
+
+      return false;
     });
   };
 
@@ -88,32 +92,50 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
       event?.creator?.email || '',
       theme === 'dark',
     );
+
+    const timeString =
+      event.start.date && !event.start.dateTime
+        ? t('sites.dashboard.components.calendar.allDay')
+        : event.start.dateTime
+          ? `${format(new Date(event.start.dateTime), 'HH:mm')}${event.end?.dateTime ? ' - ' + format(new Date(event.end.dateTime), 'HH:mm') : ''}`
+          : '';
+
     return (
       <Card
         key={event.id}
-        className={`${getFontSizeClass(layout?.fontSize)} w-full mb-1 justify-start`}
+        className={`${getFontSizeClass(layout?.fontSize)} w-full mb-0.5 justify-start`}
         style={{ backgroundColor }}
         shadow='sm'
       >
-
-        <div className="w-full text-left p-2">
+        <div className="w-full text-left py-1 px-2">
+          {/* Event Title */}
           <div
             title={event.summary}
-            className="font-bold truncate"
+            className="font-semibold truncate leading-tight"
           >
-            {event.summary}
+            {event.summary || t('sites.dashboard.components.calendar.unnamedEvent')}
           </div>
-          <div className={`${getFontSizeClass(layout?.fontSize)} text-xs opacity-80 truncate`}>
-            {event.start.dateTime && (
-              <>{format(new Date(event.start.dateTime), 'HH:mm')}</>
-            )}
 
-            {event.end?.dateTime && ' - '}
-            {event.end?.dateTime && (
-              <>{format(new Date(event.end.dateTime), 'HH:mm')}</>
-            )}
-            {event.end?.date && t('sites.dashboard.components.calendar.allDay')}
-          </div>
+          {/* Time or All-Day Indicator */}
+          {timeString && (
+            <div className={`${getFontSizeClass(layout?.fontSize)} text-xs opacity-75`}>
+              🕐 {timeString}
+            </div>
+          )}
+
+          {/* Location */}
+          {event.location && (
+            <div className={`${getFontSizeClass(layout?.fontSize)} text-xs opacity-65 truncate`}>
+              📍 {event.location}
+            </div>
+          )}
+
+          {/* Description */}
+          {event.description && (
+            <div className={`${getFontSizeClass(layout?.fontSize)} text-xs opacity-55 line-clamp-1`}>
+              {event.description}
+            </div>
+          )}
         </div>
       </Card>
     );
@@ -132,30 +154,30 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
           ...getCustomColorCssClass(layout, theme),
         }}
       >
-        <CardHeader className="flex-col items-start pb-2">
+        <CardHeader className="flex-col items-start pb-1 pt-2 px-3">
           <p className={`font-bold ${getFontSizeClass(layout?.fontSize)}`}>
-            {format(day, 'd. MMMM', { locale })}
+            {format(day, 'd. MMM', { locale })}
           </p>
           <p
-            className={`${getFontSizeClass(layout?.fontSize)} ${isCurrentDay ? 'text-primary' : 'text-default-500'}`}
+            className={`${getFontSizeClass(layout?.fontSize)} text-xs ${isCurrentDay ? 'text-primary' : 'text-default-500'}`}
           >
             {isCurrentDay
               ? t('sites.dashboard.components.calendar.today')
-              : format(day, 'EEEE', { locale })}
+              : format(day, 'EEE', { locale })}
           </p>
         </CardHeader>
-        <CardBody className="overflow-y-auto overflow-x-hidden pt-2">
+        <CardBody className="overflow-y-auto overflow-x-hidden pt-1 px-2 py-2">
           {hasEvents ? (
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {dayEvents.map(renderEventItem)}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full">
               <FaCheck
-                className={`${getFontSizeClass(layout?.fontSize)} text-default-300 mb-2`}
+                className={`${getFontSizeClass(layout?.fontSize)} text-default-300 mb-1`}
               />
               <p
-                className={`${getFontSizeClass(layout?.fontSize)} text-center text-default-400`}
+                className={`${getFontSizeClass(layout?.fontSize)} text-xs text-center text-default-400`}
               >
                 {t('sites.dashboard.components.calendar.noEvents')}
               </p>

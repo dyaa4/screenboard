@@ -48,6 +48,9 @@ export const DisplaySection: React.FC<DisplaySectionProps> = ({
               label: "font-medium text-default-700"
             }}
           >
+            <Radio value={FontSize.EXTRA_SMALL}>
+              {t('sites.config.components.layout.fontsizeextrasmall')}
+            </Radio>
             <Radio value={FontSize.SMALL}>
               {t('sites.config.components.layout.fontsizesmall')}
             </Radio>
@@ -56,6 +59,9 @@ export const DisplaySection: React.FC<DisplaySectionProps> = ({
             </Radio>
             <Radio value={FontSize.LARGE}>
               {t('sites.config.components.layout.fontsizelarge')}
+            </Radio>
+            <Radio value={FontSize.EXTRA_LARGE}>
+              {t('sites.config.components.layout.fontsizeextralarge')}
             </Radio>
           </RadioGroup>
           <RadioGroup

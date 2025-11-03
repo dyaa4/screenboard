@@ -29,6 +29,7 @@
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.1",
     "node-cron": "^3.0.3",
+    "node-ical": "^0.22.1",
     "pino": "^9.7.0",
     "reflect-metadata": "^0.2.2",
     "remult": "^0.27.22",

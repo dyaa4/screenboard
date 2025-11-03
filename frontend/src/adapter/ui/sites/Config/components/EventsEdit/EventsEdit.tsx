@@ -99,6 +99,25 @@ const EventsEdit = ({
     }
   }, [user, selectedCalendar]);
 
+  // Update settings when activeTab changes
+  useEffect(() => {
+    if (activeTab === EventType.GOOGLE && selectedCalendar) {
+      updateSettings({
+        type: EventType.GOOGLE,
+        calendarId: selectedCalendar,
+      });
+    } else if (activeTab === EventType.ICAL) {
+      updateSettings({
+        type: EventType.ICAL,
+        icalLink: icalLink,
+      });
+    } else if (activeTab === EventType.MICROSOFT) {
+      updateSettings({
+        type: EventType.MICROSOFT,
+      });
+    }
+  }, [activeTab]);
+
   if (loading)
     return (
       <div className="flex justify-center">
@@ -124,7 +143,7 @@ const EventsEdit = ({
           }
         />
         <Tab
-          key="microsoft"
+          key={EventType.MICROSOFT}
           title={
             <div className="flex items-center space-x-2">
               <FaMicrosoft />

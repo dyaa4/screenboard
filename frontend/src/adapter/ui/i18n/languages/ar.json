@@ -81,9 +81,11 @@
           "security": "الأمان",
           "pinProtection": "حماية PIN",
           "display": "العرض",
+          "fontsizeextrasmall": "صغير جداً",
           "fontsizesmall": "صغير",
           "fontsizemedium": "متوسط",
           "fontsizelarge": "كبير",
+          "fontsizeextralarge": "كبير جداً",
           "background": "الخلفية",
           "error": {
             "title": "خطأ في تحميل التخطيط"
@@ -175,7 +177,8 @@
           "notConfigured": "لم تُضبط الأحداث بعد. يرجى استخدام ودجيت الأحداث لضبطها.",
           "today": "اليوم",
           "noEvents": "لا توجد أحداث",
-          "allDay": "طوال اليوم"
+          "allDay": "طوال اليوم",
+          "unnamedEvent": "بدون اسم"
         },
         "news": {
           "notConfigured": "لم تقم بإضافة رابط RSS إلى ودجيتك بعد. الرجاء إضافة الرابط في صفحة الإعدادات.",

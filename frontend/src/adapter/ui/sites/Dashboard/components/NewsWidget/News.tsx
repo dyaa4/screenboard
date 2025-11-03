@@ -77,8 +77,9 @@ function NewsWidget({ widget, layout }: NewsProps): JSX.Element {
                       <Image
                         src={item.enclosure.url}
                         alt={item.title}
-                        className="w-full h-48 object-cover"
+                        className="w-full h-48 object-cover cursor-grab active:cursor-grabbing"
                         fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='192'%3E%3Crect width='320' height='192' fill='%23f4f4f5'/%3E%3C/svg%3E"
+                        onDragStart={(e) => e.preventDefault()}
                       />
                     ) : (
                       <div className="w-full h-48 flex items-center justify-center bg-default-100">

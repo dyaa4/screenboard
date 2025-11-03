@@ -81,9 +81,11 @@
           "security": "Безопасность",
           "pinProtection": "Защита PIN",
           "display": "Отображение",
+          "fontsizeextrasmall": "Очень Маленький",
           "fontsizesmall": "Маленький",
           "fontsizemedium": "Средний",
           "fontsizelarge": "Большой",
+          "fontsizeextralarge": "Очень Большой",
           "background": "Фон",
           "error": {
             "title": "Ошибка загрузки макета"
@@ -175,7 +177,8 @@
           "notConfigured": "События ещё не настроены. Пожалуйста, используйте виджет «События» для настройки.",
           "today": "Сегодня",
           "noEvents": "Нет событий",
-          "allDay": "весь день"
+          "allDay": "весь день",
+          "unnamedEvent": "Без названия"
         },
         "news": {
           "notConfigured": "Вы ещё не добавили RSS‑ссылку в ваш виджет. Пожалуйста, добавьте её на странице настроек.",

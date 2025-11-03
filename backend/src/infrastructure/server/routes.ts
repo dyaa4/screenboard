@@ -7,6 +7,7 @@ import widgetRoutes from '../routes/widgetRoutes';
 import spotifyRoutes from '../routes/spotifyRoutes';
 import dashboardRoutes from '../routes/dashboardRoutes';
 import smartThingsRoutes from '../routes/smartThingsRoutes';
+import eventsRoutes from '../routes/eventsRoutes';
 
 export const setupRoutes = (app: Express): void => {
   app.use('/api', spotifyRoutes);
@@ -16,4 +17,5 @@ export const setupRoutes = (app: Express): void => {
   app.use('/api', smartThingsRoutes);
   app.use('/api', layoutConfigRoutes);
   app.use('/api', dashboardRoutes);
+  app.use('/api', eventsRoutes);
 };

@@ -81,9 +81,11 @@
           "security": "Security",
           "pinProtection": "PIN protection",
           "display": "Display",
+          "fontsizeextrasmall": "Extra Small",
           "fontsizesmall": "Small",
           "fontsizemedium": "Medium",
           "fontsizelarge": "Large",
+          "fontsizeextralarge": "Extra Large",
           "background": "Background",
           "error": {
             "title": "Error loading layout"
@@ -175,7 +177,8 @@
           "notConfigured": "Events aren't configured yet. Please use the Event widget to configure them.",
           "today": "Today",
           "noEvents": "No events",
-          "allDay": "all day"
+          "allDay": "all day",
+          "unnamedEvent": "Unnamed"
         },
         "news": {
           "notConfigured": "You haven't added an RSS link to your widget yet. Please add the RSS link on the configuration page.",

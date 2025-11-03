@@ -81,9 +81,11 @@
           "security": "安全",
           "pinProtection": "PIN 保护",
           "display": "显示",
+          "fontsizeextrasmall": "极小",
           "fontsizesmall": "小",
           "fontsizemedium": "中",
           "fontsizelarge": "大",
+          "fontsizeextralarge": "极大",
           "background": "背景",
           "error": {
             "title": "加载布局时出错"
@@ -175,7 +177,8 @@
           "notConfigured": "事件尚未配置。请使用事件小部件进行配置。",
           "today": "今天",
           "noEvents": "暂无事件",
-          "allDay": "全天"
+          "allDay": "全天",
+          "unnamedEvent": "未命名"
         },
         "news": {
           "notConfigured": "您尚未向小部件添加 RSS 链接。请在配置页面添加 RSS。",

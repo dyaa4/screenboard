@@ -82,9 +82,11 @@
           "security": "Sicherheit",
           "pinProtection": "PIN-Schutz",
           "display": "Anzeige",
+          "fontsizeextrasmall": "Sehr Klein",
           "fontsizesmall": "Klein",
           "fontsizemedium": "Mittel",
           "fontsizelarge": "Groß",
+          "fontsizeextralarge": "Sehr Groß",
           "background": "Hintergrund",
           "error": {
             "title": "Fehler beim Laden des Layouts"
@@ -176,7 +178,8 @@
           "notConfigured": "Die Ereignisse sind noch nicht konfiguriert. Bitte nutzen Sie das Ereignis-Widget, um diese zu konfigurieren.",
           "today": "Heute",
           "noEvents": "Keine Ereignisse",
-          "allDay": "ganztägig"
+          "allDay": "ganztägig",
+          "unnamedEvent": "Namenlos"
         },
         "news": {
           "notConfigured": "Sie haben noch keinen RSS-Link zu Ihrem Widget hinzugefügt. Bitte fügen Sie den RSS-Link auf der Konfigurationsseite hinzu.",

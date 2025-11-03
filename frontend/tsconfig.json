@@ -34,8 +34,8 @@
       "@common/*": ["common/*"],
       "@adapter/*": ["adapter/*"],
       "@i18n/*": ["adapter/ui/i18n/*"],
-      "../../application/*": ["application/*"],
-      "../../domain/*": ["domain/*"]
+      "@application/*": ["application/*"],
+      "@domain/*": ["domain/*"]
     }
   },
   "include": ["src", "postcss.config.js"],

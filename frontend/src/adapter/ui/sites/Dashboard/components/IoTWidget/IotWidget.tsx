@@ -11,6 +11,7 @@ import {
   getCustomColorCssClass,
   getDeviceIcon,
 } from '@adapter/ui/helpers/generalHelper';
+import { getFontSizeClass } from '@sites/Dashboard/helper';
 import { useTheme } from 'next-themes';
 
 import { container } from 'tsyringe';
@@ -188,7 +189,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
           ...getCustomColorCssClass(layout, theme),
         }}
       >
-        <div 
+        <div
           className="flex flex-col h-full justify-between"
           onClick={(e) => {
             if (!deviceStates[device.deviceId]?.components?.main?.switch || hasError || deviceLoading[device.deviceId]) {
@@ -201,9 +202,8 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
         >
           <div className="flex items-center justify-between mb-3">
             <div
-              className={`text-2xl transition-colors duration-300 ${
-                isOn ? 'text-success' : 'text-default-300'
-              }`}
+              className={`text-2xl transition-colors duration-300 ${isOn ? 'text-success' : 'text-default-300'
+                }`}
             >
               <i className={deviceIcon}></i>
             </div>
@@ -216,7 +216,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
 
           <div className="flex flex-col gap-2">
             <p
-              className="font-semibold text-sm truncate"
+              className={`${getFontSizeClass(layout?.fontSize)} font-semibold truncate`}
               title={device.label || device.name}
             >
               {device.label || device.name}
@@ -230,7 +230,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
                 size="sm"
                 color={isOn ? 'success' : 'default'}
                 variant="flat"
-                className="text-xs font-medium"
+                className={`${getFontSizeClass(layout?.fontSize)} font-medium`}
               >
                 <i className={`fa-solid ${isOn ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}></i>
                 {isOn ? t('sites.dashboard.components.iot.on') : t('sites.dashboard.components.iot.off')}

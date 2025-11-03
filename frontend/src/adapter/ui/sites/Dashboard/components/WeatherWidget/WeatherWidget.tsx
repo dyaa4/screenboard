@@ -43,18 +43,18 @@ const WeatherWidget = (props: WeatherProps): React.ReactNode => {
       return (
         <Card
           key={day.id}
-          className="flex-1 min-w-[180px] h-[8vw] max-h-[160px] min-h-[140px] overflow-x-hidden transition-shadow duration-300 shadow-lg hover:shadow-xl"
+          className="flex-1 min-w-[160px] h-[7vw] max-h-[140px] min-h-[120px] overflow-x-hidden transition-shadow duration-300 shadow-lg hover:shadow-xl"
           style={{
             ...getCustomColorCssClass(layout, theme),
           }}
         >
-          <CardBody className="flex flex-row justify-between p-5 overflow-x-hidden">
-            <div className="flex flex-col justify-between">
+          <CardBody className="flex flex-row justify-between p-3 gap-2 overflow-x-hidden">
+            <div className="flex flex-col justify-between flex-1">
               <div>
                 <p
                   className={classNames(
                     getFontSizeClass(layout?.fontSize),
-                    'font-semibold',
+                    'font-semibold leading-tight',
                     {
                       'text-primary': isCurrentDay,
                     },
@@ -65,23 +65,23 @@ const WeatherWidget = (props: WeatherProps): React.ReactNode => {
                 <p
                   className={classNames(
                     getFontSizeClass(layout?.fontSize),
-                    'text-default-500'
+                    'text-default-500 text-xs'
                   )}
                 >
-                  {format(day.date, 'd. MMMM', { locale })}
+                  {format(day.date, 'd. MMM', { locale })}
                 </p>
               </div>
-              <p className="flex items-baseline text-3xl font-bold">
+              <p className="flex items-baseline text-2xl font-bold leading-tight">
                 {day.temperature}
-                <span className="text-sm ml-0.5 text-default-500">
+                <span className="text-xs ml-0.5 text-default-500">
                   °C
                 </span>
               </p>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center justify-center">
               <i
                 className={classNames(
-                  'text-5xl text-default-400',
+                  'text-4xl text-default-400',
                   getIcon(day.weather),
                   day.weather.toLowerCase(),
                 )}
