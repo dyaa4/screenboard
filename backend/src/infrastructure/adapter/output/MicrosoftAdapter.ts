@@ -52,7 +52,7 @@ export class MicrosoftAdapter implements MicrosoftRepository {
       params.append('code', code);
       params.append('redirect_uri', this.redirectUri);
       params.append('grant_type', 'authorization_code');
-      params.append('scope', this.scopes);
+      // NOTE: Don't include scope in token exchange - they were already set during authorization
 
       console.log('Token request params:', params.toString());
 
