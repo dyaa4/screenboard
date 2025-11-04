@@ -85,7 +85,7 @@ export const useMicrosoftCalendar = (
             `client_id=${clientId}&` +
             `response_type=code&` +
             `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-            `scope=${encodeURIComponent('https://graph.microsoft.com/Calendars.Read https://graph.microsoft.com/User.Read')}&` +
+            `scope=${encodeURIComponent('https://graph.microsoft.com/Calendars.Read https://graph.microsoft.com/User.Read offline_access')}&` +
             `state=${encodeURIComponent(state)}`;
 
         // Open popup window

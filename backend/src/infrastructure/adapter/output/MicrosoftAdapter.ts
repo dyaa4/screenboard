@@ -24,6 +24,13 @@ export class MicrosoftAdapter implements MicrosoftRepository {
     if (!this.clientId || !this.clientSecret || !this.redirectUri) {
       throw new Error('Microsoft OAuth configuration missing. Please set MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, and MICROSOFT_REDIRECT_URI environment variables.');
     }
+
+    // Debug log (remove in production)
+    console.log('Microsoft OAuth Config:', {
+      clientId: this.clientId,
+      redirectUri: this.redirectUri,
+      scopes: this.scopes
+    });
   }
 
   /**
@@ -31,6 +38,13 @@ export class MicrosoftAdapter implements MicrosoftRepository {
    */
   async exchangeAuthCodeForTokens(code: string): Promise<MicrosoftTokenDTO> {
     try {
+      console.log('Attempting token exchange with:', {
+        clientId: this.clientId,
+        redirectUri: this.redirectUri,
+        codeLength: code?.length,
+        scopes: this.scopes
+      });
+
       // Microsoft OAuth requires form-encoded data
       const params = new URLSearchParams();
       params.append('client_id', this.clientId);
@@ -40,6 +54,8 @@ export class MicrosoftAdapter implements MicrosoftRepository {
       params.append('grant_type', 'authorization_code');
       params.append('scope', this.scopes);
 
+      console.log('Token request params:', params.toString());
+
       const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token',
         params.toString(),
         {
@@ -47,9 +63,7 @@ export class MicrosoftAdapter implements MicrosoftRepository {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
         }
-      );
-
-      return {
+      ); return {
         accessToken: tokenResponse.data.access_token,
         refreshToken: tokenResponse.data.refresh_token,
         expiresIn: tokenResponse.data.expires_in,
