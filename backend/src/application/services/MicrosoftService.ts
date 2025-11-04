@@ -33,11 +33,14 @@ export class MicrosoftService {
     const microsoftTokens = await this.microsoftRepository.exchangeAuthCodeForTokens(code);
     const { accessToken, refreshToken, expiresIn } = microsoftTokens;
 
+    // Calculate expiration date: current time + expiresIn seconds
+    const expirationDate = new Date(Date.now() + (expiresIn * 1000));
+
     // Create Token Entity
     const token = new Token(
       accessToken,
       refreshToken,
-      new Date(expiresIn), // Use expiresIn directly like in GoogleService
+      expirationDate,
       userId,
       dashboardId,
       SERVICES.MICROSOFT,
@@ -167,11 +170,14 @@ export class MicrosoftService {
     const { accessToken: newAccessToken, refreshToken: newRefreshToken, expiresIn } =
       await this.refreshAccessToken(userId, dashboardId, refreshToken);
 
+    // Calculate new expiration date
+    const newExpirationDate = new Date(Date.now() + (expiresIn * 1000));
+
     // Update token in database
     await this.tokenRepository.updateAccessToken(
       token.id,
       newAccessToken,
-      new Date(expiresIn),
+      newExpirationDate,
       newRefreshToken
     );
 

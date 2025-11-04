@@ -31,18 +31,23 @@ export class MicrosoftAdapter implements MicrosoftRepository {
    */
   async exchangeAuthCodeForTokens(code: string): Promise<MicrosoftTokenDTO> {
     try {
-      const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        code: code,
-        redirect_uri: this.redirectUri,
-        grant_type: 'authorization_code',
-        scope: this.scopes,
-      }, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
+      // Microsoft OAuth requires form-encoded data
+      const params = new URLSearchParams();
+      params.append('client_id', this.clientId);
+      params.append('client_secret', this.clientSecret);
+      params.append('code', code);
+      params.append('redirect_uri', this.redirectUri);
+      params.append('grant_type', 'authorization_code');
+      params.append('scope', this.scopes);
+
+      const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token',
+        params.toString(),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
 
       return {
         accessToken: tokenResponse.data.access_token,
@@ -62,17 +67,22 @@ export class MicrosoftAdapter implements MicrosoftRepository {
    */
   async refreshAccessToken(refreshToken: string): Promise<MicrosoftTokenDTO> {
     try {
-      const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token',
-        scope: this.scopes,
-      }, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
+      // Microsoft OAuth requires form-encoded data
+      const params = new URLSearchParams();
+      params.append('client_id', this.clientId);
+      params.append('client_secret', this.clientSecret);
+      params.append('refresh_token', refreshToken);
+      params.append('grant_type', 'refresh_token');
+      params.append('scope', this.scopes);
+
+      const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token',
+        params.toString(),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
 
       return {
         accessToken: tokenResponse.data.access_token,
