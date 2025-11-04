@@ -59,8 +59,19 @@ const EventsEdit = ({
 
   const { t } = useTranslation();
 
+  // Debug log to see what's happening
+  console.log('EventsEdit state:', {
+    settingsType: settings.type,
+    activeTab,
+    selectedCalendar: settings.calendarId
+  });
+
   useEffect(() => {
-    setActiveTab(settings.type || EventType.GOOGLE);
+    console.log('Settings changed:', settings);
+    // Only update if settings.type is actually defined
+    if (settings.type) {
+      setActiveTab(settings.type);
+    }
     setSelectedCalendar(settings.calendarId || null);
     setIcalLink(settings.icalLink || '');
   }, [settings]);
@@ -108,6 +119,13 @@ const EventsEdit = ({
   const handleMicrosoftCalendarSelect = (selectedKeys: Selection) => {
     const selectedCalendarId = Array.from(selectedKeys).values().next()
       .value as string;
+
+    console.log('Microsoft Calendar selected:', {
+      selectedCalendarId,
+      calendarLength: selectedCalendarId?.length,
+      allCalendars: microsoftCalendars
+    });
+
     if (selectedCalendarId) {
       setSelectedCalendar(selectedCalendarId);
 
