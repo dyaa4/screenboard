@@ -14,20 +14,32 @@ export class MicrosoftController {
    */
   async handleLogin(req: Request, res: Response): Promise<void> {
     try {
-      const { code, userId, dashboardId } = req.body;
+      const { code } = req.body;
+      const userId = req.auth?.payload?.sub;
+      const { dashboardId } = req.query;
 
-      if (!code || !userId || !dashboardId) {
-        res.status(400).json({
-          error: 'Missing required parameters: code, userId, dashboardId'
-        });
+      if (!code) {
+        res.status(400).json({ error: 'Microsoft auth code is missing' });
         return;
       }
 
-      await this.microsoftService.handleMicrosoftAuthCode(userId, dashboardId, code);
+      if (!userId) {
+        res.status(400).json({ error: 'userId is missing' });
+        return;
+      }
 
-      res.status(200).json({
-        message: 'Microsoft Calendar authentication successful'
-      });
+      if (!dashboardId) {
+        res.status(400).json({ error: 'dashboardId is missing' });
+        return;
+      }
+
+      await this.microsoftService.handleMicrosoftAuthCode(
+        userId,
+        dashboardId as string,
+        code
+      );
+
+      res.status(204).json();
     } catch (error: any) {
       console.error('Microsoft login error:', error);
       res.status(500).json({
@@ -42,21 +54,25 @@ export class MicrosoftController {
    */
   async getLoginStatus(req: Request, res: Response): Promise<void> {
     try {
-      const { userId, dashboardId } = req.query;
+      const { dashboardId } = req.query;
+      const userId = req.auth?.payload?.sub;
 
-      if (!userId || !dashboardId) {
-        res.status(400).json({
-          error: 'Missing required parameters: userId, dashboardId'
-        });
+      if (!userId) {
+        res.status(400).json({ error: 'userId is missing' });
+        return;
+      }
+
+      if (!dashboardId) {
+        res.status(400).json({ error: 'dashboardId is missing' });
         return;
       }
 
       const isLoggedIn = await this.microsoftService.getLoginStatus(
-        userId as string,
+        userId,
         dashboardId as string
       );
 
-      res.status(200).json({ isLoggedIn });
+      res.status(200).json({ isLoggedin: isLoggedIn });
     } catch (error: any) {
       console.error('Microsoft login status error:', error);
       res.status(500).json({
@@ -71,16 +87,20 @@ export class MicrosoftController {
    */
   async logout(req: Request, res: Response): Promise<void> {
     try {
-      const { userId, dashboardId } = req.query;
+      const { dashboardId } = req.query;
+      const userId = req.auth?.payload?.sub;
 
-      if (!userId || !dashboardId) {
-        res.status(400).json({
-          error: 'Missing required parameters: userId, dashboardId'
-        });
+      if (!userId) {
+        res.status(400).json({ error: 'userId is missing' });
         return;
       }
 
-      await this.microsoftService.logout(userId as string, dashboardId as string);
+      if (!dashboardId) {
+        res.status(400).json({ error: 'dashboardId is missing' });
+        return;
+      }
+
+      await this.microsoftService.logout(userId, dashboardId as string);
 
       res.status(200).json({
         message: 'Microsoft Calendar logout successful'
@@ -99,17 +119,26 @@ export class MicrosoftController {
    */
   async fetchCalendarEvents(req: Request, res: Response): Promise<void> {
     try {
-      const { userId, dashboardId, calendarId } = req.query;
+      const { dashboardId, calendarId } = req.query;
+      const userId = req.auth?.payload?.sub;
 
-      if (!userId || !dashboardId || !calendarId) {
-        res.status(400).json({
-          error: 'Missing required parameters: userId, dashboardId, calendarId'
-        });
+      if (!userId) {
+        res.status(400).json({ error: 'userId is missing' });
+        return;
+      }
+
+      if (!dashboardId) {
+        res.status(400).json({ error: 'dashboardId is missing' });
+        return;
+      }
+
+      if (!calendarId) {
+        res.status(400).json({ error: 'calendarId is missing' });
         return;
       }
 
       const events = await this.microsoftService.fetchMicrosoftCalendarEvents(
-        userId as string,
+        userId,
         dashboardId as string,
         calendarId as string
       );
@@ -157,17 +186,21 @@ export class MicrosoftController {
    */
   async fetchUserCalendars(req: Request, res: Response): Promise<void> {
     try {
-      const { userId, dashboardId } = req.query;
+      const { dashboardId } = req.query;
+      const userId = req.auth?.payload?.sub;
 
-      if (!userId || !dashboardId) {
-        res.status(400).json({
-          error: 'Missing required parameters: userId, dashboardId'
-        });
+      if (!userId) {
+        res.status(400).json({ error: 'userId is missing' });
+        return;
+      }
+
+      if (!dashboardId) {
+        res.status(400).json({ error: 'dashboardId is missing' });
         return;
       }
 
       const calendars = await this.microsoftService.fetchMicrosoftUserCalendars(
-        userId as string,
+        userId,
         dashboardId as string
       );
 
@@ -194,17 +227,21 @@ export class MicrosoftController {
    */
   async fetchUserInfo(req: Request, res: Response): Promise<void> {
     try {
-      const { userId, dashboardId } = req.query;
+      const { dashboardId } = req.query;
+      const userId = req.auth?.payload?.sub;
 
-      if (!userId || !dashboardId) {
-        res.status(400).json({
-          error: 'Missing required parameters: userId, dashboardId'
-        });
+      if (!userId) {
+        res.status(400).json({ error: 'userId is missing' });
+        return;
+      }
+
+      if (!dashboardId) {
+        res.status(400).json({ error: 'dashboardId is missing' });
         return;
       }
 
       const userInfo = await this.microsoftService.fetchUserInfo(
-        userId as string,
+        userId,
         dashboardId as string
       );
 
