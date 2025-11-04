@@ -82,8 +82,7 @@ export const useEvents = (widget: Widget): UseEventsReturn => {
                 const microsoftAdapter = container.resolve(MicrosoftCalendarAdapter);
                 fetchedEvents = await microsoftAdapter.fetchMicrosoftCalendarEvents(
                     widget.dashboardId,
-                    settings.calendarId,
-                    settings.maxEvents || 10,
+                    settings.calendarId
                 );
                 setIsNotConfigured(false);
             } else {
