@@ -1,4 +1,5 @@
 import { SimpleEventDto } from '../../domain/dtos/SimpleEventDto';
+import { MicrosoftRepository, MicrosoftCalendarListDto, UserProfileDto } from '../../application/repositories/microsoftRepository';
 import axios from 'axios';
 import { inject, singleton } from 'tsyringe';
 import type { FetchAccessTokenInputPort } from '../../application/useCases/app/fetchAccessTokenUseCase/ports/input';
@@ -11,7 +12,7 @@ import { getApiUrl } from './helper';
  * Implements OAuth authentication and event retrieval
  */
 @singleton()
-export class MicrosoftCalendarAdapter {
+export class MicrosoftCalendarAdapter implements MicrosoftRepository {
     private accessTokenUseCase: FetchAccessTokenInputPort;
 
     constructor(
@@ -25,13 +26,11 @@ export class MicrosoftCalendarAdapter {
      * Fetch events from Microsoft Calendar
      * @param dashboardId Dashboard identifier
      * @param calendarId Microsoft Calendar ID
-     * @param maxEvents Maximum number of events to return
      * @returns Array of SimpleEventDto objects
      */
     async fetchMicrosoftCalendarEvents(
         dashboardId: string,
         calendarId: string,
-        maxEvents?: number,
     ): Promise<SimpleEventDto[]> {
         const appAuthToken = await this.getApiToken();
 
@@ -61,11 +60,6 @@ export class MicrosoftCalendarAdapter {
             let events = response.data.map((microsoftEvent: any) =>
                 this.mapMicrosoftEventToSimpleDto(microsoftEvent),
             );
-
-            // Apply maxEvents limit if specified
-            if (maxEvents && events.length > maxEvents) {
-                events = events.slice(0, maxEvents);
-            }
 
             return events;
         } catch (error: any) {
@@ -134,13 +128,46 @@ export class MicrosoftCalendarAdapter {
     }
 
     /**
+     * Login for Microsoft Calendar
+     * @param dashboardId Dashboard identifier
+     * @param microsoftAuthCode Microsoft Auth Code from OAuth callback
+     * @param state Optional state parameter from OAuth callback
+     * @returns void
+     */
+    async loginForMicrosoftCalendar(
+        dashboardId: string,
+        microsoftAuthCode: string,
+        state?: string,
+    ): Promise<void> {
+        try {
+            const authToken = await this.getApiToken();
+
+            if (!authToken) {
+                throw new Error('Authorization token not found in local storage');
+            }
+
+            await axios.post(
+                getApiUrl('/api/events/microsoft/login'),
+                { code: microsoftAuthCode, state },
+                {
+                    params: { dashboardId },
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                },
+            );
+        } catch (error) {
+            console.error('Error logging in with Microsoft Calendar:', error);
+            throw new Error('An unexpected error occurred during Microsoft login');
+        }
+    }
+
+    /**
      * Get list of Microsoft Calendars
      * @param dashboardId Dashboard identifier
-     * @returns Array of calendars with id and name
+     * @returns MicrosoftCalendarListDto with array of calendars
      */
-    async fetchMicrosoftCalendars(
-        dashboardId: string,
-    ): Promise<{ id: string; name: string }[]> {
+    async fetchMicrosoftUserCalendars(dashboardId: string): Promise<MicrosoftCalendarListDto> {
         const appAuthToken = await this.getApiToken();
 
         if (!appAuthToken) {
@@ -164,10 +191,12 @@ export class MicrosoftCalendarAdapter {
                 throw new Error('Invalid response from Microsoft Calendar API');
             }
 
-            return response.data.map((calendar: any) => ({
-                id: calendar.id,
-                name: calendar.name,
-            }));
+            return {
+                items: response.data.map((calendar: any) => ({
+                    id: calendar.id,
+                    name: calendar.name,
+                }))
+            };
         } catch (error) {
             console.error('Error fetching Microsoft Calendars:', error);
             throw error;
@@ -179,9 +208,7 @@ export class MicrosoftCalendarAdapter {
      * @param dashboardId Dashboard identifier
      * @returns User profile data
      */
-    async fetchUserInfo(
-        dashboardId: string,
-    ): Promise<{ name: string; email: string; picture?: string }> {
+    async fetchUserInfo(dashboardId: string): Promise<UserProfileDto> {
         const appAuthToken = await this.getApiToken();
 
         if (!appAuthToken) {

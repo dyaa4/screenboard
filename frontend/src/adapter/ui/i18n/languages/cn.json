@@ -346,6 +346,17 @@
     "errorWidget": {
       "errorTitle": "Error when loading the widget: {{Widgetname}}",
       "errorMessage": "Please make sure that the configuration is correct. \nTry it again. \nIf the error still exists, please contact support."
+    },
+    "microsoftCalendar": {
+      "title": "Microsoft Calendar 连接",
+      "processing": "连接中...",
+      "success": "Microsoft Calendar 连接成功！",
+      "error": "连接 Microsoft Calendar 时出错",
+      "connecting": "正在连接到 Microsoft Calendar...",
+      "completed": "连接完成",
+      "failed": "连接失败",
+      "retryButton": "重试",
+      "continueButton": "继续"
     }
   },
   "domain": {

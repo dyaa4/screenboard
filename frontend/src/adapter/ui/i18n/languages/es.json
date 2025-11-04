@@ -346,6 +346,17 @@
     "errorWidget": {
       "errorTitle": "Error Al cargar el widget: {{widgetName}}",
       "errorMessage": "Asegúrese de que la configuración sea correcta. Pruébalo de nuevo. Si el error todavía existe, comuníquese con el soporte."
+    },
+    "microsoftCalendar": {
+      "title": "Conexión de Microsoft Calendar",
+      "processing": "Conectando...",
+      "success": "¡Microsoft Calendar conectado con éxito!",
+      "error": "Error al conectar con Microsoft Calendar",
+      "connecting": "Conectando a Microsoft Calendar...",
+      "completed": "Conexión completada",
+      "failed": "Conexión fallida",
+      "retryButton": "Intentar de nuevo",
+      "continueButton": "Continuar"
     }
   },
   "domain": {

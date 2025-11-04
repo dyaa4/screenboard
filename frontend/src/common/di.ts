@@ -1,6 +1,7 @@
 import CommunicationAdapter from '@adapter/api/CommunicationAdapter';
 import { DashboardAdapter } from '@adapter/api/DashboardAdapter';
 import GoogleCalendarAdapter from '@adapter/api/GoogleCalendarAdapter';
+import { MicrosoftCalendarAdapter } from '@adapter/api/MicrosoftCalendarAdapter';
 import { LayoutAdapter } from '@adapter/api/LayoutAdapter';
 import NewWidgetAdapter from '@adapter/api/NewsWidgetAdapter';
 import SmartThingsAdapter from '@adapter/api/SmartthingsAdapter';
@@ -20,6 +21,7 @@ import {
   FETCH_NEWS_RSS_FEEDS_OUTPUT_PORT,
   GOOGLE_REPOSITORY_NAME,
   LAYOUT_REPOSITORY_NAME,
+  MICROSOFT_REPOSITORY_NAME,
   SMARTTHINGS_REPOSITORY_NAME,
   SPOTIFY_REPOSITORY_NAME,
   WIDGET_REPOSITORY_NAME,
@@ -48,6 +50,10 @@ export function registerDi() {
 
     container.register(GOOGLE_REPOSITORY_NAME, {
       useClass: GoogleCalendarAdapter,
+    });
+
+    container.register(MICROSOFT_REPOSITORY_NAME, {
+      useClass: MicrosoftCalendarAdapter,
     });
 
     // UseCase News Rss Feeds

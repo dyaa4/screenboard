@@ -11,4 +11,5 @@ export const ROUTE_PRIVACY_POLICY = '/privacy-policy';
 export const ROUTE_IMPRINT = '/imprint';
 export const ROUTE_SPOTIFY_CALLBACK = '/spotify-callback';
 export const ROUTE_SMARTTHINGS_CALLBACK = '/smartthings/callback';
+export const ROUTE_MICROSOFT_CALLBACK = '/microsoft/callback';
 export const ROUTE_HOME = '/';

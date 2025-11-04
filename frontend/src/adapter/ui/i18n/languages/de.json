@@ -364,6 +364,17 @@
     "errorWidget": {
       "errorMessage": "Bitte stellen Sie sicher, dass die Konfiguration richtig ist. Versuchen Sie es erneut. Falls der Fehler weiterhin besteht, kontaktieren Sie bitte den Support.",
       "errorTitle": "Fehler beim Laden des Widgets: {{widgetName}}"
+    },
+    "microsoftCalendar": {
+      "title": "Microsoft Calendar Verbindung",
+      "processing": "Verbindung wird hergestellt...",
+      "success": "Microsoft Calendar erfolgreich verbunden!",
+      "error": "Fehler bei der Verbindung mit Microsoft Calendar",
+      "connecting": "Verbinde mit Microsoft Calendar...",
+      "completed": "Verbindung abgeschlossen",
+      "failed": "Verbindung fehlgeschlagen",
+      "retryButton": "Erneut versuchen",
+      "continueButton": "Weiter"
     }
   },
   "domain": {

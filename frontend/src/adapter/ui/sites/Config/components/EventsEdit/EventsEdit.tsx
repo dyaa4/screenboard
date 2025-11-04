@@ -13,6 +13,7 @@ import {
   Tabs,
 } from '@heroui/react';
 import { useGoogleCalendar } from '@hooks/sites/configSite/useGoogleCalendar';
+import { useMicrosoftCalendar } from '@hooks/sites/configSite/useMicrosoftCalendar';
 import { JSX, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -39,6 +40,15 @@ const EventsEdit = ({
     widget.dashboardId,
   );
 
+  const {
+    user: microsoftUser,
+    calendars: microsoftCalendars,
+    login: microsoftLogin,
+    logout: microsoftLogout,
+    loading: microsoftLoading,
+    error: microsoftError
+  } = useMicrosoftCalendar(widget.dashboardId);
+
   const [selectedCalendar, setSelectedCalendar] = useState<string | null>(
     settings.calendarId || null,
   );
@@ -56,21 +66,27 @@ const EventsEdit = ({
   }, [settings]);
 
   useEffect(() => {
-    if (user && calendars.length > 0 && !selectedCalendar) {
+    if (user && calendars.length > 0 && !selectedCalendar && activeTab === EventType.GOOGLE) {
       handleCalendarSelect(new Set([calendars[0].id]));
     }
-  }, [calendars, user]);
+  }, [calendars, user, activeTab]);
+
+  useEffect(() => {
+    if (microsoftUser && microsoftCalendars.length > 0 && !selectedCalendar && activeTab === EventType.MICROSOFT) {
+      handleMicrosoftCalendarSelect(new Set([microsoftCalendars[0].id]));
+    }
+  }, [microsoftCalendars, microsoftUser, activeTab]);
 
   const updateSettings = (newSettings: Partial<EventWidgetSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     const isValid =
       updatedSettings.type === EventType.GOOGLE
         ? !!updatedSettings.calendarId && !!user
-        : !!updatedSettings.icalLink;
+        : updatedSettings.type === EventType.MICROSOFT
+          ? !!updatedSettings.calendarId && !!microsoftUser
+          : !!updatedSettings.icalLink;
     onSettingsChange(updatedSettings, isValid);
-  };
-
-  const handleCalendarSelect = (selectedKeys: Selection) => {
+  }; const handleCalendarSelect = (selectedKeys: Selection) => {
     const selectedCalendarId = Array.from(selectedKeys).values().next()
       .value as string;
     if (selectedCalendarId) {
@@ -89,6 +105,25 @@ const EventsEdit = ({
     }
   };
 
+  const handleMicrosoftCalendarSelect = (selectedKeys: Selection) => {
+    const selectedCalendarId = Array.from(selectedKeys).values().next()
+      .value as string;
+    if (selectedCalendarId) {
+      setSelectedCalendar(selectedCalendarId);
+
+      updateSettings({
+        type: EventType.MICROSOFT,
+        calendarId: selectedCalendarId,
+      });
+    } else {
+      setSelectedCalendar(null);
+      updateSettings({
+        type: EventType.MICROSOFT,
+        calendarId: undefined,
+      });
+    }
+  };
+
   useEffect(() => {
     // Trigger validation when user or selectedCalendar changes
     if (activeTab === EventType.GOOGLE) {
@@ -97,13 +132,33 @@ const EventsEdit = ({
         calendarId: selectedCalendar || undefined,
       });
     }
-  }, [user, selectedCalendar]);
+  }, [user, selectedCalendar, activeTab]);
+
+  useEffect(() => {
+    // Trigger validation when microsoftUser or selectedCalendar changes
+    if (activeTab === EventType.MICROSOFT) {
+      updateSettings({
+        type: EventType.MICROSOFT,
+        calendarId: selectedCalendar || undefined,
+      });
+    }
+  }, [microsoftUser, selectedCalendar, activeTab]);
 
   // Update settings when activeTab changes
   useEffect(() => {
+    // Clear selectedCalendar when switching tabs
+    if (activeTab !== settings.type) {
+      setSelectedCalendar(null);
+    }
+
     if (activeTab === EventType.GOOGLE && selectedCalendar) {
       updateSettings({
         type: EventType.GOOGLE,
+        calendarId: selectedCalendar,
+      });
+    } else if (activeTab === EventType.MICROSOFT && selectedCalendar) {
+      updateSettings({
+        type: EventType.MICROSOFT,
         calendarId: selectedCalendar,
       });
     } else if (activeTab === EventType.ICAL) {
@@ -118,13 +173,15 @@ const EventsEdit = ({
     }
   }, [activeTab]);
 
-  if (loading)
+  if (loading || microsoftLoading)
     return (
       <div className="flex justify-center">
         <Spinner />
       </div>
     );
+  if (error && microsoftError) return <p className="text-red-500">{error} / {microsoftError}</p>;
   if (error) return <p className="text-red-500">{error}</p>;
+  if (microsoftError) return <p className="text-red-500">{microsoftError}</p>;
 
   return (
     <div className="w-full mx-auto">
@@ -221,6 +278,65 @@ const EventsEdit = ({
               )}
             </>
           ))}
+        {activeTab === EventType.MICROSOFT &&
+          (!microsoftUser ? (
+            <Button onPress={microsoftLogin} startContent={<FaLink />} className="w-sm">
+              {t('sites.config.components.eventsEdit.signInMicrosoft')}
+            </Button>
+          ) : (
+            <>
+              <div className="flex items-center justify-between w-full mb-4">
+                <div className="flex items-center gap-2">
+                  <Avatar src={microsoftUser.picture} alt={microsoftUser.name} size="sm" />
+                  <span className="text-small">{microsoftUser.name}</span>
+                </div>
+                <Button
+                  color="danger"
+                  variant="light"
+                  endContent={<FaSignOutAlt />}
+                  onPress={() => {
+                    microsoftLogout();
+                    setSelectedCalendar(null);
+                    updateSettings({
+                      type: EventType.MICROSOFT,
+                      calendarId: undefined,
+                    });
+                  }}
+                  size="sm"
+                >
+                  {t('actions.logout')}
+                </Button>
+              </div>
+              {microsoftCalendars.length > 0 ? (
+                <Listbox
+                  aria-label="Microsoft Calendar selection"
+                  selectionMode="single"
+                  selectedKeys={selectedCalendar ? [selectedCalendar] : []}
+                  onSelectionChange={handleMicrosoftCalendarSelect}
+                  className="max-h-[300px] overflow-y-auto"
+                >
+                  {microsoftCalendars.map((calendar) => (
+                    <ListboxItem
+                      key={calendar.id}
+                      startContent={<FaCalendar className="text-default-500" />}
+                      className="py-2"
+                    >
+                      {calendar.name}
+                    </ListboxItem>
+                  ))}
+                </Listbox>
+              ) : (
+                <p className="text-center text-default-500">
+                  {t('sites.config.components.eventsEdit.noCalendarFound')}
+                </p>
+              )}
+              {!selectedCalendar && activeTab === EventType.MICROSOFT && (
+                <p className="text-center text-danger mt-2">
+                  {t('sites.config.components.eventsEdit.selectACalendar')}
+                </p>
+              )}
+            </>
+          ))}
         {activeTab === EventType.ICAL && (
           <Input
             label="iCal Link"
@@ -234,9 +350,6 @@ const EventsEdit = ({
               });
             }}
           />
-        )}
-        {activeTab === EventType.MICROSOFT && (
-          <p className="text-center text-default-500">Coming soon</p>
         )}
       </div>
     </div>

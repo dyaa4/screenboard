@@ -346,6 +346,17 @@
     "errorWidget": {
       "errorTitle": "Ошибка при загрузке виджета: {{widgetName}}",
       "errorMessage": "Пожалуйста, убедитесь, что конфигурация верна. Попробуйте еще раз. Если ошибка все еще существует, свяжитесь с поддержкой."
+    },
+    "microsoftCalendar": {
+      "title": "Подключение Microsoft Calendar",
+      "processing": "Подключение...",
+      "success": "Microsoft Calendar успешно подключен!",
+      "error": "Ошибка подключения к Microsoft Calendar",
+      "connecting": "Подключение к Microsoft Calendar...",
+      "completed": "Подключение завершено",
+      "failed": "Подключение не удалось",
+      "retryButton": "Попробовать снова",
+      "continueButton": "Продолжить"
     }
   },
   "domain": {

@@ -363,6 +363,17 @@
     "errorWidget": {
       "errorTitle": "خطأ عند تحميل القطعة: {{widgetName}}",
       "errorMessage": "يرجى التأكد من أن التكوين صحيح. جربه مرة أخرى. إذا كان الخطأ لا يزال موجودًا ، فيرجى الاتصال بالدعم."
+    },
+    "microsoftCalendar": {
+      "title": "اتصال Microsoft Calendar",
+      "processing": "جارٍ الاتصال...",
+      "success": "تم ربط Microsoft Calendar بنجاح!",
+      "error": "خطأ في الاتصال بـ Microsoft Calendar",
+      "connecting": "جارٍ الاتصال بـ Microsoft Calendar...",
+      "completed": "تم الاتصال",
+      "failed": "فشل الاتصال",
+      "retryButton": "المحاولة مرة أخرى",
+      "continueButton": "متابعة"
     }
   },
   "domain": {

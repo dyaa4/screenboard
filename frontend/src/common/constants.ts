@@ -9,6 +9,7 @@ export const COMMUNICATION_REPOSITORY_NAME = 'CommunicationRepository';
 export const SPOTIFY_REPOSITORY_NAME = 'SpotifyRepository';
 export const DASHBOARD_REPOSITORY_NAME = 'DashboardRepository';
 export const GOOGLE_REPOSITORY_NAME = 'GoogleRepository';
+export const MICROSOFT_REPOSITORY_NAME = 'MicrosoftRepository';
 export const SMARTTHINGS_REPOSITORY_NAME = 'SmartThingsRepository';
 
 // UseCases News Rss Feeds
