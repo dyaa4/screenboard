@@ -204,7 +204,8 @@ export class MicrosoftController {
         dashboardId as string
       );
 
-      res.status(200).json(calendars);
+      // Extract the value array from Microsoft Graph response to match frontend expectations
+      res.status(200).json(calendars.value || []);
     } catch (error: any) {
       console.error('Microsoft calendars error:', error);
 
