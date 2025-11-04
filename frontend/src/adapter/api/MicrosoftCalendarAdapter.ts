@@ -86,7 +86,7 @@ export class MicrosoftCalendarAdapter implements MicrosoftRepository {
         }
 
         try {
-            const response = await axios.get(getApiUrl('/api/events/microsoft/status'), {
+            const response = await axios.get(getApiUrl('/api/auth/microsoft/loginStatus'), {
                 headers: {
                     Authorization: `Bearer ${appToken}`,
                 },
@@ -115,7 +115,7 @@ export class MicrosoftCalendarAdapter implements MicrosoftRepository {
         }
 
         try {
-            await axios.delete(getApiUrl('/api/events/microsoft/logout'), {
+            await axios.delete(getApiUrl('/api/auth/microsoft/logout'), {
                 headers: {
                     Authorization: `Bearer ${appToken}`,
                 },
@@ -147,7 +147,7 @@ export class MicrosoftCalendarAdapter implements MicrosoftRepository {
             }
 
             await axios.post(
-                getApiUrl('/api/events/microsoft/login'),
+                getApiUrl('/api/auth/microsoft/login'),
                 { code: microsoftAuthCode, state },
                 {
                     params: { dashboardId },
