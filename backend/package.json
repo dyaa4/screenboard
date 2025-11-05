@@ -7,7 +7,8 @@
     "dev-node": "tsx watch src/infrastructure/server/server.ts",
     "start": "node -r module-alias/register dist/infrastructure/server/server.js",
     "build": "tsc",
-    "debug": "node --inspect=0.0.0.0:9229 dist/infrastructure/server/server.js"
+    "debug": "node --inspect=0.0.0.0:9229 dist/infrastructure/server/server.js",
+    "migrate:removeMaxEvents": "tsx src/infrastructure/migrations/migrationRunner.ts"
   },
   "author": "",
   "license": "ISC",

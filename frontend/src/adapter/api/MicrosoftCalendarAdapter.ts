@@ -246,7 +246,7 @@ export class MicrosoftCalendarAdapter implements MicrosoftRepository {
     private mapMicrosoftEventToSimpleDto(microsoftEvent: any): SimpleEventDto {
         return {
             id: microsoftEvent.id || '',
-            summary: microsoftEvent.subject || 'Untitled Event',
+            summary: microsoftEvent.summary || 'Untitled Event',
             start: {
                 dateTime: microsoftEvent.start?.dateTime,
                 date: microsoftEvent.start?.dateTime?.split('T')[0], // Extract date if needed
@@ -255,8 +255,8 @@ export class MicrosoftCalendarAdapter implements MicrosoftRepository {
                 dateTime: microsoftEvent.end?.dateTime,
                 date: microsoftEvent.end?.dateTime?.split('T')[0], // Extract date if needed
             },
-            location: microsoftEvent.location?.displayName,
-            description: microsoftEvent.bodyPreview || microsoftEvent.body?.content,
+            location: microsoftEvent.location || '',
+            description: microsoftEvent.description || '',
             creator: microsoftEvent.organizer
                 ? {
                     email: microsoftEvent.organizer.emailAddress?.address,
