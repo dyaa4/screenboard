@@ -42,7 +42,6 @@ export async function initializeWidgets(
       position: 3,
       isActive: true,
       settings: {
-        calendarId: 'primary',
         maxEvents: 10,
         type: EventType.GOOGLE,
       },

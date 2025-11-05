@@ -59,16 +59,8 @@ const EventsEdit = ({
 
   const { t } = useTranslation();
 
-  // Debug log to see what's happening
-  console.log('EventsEdit state:', {
-    settingsType: settings.type,
-    activeTab,
-    selectedCalendar: settings.calendarId
-  });
-
+  // Update local state when settings change
   useEffect(() => {
-    console.log('Settings changed:', settings);
-    // Only update if settings.type is actually defined
     if (settings.type) {
       setActiveTab(settings.type);
     }
@@ -76,33 +68,33 @@ const EventsEdit = ({
     setIcalLink(settings.icalLink || '');
   }, [settings]);
 
-  useEffect(() => {
-    if (user && calendars.length > 0 && !selectedCalendar && activeTab === EventType.GOOGLE) {
-      handleCalendarSelect(new Set([calendars[0].id]));
+  // Validation helper
+  const isConfigurationValid = (updatedSettings: EventWidgetSettings): boolean => {
+    switch (updatedSettings.type) {
+      case EventType.GOOGLE:
+        return !!(updatedSettings.calendarId && user);
+      case EventType.MICROSOFT:
+        return !!(updatedSettings.calendarId && microsoftUser);
+      case EventType.ICAL:
+        return !!updatedSettings.icalLink;
+      default:
+        return false;
     }
-  }, [calendars, user, activeTab]);
+  };
 
-  useEffect(() => {
-    if (microsoftUser && microsoftCalendars.length > 0 && !selectedCalendar && activeTab === EventType.MICROSOFT) {
-      handleMicrosoftCalendarSelect(new Set([microsoftCalendars[0].id]));
-    }
-  }, [microsoftCalendars, microsoftUser, activeTab]);
-
+  // Settings update helper
   const updateSettings = (newSettings: Partial<EventWidgetSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
-    const isValid =
-      updatedSettings.type === EventType.GOOGLE
-        ? !!updatedSettings.calendarId && !!user
-        : updatedSettings.type === EventType.MICROSOFT
-          ? !!updatedSettings.calendarId && !!microsoftUser
-          : !!updatedSettings.icalLink;
+    const isValid = isConfigurationValid(updatedSettings);
     onSettingsChange(updatedSettings, isValid);
-  }; const handleCalendarSelect = (selectedKeys: Selection) => {
-    const selectedCalendarId = Array.from(selectedKeys).values().next()
-      .value as string;
+  };
+
+  // Event handlers
+  const handleGoogleCalendarSelect = (selectedKeys: Selection) => {
+    const selectedCalendarId = Array.from(selectedKeys)[0] as string;
+
     if (selectedCalendarId) {
       setSelectedCalendar(selectedCalendarId);
-
       updateSettings({
         type: EventType.GOOGLE,
         calendarId: selectedCalendarId,
@@ -117,18 +109,10 @@ const EventsEdit = ({
   };
 
   const handleMicrosoftCalendarSelect = (selectedKeys: Selection) => {
-    const selectedCalendarId = Array.from(selectedKeys).values().next()
-      .value as string;
-
-    console.log('Microsoft Calendar selected:', {
-      selectedCalendarId,
-      calendarLength: selectedCalendarId?.length,
-      allCalendars: microsoftCalendars
-    });
+    const selectedCalendarId = Array.from(selectedKeys)[0] as string;
 
     if (selectedCalendarId) {
       setSelectedCalendar(selectedCalendarId);
-
       updateSettings({
         type: EventType.MICROSOFT,
         calendarId: selectedCalendarId,
@@ -142,8 +126,34 @@ const EventsEdit = ({
     }
   };
 
+  const handleGoogleLogout = () => {
+    logout();
+    setSelectedCalendar(null);
+    updateSettings({
+      type: EventType.GOOGLE,
+      calendarId: undefined,
+    });
+  };
+
+  const handleMicrosoftLogout = () => {
+    microsoftLogout();
+    setSelectedCalendar(null);
+    updateSettings({
+      type: EventType.MICROSOFT,
+      calendarId: undefined,
+    });
+  };
+
+  const handleIcalLinkChange = (link: string) => {
+    setIcalLink(link);
+    updateSettings({
+      type: EventType.ICAL,
+      icalLink: link,
+    });
+  };
+
+  // Auto-sync settings when dependencies change
   useEffect(() => {
-    // Trigger validation when user or selectedCalendar changes
     if (activeTab === EventType.GOOGLE) {
       updateSettings({
         type: EventType.GOOGLE,
@@ -153,7 +163,6 @@ const EventsEdit = ({
   }, [user, selectedCalendar, activeTab]);
 
   useEffect(() => {
-    // Trigger validation when microsoftUser or selectedCalendar changes
     if (activeTab === EventType.MICROSOFT) {
       updateSettings({
         type: EventType.MICROSOFT,
@@ -162,14 +171,22 @@ const EventsEdit = ({
     }
   }, [microsoftUser, selectedCalendar, activeTab]);
 
-  // Update settings when activeTab changes
+  // Handle tab changes
   useEffect(() => {
-    // Clear selectedCalendar when switching tabs
     if (activeTab !== settings.type) {
       setSelectedCalendar(null);
     }
 
-    if (activeTab === EventType.GOOGLE && selectedCalendar) {
+    if (activeTab === EventType.ICAL) {
+      updateSettings({
+        type: EventType.ICAL,
+        icalLink: icalLink,
+      });
+    } else if (activeTab === EventType.MICROSOFT && !selectedCalendar) {
+      updateSettings({
+        type: EventType.MICROSOFT,
+      });
+    } else if (activeTab === EventType.GOOGLE && selectedCalendar) {
       updateSettings({
         type: EventType.GOOGLE,
         calendarId: selectedCalendar,
@@ -179,27 +196,28 @@ const EventsEdit = ({
         type: EventType.MICROSOFT,
         calendarId: selectedCalendar,
       });
-    } else if (activeTab === EventType.ICAL) {
-      updateSettings({
-        type: EventType.ICAL,
-        icalLink: icalLink,
-      });
-    } else if (activeTab === EventType.MICROSOFT) {
-      updateSettings({
-        type: EventType.MICROSOFT,
-      });
     }
   }, [activeTab]);
 
-  if (loading || microsoftLoading)
+  // Loading state
+  if (loading || microsoftLoading) {
     return (
       <div className="flex justify-center">
         <Spinner />
       </div>
     );
-  if (error && microsoftError) return <p className="text-red-500">{error} / {microsoftError}</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (microsoftError) return <p className="text-red-500">{microsoftError}</p>;
+  }
+
+  // Error states
+  if (error && microsoftError) {
+    return <p className="text-red-500">{error} / {microsoftError}</p>;
+  }
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
+  }
+  if (microsoftError) {
+    return <p className="text-red-500">{microsoftError}</p>;
+  }
 
   return (
     <div className="w-full mx-auto">
@@ -253,14 +271,7 @@ const EventsEdit = ({
                   color="danger"
                   variant="light"
                   endContent={<FaSignOutAlt />}
-                  onPress={() => {
-                    logout();
-                    setSelectedCalendar(null);
-                    updateSettings({
-                      type: EventType.GOOGLE,
-                      calendarId: undefined,
-                    });
-                  }}
+                  onPress={handleGoogleLogout}
                   size="sm"
                 >
                   {t('actions.logout')}
@@ -271,7 +282,7 @@ const EventsEdit = ({
                   aria-label="Calendar selection"
                   selectionMode="single"
                   selectedKeys={selectedCalendar ? [selectedCalendar] : []}
-                  onSelectionChange={handleCalendarSelect}
+                  onSelectionChange={handleGoogleCalendarSelect}
                   className="max-h-[300px] overflow-y-auto"
                 >
                   {calendars.map((calendar) => (
@@ -312,14 +323,7 @@ const EventsEdit = ({
                   color="danger"
                   variant="light"
                   endContent={<FaSignOutAlt />}
-                  onPress={() => {
-                    microsoftLogout();
-                    setSelectedCalendar(null);
-                    updateSettings({
-                      type: EventType.MICROSOFT,
-                      calendarId: undefined,
-                    });
-                  }}
+                  onPress={handleMicrosoftLogout}
                   size="sm"
                 >
                   {t('actions.logout')}
@@ -360,13 +364,7 @@ const EventsEdit = ({
             label="iCal Link"
             placeholder="Enter your iCal link here"
             value={icalLink}
-            onChange={(e) => {
-              setIcalLink(e.target.value);
-              updateSettings({
-                type: EventType.ICAL,
-                icalLink: e.target.value,
-              });
-            }}
+            onChange={(e) => handleIcalLinkChange(e.target.value)}
           />
         )}
       </div>
