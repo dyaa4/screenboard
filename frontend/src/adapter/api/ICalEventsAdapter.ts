@@ -25,12 +25,10 @@ export class ICalEventsAdapter {
     /**
      * Fetch events from iCal feed
      * @param icalLink URL to iCal feed
-     * @param maxEvents Maximum number of events to return
      * @returns Array of SimpleEventDto objects
      */
     async fetchICalEvents(
         icalLink: string,
-        maxEvents?: number,
     ): Promise<SimpleEventDto[]> {
         const appAuthToken = await this.getApiToken();
 
@@ -59,11 +57,6 @@ export class ICalEventsAdapter {
             let events = response.data.map((icalEvent: any) =>
                 this.mapICalEventToSimpleDto(icalEvent),
             );
-
-            // Apply maxEvents limit if specified
-            if (maxEvents && events.length > maxEvents) {
-                events = events.slice(0, maxEvents);
-            }
 
             return events;
         } catch (error) {

@@ -137,7 +137,16 @@ export default class SpotifyAdapter implements SpotifyRepository {
   }
 
   initiateLogin(dashboardId: string): void {
-    window.location.href = this.getLoginUrl(dashboardId);
+    // Open Spotify OAuth in popup window (like Microsoft Calendar)
+    const popup = window.open(
+      this.getLoginUrl(dashboardId),
+      'spotifyAuth',
+      'width=500,height=600,scrollbars=yes,resizable=yes'
+    );
+
+    if (!popup) {
+      throw new Error('Failed to open Spotify login popup. Please allow popups for this site.');
+    }
   }
 
   async handleCallback(code: string, dashboardId: string): Promise<void> {

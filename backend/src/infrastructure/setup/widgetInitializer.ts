@@ -42,7 +42,6 @@ export async function initializeWidgets(
       position: 3,
       isActive: true,
       settings: {
-        maxEvents: 10,
         type: EventType.GOOGLE,
       },
       createdAt: new Date(),

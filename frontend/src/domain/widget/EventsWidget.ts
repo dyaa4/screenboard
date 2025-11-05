@@ -22,10 +22,9 @@ export class EventsWidget extends Widget {
   }
 
   static settingsSchema = z.object({
-    type: z.enum([EventType.GOOGLE, EventType.ICAL]),
+    type: z.enum([EventType.GOOGLE, EventType.ICAL, EventType.MICROSOFT]),
     calendarId: z.string().optional(),
     icalLink: z.string().url().optional(),
-    maxEvents: z.number().min(1).max(20),
   });
 
   getSettingsSchema(): z.ZodSchema {

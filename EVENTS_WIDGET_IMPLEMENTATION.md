@@ -140,7 +140,6 @@ hooks/
 {
   type: EventType.GOOGLE,
   calendarId: "primary@gmail.com",
-  maxEvents: 10
 }
 ```
 
@@ -149,7 +148,6 @@ hooks/
 {
   type: EventType.ICAL,
   icalLink: "https://example.com/calendar.ics",
-  maxEvents: 10
 }
 ```
 
@@ -158,7 +156,6 @@ hooks/
 {
   type: EventType.MICROSOFT,
   calendarId: "calendar-id",
-  maxEvents: 10
 }
 ```
 

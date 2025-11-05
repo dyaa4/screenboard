@@ -8,5 +8,4 @@ export interface EventWidgetSettings {
   type: EventType;
   calendarId?: string;
   icalLink?: string;
-  maxEvents: number;
 }

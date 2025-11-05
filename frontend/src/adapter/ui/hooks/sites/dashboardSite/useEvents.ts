@@ -67,7 +67,6 @@ export const useEvents = (widget: Widget): UseEventsReturn => {
                 const icalAdapter = container.resolve(ICalEventsAdapter);
                 fetchedEvents = await icalAdapter.fetchICalEvents(
                     settings.icalLink,
-                    settings.maxEvents || 10,
                 );
                 setIsNotConfigured(false);
             }

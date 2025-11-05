@@ -98,12 +98,15 @@ const EventsEdit = ({
       updateSettings({
         type: EventType.GOOGLE,
         calendarId: selectedCalendarId,
+        // Explizit icalLink entfernen für Google Calendar
+        icalLink: undefined,
       });
     } else {
       setSelectedCalendar(null);
       updateSettings({
         type: EventType.GOOGLE,
         calendarId: undefined,
+        icalLink: undefined,
       });
     }
   };
@@ -116,12 +119,15 @@ const EventsEdit = ({
       updateSettings({
         type: EventType.MICROSOFT,
         calendarId: selectedCalendarId,
+        // Explizit icalLink entfernen für Microsoft Calendar
+        icalLink: undefined,
       });
     } else {
       setSelectedCalendar(null);
       updateSettings({
         type: EventType.MICROSOFT,
         calendarId: undefined,
+        icalLink: undefined,
       });
     }
   };
@@ -149,6 +155,8 @@ const EventsEdit = ({
     updateSettings({
       type: EventType.ICAL,
       icalLink: link,
+      // Explizit calendarId entfernen für iCal
+      calendarId: undefined,
     });
   };
 
@@ -158,6 +166,7 @@ const EventsEdit = ({
       updateSettings({
         type: EventType.GOOGLE,
         calendarId: selectedCalendar || undefined,
+        icalLink: undefined, // Sicherstellen, dass icalLink entfernt wird
       });
     }
   }, [user, selectedCalendar, activeTab]);
@@ -167,6 +176,7 @@ const EventsEdit = ({
       updateSettings({
         type: EventType.MICROSOFT,
         calendarId: selectedCalendar || undefined,
+        icalLink: undefined, // Sicherstellen, dass icalLink entfernt wird
       });
     }
   }, [microsoftUser, selectedCalendar, activeTab]);
@@ -181,20 +191,24 @@ const EventsEdit = ({
       updateSettings({
         type: EventType.ICAL,
         icalLink: icalLink,
+        calendarId: undefined, // Entferne calendarId für iCal
       });
     } else if (activeTab === EventType.MICROSOFT && !selectedCalendar) {
       updateSettings({
         type: EventType.MICROSOFT,
+        icalLink: undefined, // Entferne icalLink für Microsoft
       });
     } else if (activeTab === EventType.GOOGLE && selectedCalendar) {
       updateSettings({
         type: EventType.GOOGLE,
         calendarId: selectedCalendar,
+        icalLink: undefined, // Entferne icalLink für Google
       });
     } else if (activeTab === EventType.MICROSOFT && selectedCalendar) {
       updateSettings({
         type: EventType.MICROSOFT,
         calendarId: selectedCalendar,
+        icalLink: undefined, // Entferne icalLink für Microsoft
       });
     }
   }, [activeTab]);
