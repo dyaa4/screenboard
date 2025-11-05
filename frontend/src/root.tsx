@@ -45,8 +45,9 @@ const LayoutWrapper = ({ children }: { children: React.ReactNode }) => {
   const isDashboardRoute = location.pathname.startsWith(ROUTE_DASHBOARD);
   const isSmartthingsCallback = location.pathname.startsWith(ROUTE_SMARTTHINGS_CALLBACK);
   const isMicrosoftCallback = location.pathname.startsWith(ROUTE_MICROSOFT_CALLBACK);
+  const isSpotifyCallback = location.pathname.startsWith(ROUTE_SPOTIFY_CALLBACK);
 
-  return isDashboardRoute || isSmartthingsCallback || isMicrosoftCallback ? children : <Layout>{children}</Layout>;
+  return isDashboardRoute || isSmartthingsCallback || isMicrosoftCallback || isSpotifyCallback ? children : <Layout>{children}</Layout>;
 };
 
 const Root = () => {

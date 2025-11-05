@@ -66,6 +66,7 @@ export class WidgetService {
     try {
 
       await this.handleGoogleCalendarEventRegistry(widget, userId, dashboardId);
+      await this.handleMicrosoftCalendarEventRegistry(widget, userId, dashboardId);
       await this.handleSmartthingsEventRegistry(widget, userId, dashboardId);
     } catch (error) {
       logger.error('Error subscribing to Widget Events', error);
@@ -116,6 +117,27 @@ export class WidgetService {
 
     const doc = EventSubscriptionMapper.toData(entity);
     await this.eventSubscriptionService.createSubscription(doc);
+  }
+
+  /**
+   *  Handles the registration of Microsoft Calendar Event Subscriptions.
+   * @param widget  The widget document
+   * @param userId  The user ID
+   * @param dashboardId  The dashboard ID
+   * @returns  {Promise<void>}
+   */
+  private async handleMicrosoftCalendarEventRegistry(widget: IWidgetDocument, _userId: string, dashboardId: string) {
+    const isMicrosoftEventWidget =
+      widget.type === WidgetTypeEnum.EVENTS &&
+      widget.settings.type === EventType.MICROSOFT &&
+      widget.settings.calendarId;
+
+    if (!isMicrosoftEventWidget) return;
+
+    // Microsoft Calendar doesn't need event subscriptions like Google Calendar
+    // Microsoft Calendar events are fetched on-demand via Microsoft Graph API
+    // No additional event subscription setup required
+    logger.info(`Microsoft Calendar widget configured for dashboard ${dashboardId} with calendar ${widget.settings.calendarId}`);
   }
 
   /**

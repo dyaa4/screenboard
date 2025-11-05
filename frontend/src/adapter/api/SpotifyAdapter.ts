@@ -2,20 +2,15 @@ import { SpotifyRepository } from '@application/repositories/spotifyRepository';
 import type { FetchAccessTokenInputPort } from '@application/useCases/app/fetchAccessTokenUseCase/ports/input';
 import { FETCH_ACCESS_TOKEN_INPUT_PORT } from '@common/constants';
 import axios from 'axios';
-import { inject, singleton } from 'tsyringe';
+import { container, singleton } from 'tsyringe';
 import { getApiUrl } from './helper';
 
 @singleton()
 export default class SpotifyAdapter implements SpotifyRepository {
   private readonly CLIENT_ID: string;
   private readonly REDIRECT_URI: string;
-  private accessTokenUseCase: FetchAccessTokenInputPort;
 
-  constructor(
-    @inject(FETCH_ACCESS_TOKEN_INPUT_PORT)
-    fetchAccessTokenUseCase: FetchAccessTokenInputPort,
-  ) {
-    this.accessTokenUseCase = fetchAccessTokenUseCase;
+  constructor() {
     this.CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || '';
     this.REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI_SPOTIFY;
 
@@ -162,6 +157,7 @@ export default class SpotifyAdapter implements SpotifyRepository {
   }
 
   private async getAppToken(): Promise<string | null> {
-    return await this.accessTokenUseCase.getAccessToken();
+    const accessTokenUseCase = container.resolve<FetchAccessTokenInputPort>(FETCH_ACCESS_TOKEN_INPUT_PORT);
+    return await accessTokenUseCase.getAccessToken();
   }
 }

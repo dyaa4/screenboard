@@ -14,11 +14,43 @@ export const MusicEdit: React.FC<MusicEditProps> = ({
   dashboardId,
 }) => {
   const { t } = useTranslation();
-  const { isLoggedIn, isLoading, login, logout } = useSpotifyAuth(dashboardId);
+  const { isLoggedIn, isLoading, login, logout, handleCallback } = useSpotifyAuth(dashboardId);
 
   useEffect(() => {
     onHideSaveButton(true);
   }, [onHideSaveButton]);
+
+  // Message listener for Spotify callback (like Microsoft/SmartThings pattern)
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data.type === 'spotify-auth-success') {
+        console.log('Spotify auth success message received:', event.data);
+
+        try {
+          const { code, dashboardId: msgDashboardId } = event.data;
+
+          if (code && msgDashboardId) {
+            // Send code to backend via the hook (like it was done in SpotifyCallback before)
+            await handleCallback(code, msgDashboardId);
+            console.log('Spotify callback processed successfully');
+          } else {
+            console.error('Missing code or dashboardId in Spotify auth message');
+          }
+        } catch (error) {
+          console.error('Error processing Spotify callback:', error);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [handleCallback]);
 
   if (isLoading) {
     return (
