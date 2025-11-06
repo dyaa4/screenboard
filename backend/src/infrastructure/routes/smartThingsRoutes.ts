@@ -3,13 +3,13 @@ import { EventSubscriptionRepository } from "../../infrastructure/repositories/E
 import { SmartThingsService } from "../../application/services/SmartThingsService";
 import { SmartThingsController } from "../../infrastructure/adapter/input/controllers/SmartThingsController";
 import { SmartThingsAdapter } from "../../infrastructure/adapter/output/SmartThingsAdapter";
-import { TokenRepository } from "../../infrastructure/repositories/TokenRepository";
+import { getTokenRepository } from "../config/TokenDependencyConfig";
 import { EventSubscriptionService } from "../../application/services/EventSubscriptionService";
 import { Router } from "express";
 const router = Router();
 
 
-const tokenRepository = new TokenRepository();
+const tokenRepository = getTokenRepository();
 const eventSubscriptionRepository = new EventSubscriptionRepository();
 
 const smartThingsAdapter = new SmartThingsAdapter();

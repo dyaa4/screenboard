@@ -3,7 +3,7 @@ import { WidgetService } from '../../application/services/WidgetService'; // Imp
 import { WidgetController } from '../adapter/input/controllers/WidgetController'; // Importiere den WidgetController
 import { WidgetRepository } from '../repositories/WidgetRepository';
 import { GoogleService } from '../../application/services/GoogleService';
-import { TokenRepository } from '../../infrastructure/repositories/TokenRepository';
+import { getTokenRepository } from '../config/TokenDependencyConfig';
 import { GoogleAdapter } from '../../infrastructure/adapter/output/GoogleAdapter';
 import { SmartThingsAdapter } from '../../infrastructure/adapter/output/SmartThingsAdapter';
 import { SmartThingsService } from '../../application/services/SmartThingsService';
@@ -17,7 +17,7 @@ const widgetRepository = new WidgetRepository();
 const eventSubscriptionRepository = new EventSubscriptionRepository();
 const googleAdapter = new GoogleAdapter();
 const smartthingsAdapter = new SmartThingsAdapter();
-const tokenRepository = new TokenRepository();
+const tokenRepository = getTokenRepository();
 
 const eventSubscriptionService = new EventSubscriptionService(eventSubscriptionRepository);
 const googleService = new GoogleService(googleAdapter, tokenRepository, eventSubscriptionRepository);
