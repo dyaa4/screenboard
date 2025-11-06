@@ -17,7 +17,7 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5000',
 ];
 
-const EXCLUDED_API_PATHS = ['/google/calendar/webhook', '/auth/smartthings/webhook'];
+const EXCLUDED_API_PATHS = ['/google/calendar/webhook', '/auth/smartthings/webhook', '/microsoft/calendar/webhook'];
 
 /**
  * Setup express middleware: CORS, JSON parser and API auth guard.

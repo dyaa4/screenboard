@@ -9,14 +9,7 @@ const router = Router();
 // Initialize dependencies following Hexagonal Architecture with Encryption
 const tokenRepository = getTokenRepository();
 const microsoftAdapter = new MicrosoftAdapter();
-
-// Application Service
-const microsoftService = new MicrosoftService(
-  microsoftAdapter,
-  tokenRepository
-);
-
-// Input Adapter (Controller)
+const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository);
 const microsoftController = new MicrosoftController(microsoftService);
 
 // Authentication Routes
@@ -43,6 +36,15 @@ router.get("/events/microsoft/calendars", (req, res) =>
 
 router.get("/events/microsoft/user", (req, res) =>
   microsoftController.fetchUserInfo(req, res)
+);
+
+// Microsoft Graph Webhook & Subscription Routes
+router.post("/microsoft/calendar/webhook", (req, res) =>
+  microsoftController.handleCalendarWebhook(req, res)
+);
+
+router.post("/microsoft/calendar/subscribe", (req, res) =>
+  microsoftController.subscribeToCalendarEvents(req, res)
 );
 
 export default router;

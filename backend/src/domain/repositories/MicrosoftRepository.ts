@@ -1,6 +1,7 @@
 import { MicrosoftEventDTO, MicrosoftTokenDTO } from "../../infrastructure/dtos/MicrosoftEventDTO";
 import { MicrosoftCalendarListDto } from "../../infrastructure/dtos/MicrosoftCalendarListDTO";
 import { MicrosoftUserInfoDTO } from "../../infrastructure/dtos/MicrosoftUserInfoDTO";
+import { MicrosoftSubscriptionDTO } from "../../infrastructure/dtos/MicrosoftSubscriptionDTO";
 
 /**
  * Microsoft Repository Interface - Domain Layer
@@ -49,4 +50,40 @@ export interface MicrosoftRepository {
    * @returns Microsoft user profile information
    */
   fetchUserInfo(accessToken: string): Promise<MicrosoftUserInfoDTO>;
+
+  /**
+   * Subscribe to calendar events using Microsoft Graph subscriptions
+   * @param accessToken Valid access token
+   * @param calendarId Microsoft Calendar ID
+   * @param userId User identifier
+   * @param dashboardId Dashboard identifier
+   * @returns Microsoft subscription details
+   */
+  subscribeToCalendarEvents(
+    accessToken: string,
+    calendarId: string,
+    userId: string,
+    dashboardId: string
+  ): Promise<MicrosoftSubscriptionDTO>;
+
+  /**
+   * Renew an existing Microsoft Graph subscription
+   * @param accessToken Valid access token
+   * @param subscriptionId Existing subscription ID
+   * @returns Updated subscription details
+   */
+  renewSubscription(
+    accessToken: string,
+    subscriptionId: string
+  ): Promise<MicrosoftSubscriptionDTO>;
+
+  /**
+   * Delete Microsoft Graph subscription
+   * @param accessToken Valid access token
+   * @param subscriptionId Subscription ID to delete
+   */
+  deleteSubscription(
+    accessToken: string,
+    subscriptionId: string
+  ): Promise<void>;
 }

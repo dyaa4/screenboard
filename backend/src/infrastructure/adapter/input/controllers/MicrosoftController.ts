@@ -274,4 +274,94 @@ export class MicrosoftController {
       }
     }
   }
+
+  /**
+   * Handle Microsoft Graph webhook notifications
+   */
+  async handleCalendarWebhook(req: Request, res: Response): Promise<void> {
+    try {
+      // Microsoft Graph webhook validation (when setting up subscription)
+      const validationToken = req.query.validationToken;
+      if (validationToken) {
+        console.log('Microsoft Graph webhook validation requested');
+        res.status(200).send(validationToken);
+        return;
+      }
+
+      // Process actual webhook notifications
+      const notifications = req.body.value;
+      if (!notifications || !Array.isArray(notifications)) {
+        res.status(400).json({ error: 'Invalid notification payload' });
+        return;
+      }
+
+      console.log('Processing Microsoft Graph webhook notifications:', notifications.length);
+
+      for (const notification of notifications) {
+        const { subscriptionId, changeType, resource, clientState } = notification;
+
+        await this.microsoftService.handleCalendarWebhook({
+          subscriptionId,
+          changeType,
+          resource,
+          clientState,
+        });
+      }
+
+      res.status(202).json({ message: 'Notifications processed' });
+    } catch (error: any) {
+      console.error('Error processing Microsoft Graph webhook:', error);
+      res.status(500).json({
+        error: 'Failed to process webhook notification',
+        details: error.message
+      });
+    }
+  }
+
+  /**
+   * Subscribe to Microsoft Calendar events
+   */
+  async subscribeToCalendarEvents(req: Request, res: Response): Promise<void> {
+    try {
+      const { dashboardId, calendarId } = req.query;
+      const userId = req.auth?.payload?.sub;
+
+      if (!userId) {
+        res.status(400).json({ error: 'userId is missing' });
+        return;
+      }
+
+      if (!dashboardId) {
+        res.status(400).json({ error: 'dashboardId is missing' });
+        return;
+      }
+
+      if (!calendarId) {
+        res.status(400).json({ error: 'calendarId is missing' });
+        return;
+      }
+
+      const subscription = await this.microsoftService.subscribeToCalendarEvents(
+        userId,
+        dashboardId as string,
+        calendarId as string
+      );
+
+      res.status(201).json(subscription);
+    } catch (error: any) {
+      console.error('Microsoft calendar subscription error:', error);
+
+      if (error.message.includes('authenticate')) {
+        res.status(401).json({
+          error: 'Microsoft Calendar authentication required',
+          details: error.message
+        });
+      } else {
+        res.status(500).json({
+          error: 'Failed to create Microsoft Calendar subscription',
+          details: error.message
+        });
+      }
+    }
+  }
 }

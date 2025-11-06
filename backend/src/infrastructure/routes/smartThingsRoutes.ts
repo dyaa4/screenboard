@@ -8,13 +8,10 @@ import { EventSubscriptionService } from "../../application/services/EventSubscr
 import { Router } from "express";
 const router = Router();
 
-
 const tokenRepository = getTokenRepository();
 const eventSubscriptionRepository = new EventSubscriptionRepository();
-
 const smartThingsAdapter = new SmartThingsAdapter();
 const eventSubscriptionService = new EventSubscriptionService(eventSubscriptionRepository);
-
 const smartThingsService = new SmartThingsService(smartThingsAdapter, tokenRepository, eventSubscriptionService, eventSubscriptionRepository);
 const smartThingsController = new SmartThingsController(smartThingsService);
 

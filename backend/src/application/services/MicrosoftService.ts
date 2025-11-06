@@ -7,6 +7,8 @@ import { Token } from "../../domain/entities/Token";
 import { MicrosoftEventDTO } from "../../infrastructure/dtos/MicrosoftEventDTO";
 import { MicrosoftCalendarListDto } from "../../infrastructure/dtos/MicrosoftCalendarListDTO";
 import { MicrosoftUserInfoDTO } from "../../infrastructure/dtos/MicrosoftUserInfoDTO";
+import { MicrosoftSubscriptionDTO } from "../../infrastructure/dtos/MicrosoftSubscriptionDTO";
+import { emitToUserDashboard } from "../../infrastructure/server/socketIo";
 
 /**
  * MicrosoftService - Application Layer
@@ -202,6 +204,70 @@ export class MicrosoftService {
       // If refresh token is invalid, delete the token
       await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.MICROSOFT);
       throw new Error("Microsoft refresh token is invalid or expired. Re-authentication required.");
+    }
+  }
+
+  /**
+   * Subscribe to Microsoft Calendar events using Microsoft Graph subscriptions
+   * @param userId User identifier
+   * @param dashboardId Dashboard identifier
+   * @param calendarId Calendar identifier
+   * @returns Subscription details
+   */
+  async subscribeToCalendarEvents(
+    userId: string,
+    dashboardId: string,
+    calendarId: string
+  ): Promise<MicrosoftSubscriptionDTO> {
+    const tokenDocument = await this.tokenRepository.findToken(
+      userId,
+      dashboardId,
+      SERVICES.MICROSOFT
+    );
+
+    if (!tokenDocument) {
+      throw new Error("Microsoft Calendar authentication required");
+    }
+
+    return await this.microsoftRepository.subscribeToCalendarEvents(
+      tokenDocument.accessToken,
+      calendarId,
+      userId,
+      dashboardId
+    );
+  }
+
+  /**
+   * Process Microsoft Graph webhook notification
+   * @param webhookData Webhook notification data
+   */
+  async handleCalendarWebhook(webhookData: {
+    subscriptionId: string;
+    changeType: string;
+    resource: string;
+    clientState?: string;
+  }): Promise<void> {
+    const { subscriptionId, changeType, resource, clientState } = webhookData;
+
+    if (!subscriptionId || !changeType || !resource) {
+      throw new Error("Webhook data is missing required fields");
+    }
+
+    console.log('Processing Microsoft Calendar webhook:', {
+      subscriptionId,
+      changeType,
+      resource,
+      clientState
+    });
+
+    // clientState contains userIdWithoutAuth0-dashboardId
+    if (clientState) {
+      emitToUserDashboard(clientState, "microsoft-calendar-event", {
+        changeType,
+        resource,
+        subscriptionId,
+        timestamp: new Date().toISOString(),
+      });
     }
   }
 }

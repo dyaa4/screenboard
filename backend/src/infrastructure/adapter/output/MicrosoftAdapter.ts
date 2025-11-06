@@ -3,6 +3,7 @@ import { MicrosoftRepository } from '../../../domain/repositories/MicrosoftRepos
 import { MicrosoftEventDTO, MicrosoftTokenDTO } from '../../dtos/MicrosoftEventDTO';
 import { MicrosoftCalendarListDto } from '../../dtos/MicrosoftCalendarListDTO';
 import { MicrosoftUserInfoDTO } from '../../dtos/MicrosoftUserInfoDTO';
+import { MicrosoftSubscriptionDTO } from '../../dtos/MicrosoftSubscriptionDTO';
 
 /**
  * MicrosoftAdapter - Infrastructure Layer
@@ -19,7 +20,7 @@ export class MicrosoftAdapter implements MicrosoftRepository {
     this.clientId = process.env.MICROSOFT_CLIENT_ID || '';
     this.clientSecret = process.env.MICROSOFT_CLIENT_SECRET || '';
     this.redirectUri = process.env.MICROSOFT_REDIRECT_URI || '';
-    this.scopes = 'https://graph.microsoft.com/Calendars.Read https://graph.microsoft.com/User.Read offline_access';
+    this.scopes = 'https://graph.microsoft.com/Calendars.Read https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/User.Read offline_access';
 
     if (!this.clientId || !this.clientSecret || !this.redirectUri) {
       throw new Error('Microsoft OAuth configuration missing. Please set MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET, and MICROSOFT_REDIRECT_URI environment variables.');
@@ -192,6 +193,118 @@ export class MicrosoftAdapter implements MicrosoftRepository {
     } catch (error: any) {
       console.error('Error fetching Microsoft user info:', error.response?.data || error.message);
       throw new Error('Failed to fetch Microsoft user information');
+    }
+  }
+
+  /**
+   * Subscribe to calendar events using Microsoft Graph subscriptions
+   */
+  async subscribeToCalendarEvents(
+    accessToken: string,
+    calendarId: string,
+    userId: string,
+    dashboardId: string
+  ): Promise<MicrosoftSubscriptionDTO> {
+    try {
+      // Remove auth0| prefix from userId for cleaner identification
+      const userIdWithoutAuth0 = userId.replace("auth0|", "");
+      const userIdWithDashboardId = `${userIdWithoutAuth0}-${dashboardId}`;
+
+      // Calculate expiration time (maximum 4230 minutes = ~3 days for Microsoft Graph)
+      const expirationDateTime = new Date();
+      expirationDateTime.setTime(expirationDateTime.getTime() + (4230 * 60 * 1000));
+
+      const subscription = {
+        changeType: "created,updated,deleted",
+        notificationUrl: process.env.MICROSOFT_CALENDAR_WEBHOOK_URL,
+        resource: `me/calendars/${calendarId}/events`,
+        expirationDateTime: expirationDateTime.toISOString(),
+        clientState: userIdWithDashboardId, // Used to validate notifications
+      };
+
+      console.log('Creating Microsoft Graph subscription:', {
+        resource: subscription.resource,
+        notificationUrl: subscription.notificationUrl,
+        expirationDateTime: subscription.expirationDateTime,
+        clientState: subscription.clientState
+      });
+
+      const response = await axios.post(
+        'https://graph.microsoft.com/v1.0/subscriptions',
+        subscription,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Microsoft Graph subscription created:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating Microsoft Graph subscription:', error.response?.data || error.message);
+      throw new Error('Failed to create Microsoft Graph subscription');
+    }
+  }
+
+  /**
+   * Renew an existing Microsoft Graph subscription
+   */
+  async renewSubscription(
+    accessToken: string,
+    subscriptionId: string
+  ): Promise<MicrosoftSubscriptionDTO> {
+    try {
+      // Calculate new expiration time (maximum 4230 minutes)
+      const expirationDateTime = new Date();
+      expirationDateTime.setTime(expirationDateTime.getTime() + (4230 * 60 * 1000));
+
+      const updateData = {
+        expirationDateTime: expirationDateTime.toISOString(),
+      };
+
+      const response = await axios.patch(
+        `https://graph.microsoft.com/v1.0/subscriptions/${subscriptionId}`,
+        updateData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Microsoft Graph subscription renewed:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error renewing Microsoft Graph subscription:', error.response?.data || error.message);
+      throw new Error('Failed to renew Microsoft Graph subscription');
+    }
+  }
+
+  /**
+   * Delete Microsoft Graph subscription
+   */
+  async deleteSubscription(
+    accessToken: string,
+    subscriptionId: string
+  ): Promise<void> {
+    try {
+      await axios.delete(
+        `https://graph.microsoft.com/v1.0/subscriptions/${subscriptionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Microsoft Graph subscription deleted:', subscriptionId);
+    } catch (error: any) {
+      console.error('Error deleting Microsoft Graph subscription:', error.response?.data || error.message);
+      throw new Error('Failed to delete Microsoft Graph subscription');
     }
   }
 }

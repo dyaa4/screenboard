@@ -1,4 +1,3 @@
-
 import '../../config/generalVariables';
 import { config } from '../../config/config';
 import connectDB from '../database/mongoose';

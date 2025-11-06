@@ -1,56 +1,48 @@
-import 'reflect-metadata';
-import { container } from 'tsyringe';
 import { EncryptionService } from '../../application/services/EncryptionService';
 import { AESEncryptionAdapter } from '../adapter/output/AESEncryptionAdapter';
 import { TokenRepository } from '../repositories/TokenRepository';
 
 /**
- * Dependency Injection Container Setup for Token Management
- * Follows Hexagonal Architecture principles:
- * - Application Layer defines interfaces
- * - Infrastructure Layer provides implementations
- * - DI container wires them together at runtime
+ * Simple Factory Pattern for Token Management Dependencies
+ * Follows Hexagonal Architecture principles without external DI container
  */
 
-// Injection tokens (symbols prevent string-based conflicts)
-export const ENCRYPTION_SERVICE_TOKEN = Symbol('EncryptionService');
-export const TOKEN_REPOSITORY_TOKEN = Symbol('TokenRepository');
+// Singleton instances
+let encryptionService: EncryptionService | null = null;
+let tokenRepository: TokenRepository | null = null;
 
 /**
- * Configure all token-related dependencies
+ * Configure token encryption dependencies
  * Call this during application startup
  */
 export function configureTokenDependencies(): void {
     console.log('🔧 Configuring token encryption dependencies...');
 
-    // Register EncryptionService implementation
-    container.register<EncryptionService>(ENCRYPTION_SERVICE_TOKEN, {
-        useClass: AESEncryptionAdapter
-    });
-
-    // Register TokenRepository with EncryptionService dependency
-    container.register<TokenRepository>(TOKEN_REPOSITORY_TOKEN, {
-        useFactory: (dependencyContainer) => {
-            const encryptionService = dependencyContainer.resolve<EncryptionService>(ENCRYPTION_SERVICE_TOKEN);
-            return new TokenRepository(encryptionService);
-        }
-    });
+    // Initialize singleton instances
+    encryptionService = new AESEncryptionAdapter();
+    tokenRepository = new TokenRepository(encryptionService);
 
     console.log('✅ Token encryption dependencies configured');
 }
 
 /**
- * Get TokenRepository from DI container
- * This is the hexagonal-compliant way to resolve dependencies
+ * Get TokenRepository instance
+ * Creates encrypted TokenRepository following factory pattern
  */
 export function getTokenRepository(): TokenRepository {
-    return container.resolve<TokenRepository>(TOKEN_REPOSITORY_TOKEN);
+    if (!tokenRepository) {
+        throw new Error('Token dependencies not configured. Call configureTokenDependencies() first.');
+    }
+    return tokenRepository;
 }
 
 /**
- * Get EncryptionService from DI container
+ * Get EncryptionService instance
  * Useful for testing or direct service access
  */
 export function getEncryptionService(): EncryptionService {
-    return container.resolve<EncryptionService>(ENCRYPTION_SERVICE_TOKEN);
+    if (!encryptionService) {
+        throw new Error('Token dependencies not configured. Call configureTokenDependencies() first.');
+    }
+    return encryptionService;
 }

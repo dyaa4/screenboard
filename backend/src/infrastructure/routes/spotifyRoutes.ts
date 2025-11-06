@@ -17,6 +17,4 @@ router.get("/auth/spotify/loginStatus", (req, res) => spotifyController.getLoggi
 router.get("/auth/spotify/logout", (req, res) => spotifyController.logout(req, res));
 router.get("/auth/spotify/accessToken", (req, res) => spotifyController.getAccessToken(req, res));
 
-router.post("/spotify/setActiveDevice", (req, res) => spotifyController.setActiveDevice(req, res));
-
-export default router;
+router.post("/spotify/setActiveDevice", (req, res) => spotifyController.setActiveDevice(req, res)); export default router;

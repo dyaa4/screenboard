@@ -28,6 +28,4 @@ const widgetController = new WidgetController(widgetService);
 // Definiere die Routen
 router.get('/dashboard/:dashboardId/widgets/:id', (req, res) => widgetController.getWidgetById(req, res));
 router.get('/dashboard/:dashboardId/widgets', (req, res) => widgetController.getWidgetsByDashboardId(req, res));
-router.put('/dashboard/:dashboardId/widgets/:id', (req, res) => widgetController.updateWidget(req, res),);
-
-export default router;
+router.put('/dashboard/:dashboardId/widgets/:id', (req, res) => widgetController.updateWidget(req, res),); export default router;
