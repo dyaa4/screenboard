@@ -36,7 +36,7 @@ export class AESEncryptionAdapter implements EncryptionService {
     }
 
     /**
-     * Encrypt sensitive data using AES-256-GCM
+     * Encrypt sensitive data using AES-256-CBC
      * Uses a random IV for each encryption to ensure uniqueness
      */
     encrypt(plainText: string): string {
@@ -45,11 +45,14 @@ export class AESEncryptionAdapter implements EncryptionService {
                 throw new Error('Cannot encrypt empty or null text');
             }
 
+            // Parse the base64 key to WordArray
+            const key = CryptoJS.enc.Base64.parse(this.encryptionKey);
+
             // Generate random IV for this encryption
             const iv = CryptoJS.lib.WordArray.random(16); // 128-bit IV
 
             // Encrypt using AES-256-CBC with random IV
-            const encrypted = CryptoJS.AES.encrypt(plainText, this.encryptionKey, {
+            const encrypted = CryptoJS.AES.encrypt(plainText, key, {
                 iv: iv,
                 mode: CryptoJS.mode.CBC,
                 padding: CryptoJS.pad.Pkcs7
@@ -76,6 +79,9 @@ export class AESEncryptionAdapter implements EncryptionService {
                 throw new Error('Cannot decrypt empty or null text');
             }
 
+            // Parse the base64 key to WordArray
+            const key = CryptoJS.enc.Base64.parse(this.encryptionKey);
+
             // Parse the base64 encoded data
             const combined = CryptoJS.enc.Base64.parse(encryptedText);
 
@@ -89,7 +95,7 @@ export class AESEncryptionAdapter implements EncryptionService {
             });
 
             // Decrypt
-            const decrypted = CryptoJS.AES.decrypt(cipherParams, this.encryptionKey, {
+            const decrypted = CryptoJS.AES.decrypt(cipherParams, key, {
                 iv: iv,
                 mode: CryptoJS.mode.CBC,
                 padding: CryptoJS.pad.Pkcs7
