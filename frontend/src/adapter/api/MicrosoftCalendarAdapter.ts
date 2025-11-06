@@ -249,11 +249,11 @@ export class MicrosoftCalendarAdapter implements MicrosoftRepository {
             summary: microsoftEvent.summary || 'Untitled Event',
             start: {
                 dateTime: microsoftEvent.start?.dateTime,
-                date: microsoftEvent.start?.dateTime?.split('T')[0], // Extract date if needed
+                date: microsoftEvent.start?.date,
             },
             end: {
                 dateTime: microsoftEvent.end?.dateTime,
-                date: microsoftEvent.end?.dateTime?.split('T')[0], // Extract date if needed
+                date: microsoftEvent.end?.date,
             },
             location: microsoftEvent.location || '',
             description: microsoftEvent.description || '',

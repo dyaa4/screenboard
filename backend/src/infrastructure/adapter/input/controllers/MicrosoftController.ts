@@ -144,24 +144,35 @@ export class MicrosoftController {
       );
 
       // Transform Microsoft events to SimpleEventDto format
-      const simpleEvents = events.map(event => ({
-        id: event.id,
-        summary: event.subject,
-        description: event.bodyPreview || '',
-        start: {
-          dateTime: event.isAllDay ? null : event.start.dateTime,
-          date: event.isAllDay ? event.start.dateTime.split('T')[0] : null,
-        },
-        end: {
-          dateTime: event.isAllDay ? null : event.end.dateTime,
-          date: event.isAllDay ? event.end.dateTime.split('T')[0] : null,
-        },
-        location: event.location?.displayName || '',
-        creator: {
-          email: event.organizer?.emailAddress?.address || '',
-          displayName: event.organizer?.emailAddress?.name || '',
-        },
-      }));
+      const simpleEvents = events.map(event => {
+        // Microsoft Graph API returns times in UTC, convert to local timezone
+        const formatDateTime = (dateTimeObj: any) => {
+          if (!dateTimeObj?.dateTime) return null;
+
+          // Convert UTC datetime to local timezone
+          const utcDate = new Date(dateTimeObj.dateTime);
+          return utcDate.toISOString();
+        };
+
+        return {
+          id: event.id,
+          summary: event.subject, // Backend uses subject from Microsoft Graph API
+          description: event.bodyPreview || '',
+          start: {
+            dateTime: event.isAllDay ? null : formatDateTime(event.start),
+            date: event.isAllDay ? event.start.dateTime.split('T')[0] : null,
+          },
+          end: {
+            dateTime: event.isAllDay ? null : formatDateTime(event.end),
+            date: event.isAllDay ? event.end.dateTime.split('T')[0] : null,
+          },
+          location: event.location?.displayName || '',
+          creator: {
+            email: event.organizer?.emailAddress?.address || '',
+            displayName: event.organizer?.emailAddress?.name || '',
+          },
+        };
+      });
 
       res.status(200).json(simpleEvents);
     } catch (error: any) {
