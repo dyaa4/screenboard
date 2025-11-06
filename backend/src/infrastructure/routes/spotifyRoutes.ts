@@ -1,13 +1,14 @@
 import { SpotifyAdapter } from "../adapter/output/SpotifyAdapter";
 import { SpotifyController } from "../adapter/input/controllers/SpotifyController";
 import { SpotifyService } from "../../application/services/SpotifyService";
+import { TokenRepository } from "../repositories/TokenRepository";
+import { AESEncryptionAdapter } from "../adapter/output/AESEncryptionAdapter";
 import express from "express";
-import { getTokenRepository } from "../config/TokenDependencyConfig";
 
 const router = express.Router();
 
 const spotifyAdapter = new SpotifyAdapter();
-const tokenRepository = getTokenRepository();
+const tokenRepository = new TokenRepository(new AESEncryptionAdapter());
 const spotifyService = new SpotifyService(spotifyAdapter, tokenRepository);
 const spotifyController = new SpotifyController(spotifyService);
 

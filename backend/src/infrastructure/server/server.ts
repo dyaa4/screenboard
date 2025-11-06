@@ -4,13 +4,12 @@ import connectDB from '../database/mongoose';
 import express from 'express';
 import http from 'http';
 import { setupMiddleware } from './middleware';
-import { setupRoutes } from './routes';
 import { setupErrorHandlers } from './errorHandlers';
 import { setupProxy } from './middlewares/proxyMiddleware';
 import { Express } from 'express';
 import { setupSocketIO } from './socketIo';
 import path from 'path';
-import { configureTokenDependencies } from '../config/TokenDependencyConfig';
+import { setupRoutes } from './routes';
 
 
 export class Server {
@@ -39,8 +38,6 @@ export class Server {
   private async setupServer(): Promise<void> {
     setupMiddleware(this.app);
     setupProxy(this.app);
-    // Configure token encryption dependencies before routes are registered
-    configureTokenDependencies();
     setupRoutes(this.app);
     setupSocketIO(this.httpServer);
     setupErrorHandlers(this.app);
