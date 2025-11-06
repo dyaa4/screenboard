@@ -11,6 +11,7 @@ import { setupProxy } from './middlewares/proxyMiddleware';
 import { Express } from 'express';
 import { setupSocketIO } from './socketIo';
 import path from 'path';
+import { configureTokenDependencies } from '../config/TokenDependencyConfig';
 
 
 export class Server {
@@ -39,6 +40,8 @@ export class Server {
   private async setupServer(): Promise<void> {
     setupMiddleware(this.app);
     setupProxy(this.app);
+    // Configure token encryption dependencies before routes are registered
+    configureTokenDependencies();
     setupRoutes(this.app);
     setupSocketIO(this.httpServer);
     setupErrorHandlers(this.app);

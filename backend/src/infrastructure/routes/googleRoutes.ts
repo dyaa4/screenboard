@@ -1,13 +1,13 @@
 import { GoogleService } from "../../application/services/GoogleService"
 import { GoogleController } from "../../infrastructure/adapter/input/controllers/GoogleController"
 import { GoogleAdapter } from "../../infrastructure/adapter/output/GoogleAdapter"
-import { TokenRepository } from "../../infrastructure/repositories/TokenRepository"
+import { getTokenRepository } from "../config/TokenDependencyConfig";
 import { EventSubscriptionRepository } from "../../infrastructure/repositories/EventSubscription"
 import { Router } from "express"
 
 const router = Router()
 const googleAdapter = new GoogleAdapter()
-const tokenRepository = new TokenRepository()
+const tokenRepository = getTokenRepository();
 const eventSubscriptionRepository = new EventSubscriptionRepository()
 const googleService = new GoogleService(googleAdapter, tokenRepository, eventSubscriptionRepository)
 const googleController = new GoogleController(googleService)

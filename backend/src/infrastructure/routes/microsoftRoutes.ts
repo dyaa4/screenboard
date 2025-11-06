@@ -2,12 +2,12 @@ import { Router } from "express";
 import { MicrosoftService } from "../../application/services/MicrosoftService";
 import { MicrosoftController } from "../../infrastructure/adapter/input/controllers/MicrosoftController";
 import { MicrosoftAdapter } from "../../infrastructure/adapter/output/MicrosoftAdapter";
-import { TokenRepository } from "../../infrastructure/repositories/TokenRepository";
+import { getTokenRepository } from "../config/TokenDependencyConfig";
 
 const router = Router();
 
-// Initialize dependencies following Hexagonal Architecture
-const tokenRepository = new TokenRepository();
+// Initialize dependencies following Hexagonal Architecture with Encryption
+const tokenRepository = getTokenRepository();
 const microsoftAdapter = new MicrosoftAdapter();
 
 // Application Service
