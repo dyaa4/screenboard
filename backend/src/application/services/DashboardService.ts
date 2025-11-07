@@ -6,11 +6,19 @@ import { ILayoutRepository } from '../../domain/repositories/ILayoutConfigReposi
 import { initializeLayout } from '../../infrastructure/setup/layoutInitializer';
 import { initializeWidgets } from '../../infrastructure/setup/widgetInitializer';
 import { ILayoutDocument, IWidgetDocument } from '../../domain/types';
+import { GoogleService } from './GoogleService';
+import { MicrosoftService } from './MicrosoftService';
+import { SmartThingsService } from './SmartThingsService';
+import logger from '../../utils/logger';
 
 export class DashboardService {
-    constructor(private dashboardRepository: IDashboardRepository,
+    constructor(
+        private dashboardRepository: IDashboardRepository,
         private widgetRepository: IWidgetRepository,
         private layoutRepository: ILayoutRepository,
+        private googleService: GoogleService,
+        private microsoftService: MicrosoftService,
+        private smartThingsService: SmartThingsService,
     ) { }
 
     private async createDefaultWidgets(dashboardId: string): Promise<void> {
@@ -60,6 +68,63 @@ export class DashboardService {
     }
 
     async deleteDashboard(dashboardId: string, userId: string): Promise<void> {
-        return this.dashboardRepository.delete(dashboardId, userId);
+        const timer = logger.startTimer('Dashboard Deletion with Cleanup');
+        logger.info('Dashboard deletion started', { dashboardId, userId }, 'DashboardService');
+
+        try {
+            // STEP 1: Cleanup all service subscriptions before deleting dashboard
+            await this.cleanupAllServiceSubscriptions(userId, dashboardId);
+
+            // STEP 2: Delete dashboard and associated data
+            await this.dashboardRepository.delete(dashboardId, userId);
+
+            logger.success('Dashboard deleted successfully with all subscriptions cleaned',
+                { dashboardId, userId }, 'DashboardService');
+            timer();
+        } catch (error) {
+            logger.error('Dashboard deletion failed', error as Error, 'DashboardService');
+            throw error;
+        }
+    }
+
+    /**
+     * Cleanup all service subscriptions for a dashboard
+     * This runs BEFORE dashboard deletion to ensure clean shutdown
+     */
+    private async cleanupAllServiceSubscriptions(userId: string, dashboardId: string): Promise<void> {
+        logger.info('Starting subscription cleanup for all services',
+            { userId, dashboardId }, 'DashboardService');
+
+        const cleanupPromises = [];
+
+        // Google Calendar Cleanup
+        cleanupPromises.push(
+            this.googleService.cleanup(userId, dashboardId).catch(error => {
+                logger.warn('Google cleanup failed but continuing with others',
+                    { error: error.message, userId, dashboardId }, 'DashboardService');
+            })
+        );
+
+        // Microsoft Calendar Cleanup  
+        cleanupPromises.push(
+            this.microsoftService.cleanup(userId, dashboardId).catch(error => {
+                logger.warn('Microsoft cleanup failed but continuing with others',
+                    { error: error.message, userId, dashboardId }, 'DashboardService');
+            })
+        );
+
+        // SmartThings Cleanup
+        cleanupPromises.push(
+            this.smartThingsService.cleanup(userId, dashboardId).catch(error => {
+                logger.warn('SmartThings cleanup failed but continuing with others',
+                    { error: error.message, userId, dashboardId }, 'DashboardService');
+            })
+        );
+
+        // Execute all cleanups in parallel
+        await Promise.allSettled(cleanupPromises);
+
+        logger.success('All service subscription cleanups completed',
+            { userId, dashboardId }, 'DashboardService');
     }
 }

@@ -10,6 +10,7 @@ import { MicrosoftCalendarListDto } from "../../infrastructure/dtos/MicrosoftCal
 import { MicrosoftUserInfoDTO } from "../../infrastructure/dtos/MicrosoftUserInfoDTO";
 import { MicrosoftSubscriptionDTO } from "../../infrastructure/dtos/MicrosoftSubscriptionDTO";
 import { emitToUserDashboard } from "../../infrastructure/server/socketIo";
+import logger from "../../utils/logger";
 
 /**
  * MicrosoftService - Application Layer
@@ -109,7 +110,8 @@ export class MicrosoftService {
    */
   async cleanup(userId: string, dashboardId: string): Promise<void> {
     try {
-      console.log(`🧹 Starting Microsoft subscription cleanup for user ${userId}, dashboard ${dashboardId}`);
+      logger.info('Microsoft subscription cleanup started',
+        { userId, dashboardId }, 'MicrosoftService');
 
       // Get access token
       const token = await this.tokenRepository.findToken(
@@ -119,7 +121,8 @@ export class MicrosoftService {
       );
 
       if (!token || !token.accessToken) {
-        console.log('⚠️ No Microsoft token found for cleanup');
+        logger.warn('No Microsoft token found for cleanup',
+          { userId, dashboardId }, 'MicrosoftService');
         return;
       }
 
@@ -134,12 +137,14 @@ export class MicrosoftService {
         sub.serviceId === SERVICES.MICROSOFT && sub.resourceId
       );
 
-      console.log(`🔍 Found ${microsoftSubscriptions.length} Microsoft subscriptions to cleanup`);
+      logger.info(`Found ${microsoftSubscriptions.length} Microsoft subscriptions to cleanup`,
+        { userId, dashboardId, count: microsoftSubscriptions.length }, 'MicrosoftService');
 
       // Delete each subscription from Microsoft Graph
       for (const subscription of microsoftSubscriptions) {
         if (!subscription.resourceId) {
-          console.warn('⚠️ Subscription missing resourceId, skipping:', subscription);
+          logger.warn('Subscription missing resourceId, skipping',
+            { subscription }, 'MicrosoftService');
           continue;
         }
 
@@ -153,16 +158,19 @@ export class MicrosoftService {
           // Remove from our database - use deleteByResourceId method
           await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
 
-          console.log(`✅ Cleaned up Microsoft subscription: ${subscription.resourceId}`);
+          logger.success('Microsoft subscription cleaned up successfully',
+            { subscriptionId: subscription.resourceId, userId, dashboardId }, 'MicrosoftService');
         } catch (error) {
-          console.error(`❌ Failed to cleanup Microsoft subscription ${subscription.resourceId}:`, error);
+          logger.warn('Failed to cleanup Microsoft subscription but continuing',
+            { subscriptionId: subscription.resourceId, error: (error as Error).message }, 'MicrosoftService');
           // Continue with other subscriptions even if one fails
         }
       }
 
-      console.log(`🎉 Microsoft subscription cleanup completed`);
+      logger.success('Microsoft subscription cleanup completed',
+        { userId, dashboardId, processedCount: microsoftSubscriptions.length }, 'MicrosoftService');
     } catch (error) {
-      console.error('Error during Microsoft subscription cleanup:', error);
+      logger.error('Error during Microsoft subscription cleanup', error as Error, 'MicrosoftService');
       // Don't throw - cleanup should not block logout
     }
   }
@@ -269,19 +277,16 @@ export class MicrosoftService {
     refreshToken: string
   ): Promise<IMicrosoftToken> {
     try {
-      // Debug: Log refresh token info (first/last 10 chars for security)
-      console.log(`🔄 Attempting Microsoft token refresh for user ${userId}`);
-      console.log(`🔑 Refresh token format: ${refreshToken.substring(0, 10)}...${refreshToken.substring(refreshToken.length - 10)}`);
-      console.log(`📏 Refresh token length: ${refreshToken.length}`);
+      logger.debug('Attempting Microsoft token refresh',
+        { userId, tokenLength: refreshToken.length }, 'MicrosoftService');
 
       return await this.microsoftRepository.refreshAccessToken(refreshToken);
     } catch (error: any) {
-      console.log(`❌ Microsoft token refresh failed:`, error.response?.data || error.message);
+      logger.error('Microsoft token refresh failed',
+        { userId, error: error.response?.data || error.message }, 'MicrosoftService');
 
       // If refresh token is invalid, delete the token and provide specific error
-      await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.MICROSOFT);
-
-      // Pass through specific error types for better error handling
+      await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.MICROSOFT);      // Pass through specific error types for better error handling
       if (error.message.includes('INVALID_REFRESH_TOKEN')) {
         throw new Error("MICROSOFT_REAUTH_REQUIRED: Your Microsoft Calendar access has expired. Please sign in again to continue.");
       } else if (error.message.includes('INVALID_CLIENT')) {

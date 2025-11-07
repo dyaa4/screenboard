@@ -6,8 +6,6 @@ import pino from 'pino';
  */
 
 // Enhanced Logger Configuration
-const isProduction = process.env.NODE_ENV === 'production';
-
 const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
     formatters: {
@@ -16,13 +14,29 @@ const logger = pino({
     timestamp: pino.stdTimeFunctions.isoTime,
 });
 
-// Alternative: Console Logger für bessere Lesbarkeit in Production
+// Check if we should use readable logs instead of JSON
+const useReadableLogs = process.env.READABLE_LOGS === 'true';
+
+// Enhanced Console Logger für bessere Lesbarkeit
 const createReadableLog = (level: string, message: string, meta: any = {}) => {
-    if (isProduction && process.env.READABLE_LOGS === 'true') {
+    if (useReadableLogs) {
         const time = new Date().toISOString().substring(11, 19);
         const context = meta.context || 'APP';
         const module = meta.module || 'LOG';
-        console.log(`[${time}] ${level} [${context}:${module}] ${message}`);
+
+        // Add colors for different log levels
+        const colors = {
+            'INFO': '\x1b[36m',     // Cyan
+            'ERROR': '\x1b[31m',    // Red
+            'WARN': '\x1b[33m',     // Yellow
+            'DEBUG': '\x1b[90m',    // Gray
+            'SUCCESS': '\x1b[32m',  // Green
+        };
+
+        const color = colors[level as keyof typeof colors] || '\x1b[37m'; // White default
+        const reset = '\x1b[0m';
+
+        console.log(`${color}[${time}] ${level} [${context}:${module}]${reset} ${message}`);
         return true; // Indicates that readable log was used
     }
     return false; // Indicates that pino should be used

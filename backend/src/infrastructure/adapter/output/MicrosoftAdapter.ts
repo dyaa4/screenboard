@@ -83,12 +83,6 @@ export class MicrosoftAdapter implements MicrosoftRepository {
    */
   async refreshAccessToken(refreshToken: string): Promise<MicrosoftTokenDTO> {
     try {
-      // Debug: Log what we're about to send to Microsoft
-      console.log(`🚀 Sending Microsoft refresh request:`);
-      console.log(`🔑 Refresh token format: ${refreshToken.substring(0, 10)}...${refreshToken.substring(refreshToken.length - 10)} (length: ${refreshToken.length})`);
-      console.log(`🎯 Client ID: ${this.clientId.substring(0, 8)}...`);
-      console.log(`📋 Scopes: ${this.scopes}`);
-
       // Microsoft OAuth requires form-encoded data
       const params = new URLSearchParams();
       params.append('client_id', this.clientId);
@@ -96,8 +90,6 @@ export class MicrosoftAdapter implements MicrosoftRepository {
       params.append('refresh_token', refreshToken);
       params.append('grant_type', 'refresh_token');
       params.append('scope', this.scopes);
-
-      console.log(`📤 Making POST request to Microsoft token endpoint...`);
 
       const tokenResponse = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token',
         params.toString(),

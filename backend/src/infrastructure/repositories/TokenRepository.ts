@@ -137,9 +137,7 @@ export class TokenRepository implements ITokenRepository {
             const decryptedAccessToken = this.encryptionService.decrypt(encryptedToken.accessToken);
             const decryptedRefreshToken = this.encryptionService.decrypt(encryptedToken.refreshToken);
 
-            // Debug: Log token format after decryption (first/last 10 chars for security)
-            console.log(`🔓 Decrypted access token format: ${decryptedAccessToken.substring(0, 10)}...${decryptedAccessToken.substring(decryptedAccessToken.length - 10)} (length: ${decryptedAccessToken.length})`);
-            console.log(`🔓 Decrypted refresh token format: ${decryptedRefreshToken.substring(0, 10)}...${decryptedRefreshToken.substring(decryptedRefreshToken.length - 10)} (length: ${decryptedRefreshToken.length})`);
+
 
             const decryptedToken = {
                 ...encryptedToken.toObject(),
