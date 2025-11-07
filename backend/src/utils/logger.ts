@@ -10,7 +10,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
-    ...(isProduction 
+    ...(isProduction
         ? {
             // Production: Simple JSON logging ohne pino-pretty
             formatters: {
@@ -209,7 +209,7 @@ class EnhancedLogger {
     // Helper Methods
     private formatMessage(message: string, context?: string): string {
         const isProduction = process.env.NODE_ENV === 'production';
-        
+
         if (isProduction) {
             // Production: Simple message format
             return context ? `[${context}] ${message}` : message;
