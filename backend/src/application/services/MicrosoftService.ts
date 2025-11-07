@@ -1,5 +1,6 @@
 import { MicrosoftRepository } from "../../domain/repositories/MicrosoftRepository";
 import { TokenRepository } from "../../infrastructure/repositories/TokenRepository";
+import { EventSubscriptionRepository } from "../../infrastructure/repositories/EventSubscription";
 import { SERVICES } from "../../domain/valueObjects/serviceToken";
 import { IMicrosoftToken } from "../../domain/types/IMicrosoftToken";
 import { ITokenDocument } from "../../domain/types/ITokenDocument";
@@ -19,6 +20,7 @@ export class MicrosoftService {
   constructor(
     private microsoftRepository: MicrosoftRepository,
     private tokenRepository: TokenRepository,
+    private eventSubscriptionRepository: EventSubscriptionRepository,
   ) { }
 
   /**
@@ -81,6 +83,9 @@ export class MicrosoftService {
       );
 
       if (token && token.accessToken) {
+        // Clean up subscriptions before logout
+        await this.cleanup(userId, dashboardId);
+
         // Revoke token at Microsoft
         try {
           await this.microsoftRepository.revokeToken(token.accessToken);
@@ -94,6 +99,71 @@ export class MicrosoftService {
     } catch (error) {
       console.error('Error during Microsoft logout:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Cleanup Microsoft subscriptions for a user/dashboard
+   * @param userId User identifier
+   * @param dashboardId Dashboard identifier
+   */
+  async cleanup(userId: string, dashboardId: string): Promise<void> {
+    try {
+      console.log(`🧹 Starting Microsoft subscription cleanup for user ${userId}, dashboard ${dashboardId}`);
+      
+      // Get access token
+      const token = await this.tokenRepository.findToken(
+        userId,
+        dashboardId,
+        SERVICES.MICROSOFT
+      );
+
+      if (!token || !token.accessToken) {
+        console.log('⚠️ No Microsoft token found for cleanup');
+        return;
+      }
+
+      // Get all Microsoft Calendar subscriptions for this user/dashboard
+      const subscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
+        userId,
+        dashboardId
+      );
+
+      // Filter for Microsoft subscriptions (identified by serviceId)
+      const microsoftSubscriptions = subscriptions.filter((sub: any) => 
+        sub.serviceId === SERVICES.MICROSOFT && sub.resourceId
+      );
+
+      console.log(`🔍 Found ${microsoftSubscriptions.length} Microsoft subscriptions to cleanup`);
+
+      // Delete each subscription from Microsoft Graph
+      for (const subscription of microsoftSubscriptions) {
+        if (!subscription.resourceId) {
+          console.warn('⚠️ Subscription missing resourceId, skipping:', subscription);
+          continue;
+        }
+        
+        try {
+          // Use resourceId as subscriptionId for Microsoft Graph
+          await this.microsoftRepository.deleteSubscription(
+            token.accessToken,
+            subscription.resourceId
+          );
+          
+          // Remove from our database - use deleteByResourceId method
+          await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+          
+          console.log(`✅ Cleaned up Microsoft subscription: ${subscription.resourceId}`);
+        } catch (error) {
+          console.error(`❌ Failed to cleanup Microsoft subscription ${subscription.resourceId}:`, error);
+          // Continue with other subscriptions even if one fails
+        }
+      }
+
+      console.log(`🎉 Microsoft subscription cleanup completed`);
+    } catch (error) {
+      console.error('Error during Microsoft subscription cleanup:', error);
+      // Don't throw - cleanup should not block logout
     }
   }
 

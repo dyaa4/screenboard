@@ -3,14 +3,16 @@ import { MicrosoftService } from "../../application/services/MicrosoftService";
 import { MicrosoftController } from "../../infrastructure/adapter/input/controllers/MicrosoftController";
 import { MicrosoftAdapter } from "../../infrastructure/adapter/output/MicrosoftAdapter";
 import { TokenRepository } from "../repositories/TokenRepository";
+import { EventSubscriptionRepository } from "../repositories/EventSubscription";
 import { AESEncryptionAdapter } from "../adapter/output/AESEncryptionAdapter";
 
 const router = Router();
 
 // Initialize dependencies following Hexagonal Architecture with Encryption
 const tokenRepository = new TokenRepository(new AESEncryptionAdapter());
+const eventSubscriptionRepository = new EventSubscriptionRepository();
 const microsoftAdapter = new MicrosoftAdapter();
-const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository);
+const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository, eventSubscriptionRepository);
 const microsoftController = new MicrosoftController(microsoftService);
 
 // Authentication Routes

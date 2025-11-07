@@ -26,7 +26,7 @@ const tokenRepository = new TokenRepository(new AESEncryptionAdapter());
 const eventSubscriptionService = new EventSubscriptionService(eventSubscriptionRepository);
 const googleService = new GoogleService(googleAdapter, tokenRepository, eventSubscriptionRepository);
 const smartThingsService = new SmartThingsService(smartthingsAdapter, tokenRepository, eventSubscriptionService, eventSubscriptionRepository);
-const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository);
+const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository, eventSubscriptionRepository);
 const widgetService = new WidgetService(widgetRepository, googleService, smartThingsService, eventSubscriptionService, microsoftService);
 const widgetController = new WidgetController(widgetService);
 
