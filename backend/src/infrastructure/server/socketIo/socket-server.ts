@@ -4,6 +4,7 @@ import { AuthService } from "./auth.service"
 import { SocketManager } from "./socket-manager.service"
 import { SocketMiddleware } from "./socket.middleware"
 import { AuthenticatedSocket } from "./types"
+import logger from "../../../utils/logger"
 
 export class SocketServer {
     private io: SocketIOServer
@@ -53,10 +54,11 @@ export class SocketServer {
     }
 
     private handleConnection(socket: AuthenticatedSocket): void {
-        console.log(
-            "SocketIO: Client connected:",
-            socket.id + " " + socket.user?.id
-        )
+        logger.info('SocketIO client connected', {
+            socketId: socket.id,
+            userId: socket.user?.id,
+            dashboardId: socket.user?.dashboardId
+        }, 'SocketServer');
 
         this.socketManager.addSocket(socket)
 
@@ -68,13 +70,12 @@ export class SocketServer {
             this.handleRefreshDashboard(socket, data)
         })
 
-
         socket.on("disconnect", () => {
             this.handleDisconnect(socket)
         })
 
         socket.on("error", (error: Error) => {
-            console.error("Socket error:", error)
+            logger.error("SocketIO client error", error, 'SocketServer')
         })
     }
 
@@ -83,7 +84,11 @@ export class SocketServer {
         message: string
     ): void {
         try {
-            console.log("Message received:", message)
+            logger.debug('SocketIO communication message received', {
+                socketId: socket.id,
+                userId: socket.user?.id,
+                messageLength: message.length
+            }, 'SocketServer');
 
             if (socket.user?.id && socket.user?.dashboardId && socket.user?.dashboardId === "all") {
                 // Send only to sockets belonging to this user
@@ -108,7 +113,7 @@ export class SocketServer {
                 )
             }
         } catch (error) {
-            console.error("Error processing communication:", error)
+            logger.error("Error processing SocketIO communication", error as Error, 'SocketServer')
             socket.emit("error", "An error occurred while processing your message")
         }
     }
@@ -116,7 +121,11 @@ export class SocketServer {
 
     private handleRefreshDashboard(socket: AuthenticatedSocket, data: any): void {
         try {
-            console.log("Refresh Dashboard event received:", data)
+            logger.debug('SocketIO refresh dashboard event received', {
+                socketId: socket.id,
+                userId: socket.user?.id,
+                dashboardId: data?.dashboardId
+            }, 'SocketServer');
 
             // Beispiel: emit an alle Dashboards dieses Users
             const userIdWithoutAuth0 = socket.user?.id.replace("auth0|", "")
@@ -128,20 +137,21 @@ export class SocketServer {
                 data
             )
         } catch (error) {
-            console.error("Error processing refresh-dashboard:", error)
+            logger.error("Error processing refresh-dashboard event", error as Error, 'SocketServer')
             socket.emit("error", "An error occurred while processing your refresh-dashboard event")
         }
     }
 
     private handleDisconnect(socket: AuthenticatedSocket): void {
         try {
-            console.log(
-                "SocketIO: Client disconnected:",
-                socket.id + " " + socket.user?.id
-            )
+            logger.info('SocketIO client disconnected', {
+                socketId: socket.id,
+                userId: socket.user?.id,
+                dashboardId: socket.user?.dashboardId
+            }, 'SocketServer');
             this.socketManager.removeSocket(socket)
         } catch (error) {
-            console.error("Error during disconnect:", error)
+            logger.error("Error during SocketIO disconnect", error as Error, 'SocketServer')
         }
     }
 }

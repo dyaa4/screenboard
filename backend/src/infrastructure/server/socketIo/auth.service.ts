@@ -15,7 +15,7 @@ export class AuthService {
     private getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback): void {
         this.client.getSigningKey(header.kid, (err, key) => {
             if (err) {
-                console.error("Error getting signing key:", err)
+                logger.error("Error getting SocketIO JWT signing key", err, 'AuthService')
                 return callback(err)
             }
             callback(null, key?.getPublicKey())
@@ -43,7 +43,8 @@ export class AuthService {
 
                 if (decoded && typeof decoded === "object" && "sub" in decoded) {
                     if (!decoded.sub) {
-                        console.warn("No sub (user ID) found in decoded token")
+                        logger.warn("No sub (user ID) found in decoded SocketIO token",
+                            { tokenPayload: decoded }, 'AuthService')
                         return reject(new Error("Invalid token: No user ID"))
                     }
                     resolve(decoded as jwt.JwtPayload)

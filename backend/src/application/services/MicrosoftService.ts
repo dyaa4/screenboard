@@ -236,7 +236,7 @@ export class MicrosoftService {
     );
 
     if (!token) {
-      throw new Error('Microsoft token not found. User needs to authenticate.');
+      throw new Error('MICROSOFT_REAUTH_REQUIRED: Microsoft Calendar token not found. Please sign in again to restore access.');
     }
 
     const { accessToken, refreshToken, expiration } = token;
@@ -255,7 +255,7 @@ export class MicrosoftService {
 
     // Update token in database
     await this.tokenRepository.updateAccessToken(
-      token.id,
+      (token._id as any).toString(),
       newAccessToken,
       newExpirationDate,
       newRefreshToken
@@ -285,8 +285,20 @@ export class MicrosoftService {
       logger.error('Microsoft token refresh failed',
         { userId, error: error.response?.data || error.message }, 'MicrosoftService');
 
-      // If refresh token is invalid, delete the token and provide specific error
-      await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.MICROSOFT);      // Pass through specific error types for better error handling
+      // CRITICAL: Cleanup subscriptions BEFORE deleting token (while we still have access)
+      try {
+        logger.info('Cleaning up Microsoft subscriptions due to token expiration',
+          { userId, dashboardId }, 'MicrosoftService');
+        await this.cleanupSubscriptionsOnTokenExpiration(userId, dashboardId);
+      } catch (cleanupError) {
+        logger.warn('Failed to cleanup Microsoft subscriptions on token expiration but continuing',
+          { userId, dashboardId, error: (cleanupError as Error).message }, 'MicrosoftService');
+      }
+
+      // Delete the expired token from database
+      await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.MICROSOFT);
+
+      // Pass through specific error types for better error handling
       if (error.message.includes('INVALID_REFRESH_TOKEN')) {
         throw new Error("MICROSOFT_REAUTH_REQUIRED: Your Microsoft Calendar access has expired. Please sign in again to continue.");
       } else if (error.message.includes('INVALID_CLIENT')) {
@@ -343,12 +355,12 @@ export class MicrosoftService {
       throw new Error("Webhook data is missing required fields");
     }
 
-    console.log('Processing Microsoft Calendar webhook:', {
+    logger.info('Processing Microsoft Calendar webhook', {
       subscriptionId,
       changeType,
       resource,
       clientState
-    });
+    }, 'MicrosoftService');
 
     // clientState contains userIdWithoutAuth0-dashboardId
     if (clientState) {
@@ -358,6 +370,50 @@ export class MicrosoftService {
         subscriptionId,
         timestamp: new Date().toISOString(),
       });
+    }
+  }
+
+  /**
+   * Cleanup Microsoft subscriptions when token expires
+   * Since token is expired, we can only cleanup local DB records
+   * Microsoft Graph will automatically deactivate the subscriptions after 3 days
+   */
+  private async cleanupSubscriptionsOnTokenExpiration(userId: string, dashboardId: string): Promise<void> {
+    try {
+      // Get all Microsoft Calendar subscriptions for this user/dashboard
+      const subscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
+        userId,
+        dashboardId
+      );
+
+      // Filter for Microsoft subscriptions
+      const microsoftSubscriptions = subscriptions.filter((sub: any) =>
+        sub.serviceId === SERVICES.MICROSOFT
+      );
+
+      logger.info(`Token expiration cleanup: Found ${microsoftSubscriptions.length} Microsoft subscriptions`,
+        { userId, dashboardId, count: microsoftSubscriptions.length }, 'MicrosoftService');
+
+      // Delete local subscription records (Microsoft Graph will auto-cleanup after 3 days)
+      for (const subscription of microsoftSubscriptions) {
+        if (subscription.resourceId) {
+          try {
+            await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+            logger.debug('Local Microsoft subscription record cleaned up',
+              { subscriptionId: subscription.resourceId, userId, dashboardId }, 'MicrosoftService');
+          } catch (error) {
+            logger.warn('Failed to cleanup local subscription record but continuing',
+              { subscriptionId: subscription.resourceId, error: (error as Error).message }, 'MicrosoftService');
+          }
+        }
+      }
+
+      logger.success('Microsoft subscription local cleanup completed due to token expiration',
+        { userId, dashboardId, cleanedCount: microsoftSubscriptions.length }, 'MicrosoftService');
+    } catch (error) {
+      logger.error('Error during Microsoft subscription cleanup on token expiration',
+        error as Error, 'MicrosoftService');
+      // Don't throw - token cleanup should not be blocked
     }
   }
 }

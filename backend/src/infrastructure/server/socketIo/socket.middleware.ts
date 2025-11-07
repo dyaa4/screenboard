@@ -14,12 +14,14 @@ export class SocketMiddleware {
         const dashboardId = socket.handshake.query.dashboardId
 
         if (!token) {
-            console.warn("Connection attempt without token")
+            logger.warn("SocketIO connection attempt without token",
+                { socketId: socket.id }, 'SocketMiddleware')
             return next(new Error("Authentication error: No token provided"))
         }
 
         if (!dashboardId) {
-            console.warn("Connection attempt without dashboard ID")
+            logger.warn("SocketIO connection attempt without dashboard ID",
+                { socketId: socket.id }, 'SocketMiddleware')
             return next(new Error("Authentication error: No dashboard ID provided"))
         }
 
@@ -28,7 +30,8 @@ export class SocketMiddleware {
             const userId = decoded.sub
 
             if (!userId) {
-                console.warn("No user ID found in decoded token")
+                logger.warn("No user ID found in decoded SocketIO token",
+                    { socketId: socket.id, dashboardId }, 'SocketMiddleware')
                 return next(new Error("Authentication error: No user ID in token"))
             }
 

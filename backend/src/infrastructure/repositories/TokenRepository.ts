@@ -112,8 +112,6 @@ export class TokenRepository implements ITokenRepository {
             updateData.refreshToken = this.encryptionService.encrypt(newRefreshToken);
         }
 
-        console.log('🔐 Updating token with encrypted access token');
-
         const updatedToken = await TokenModel.findByIdAndUpdate(
             tokenId,
             updateData,
