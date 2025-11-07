@@ -8,6 +8,23 @@ import MenuSection from '../MenuSection/MenuSection';
 import { JSX } from 'react';
 import { Card, CardBody } from '@heroui/react';
 
+// Simple HTML sanitization to prevent XSS while preserving safe formatting
+const sanitizeHtml = (html: string): string => {
+  return html
+    // Remove script tags
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Remove javascript: URLs
+    .replace(/javascript:/gi, '')
+    // Remove on* event handlers (onclick, onload, etc.)
+    .replace(/\s*on\w+\s*=\s*[^>]*>/gi, '>')
+    // Remove object, embed, applet tags
+    .replace(/<(object|embed|applet)\b[^>]*>.*?<\/\1>/gi, '')
+    // Remove iframe with javascript or data URLs
+    .replace(/<iframe[^>]*src\s*=\s*["']?(javascript:|data:)[^>]*>.*?<\/iframe>/gi, '')
+    // Remove form tags to prevent CSRF
+    .replace(/<\/?form[^>]*>/gi, '');
+};
+
 export interface NotesProps {
   widget: Widget;
   layout: Layout | undefined;
@@ -33,7 +50,9 @@ function NotesWidget({ widget, layout }: NotesProps): JSX.Element {
         <CardBody className="overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
           <div
             className="text-default-600 prose dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(content)
+            }}
           />
         </CardBody>
       </Card>

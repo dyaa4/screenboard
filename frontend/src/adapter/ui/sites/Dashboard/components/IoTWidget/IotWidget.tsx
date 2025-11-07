@@ -245,17 +245,26 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
         </div>
 
         {/* Color Controls for capable devices */}
-        {(device.supportsColor || device.supportsColorTemperature || device.supportsBrightness) && (
-          <ColorControls
-            device={device}
-            layout={layout}
-            onColorChange={setDeviceColor}
-            onColorTemperatureChange={setDeviceColorTemperature}
-            onBrightnessChange={setDeviceBrightness}
-            isLoading={deviceLoading[device.deviceId]}
-            hasError={!!commandErrors[device.deviceId]}
-          />
-        )}
+        {(() => {
+          console.log('🔍 IoT Widget Debug:', {
+            deviceName: device.name,
+            supportsColor: device.supportsColor,
+            supportsColorTemperature: device.supportsColorTemperature,
+            supportsBrightness: device.supportsBrightness,
+            shouldShowControls: (device.supportsColor || device.supportsColorTemperature || device.supportsBrightness)
+          });
+          return (device.supportsColor || device.supportsColorTemperature || device.supportsBrightness);
+        })() && (
+            <ColorControls
+              device={device}
+              layout={layout}
+              onColorChange={setDeviceColor}
+              onColorTemperatureChange={setDeviceColorTemperature}
+              onBrightnessChange={setDeviceBrightness}
+              isLoading={deviceLoading[device.deviceId]}
+              hasError={!!commandErrors[device.deviceId]}
+            />
+          )}
       </Card>
     );
   };

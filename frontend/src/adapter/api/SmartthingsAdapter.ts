@@ -178,7 +178,7 @@ export default class SmartThingsAdapter implements SmartThingsRepository {
 
     try {
       const appToken = await this.getAppToken();
-      console.log('App Token in completeAuth:', appToken);
+      // Security: Never log sensitive tokens
       await axios.post(
         `${getApiUrl(`/api/auth/smartthings/complete`)}`,
         { code, state },

@@ -24,19 +24,17 @@ const createReadableLog = (level: string, message: string, meta: any = {}) => {
         const context = meta.context || 'APP';
         const module = meta.module || 'LOG';
 
-        // Add colors for different log levels
-        const colors = {
-            'INFO': '\x1b[36m',     // Cyan
-            'ERROR': '\x1b[31m',    // Red
-            'WARN': '\x1b[33m',     // Yellow
-            'DEBUG': '\x1b[90m',    // Gray
-            'SUCCESS': '\x1b[32m',  // Green
+        // Emojis für bessere Lesbarkeit (funktioniert überall)
+        const emoji = {
+            'INFO': 'ℹ️',
+            'ERROR': '❌',
+            'WARN': '⚠️',
+            'DEBUG': '🔍',
+            'SUCCESS': '✅'
         };
 
-        const color = colors[level as keyof typeof colors] || '\x1b[37m'; // White default
-        const reset = '\x1b[0m';
-
-        console.log(`${color}[${time}] ${level} [${context}:${module}]${reset} ${message}`);
+        const icon = emoji[level as keyof typeof emoji] || '📝';
+        console.log(`${icon} [${time}] ${level.padEnd(7)} [${context}:${module}] ${message}`);
         return true; // Indicates that readable log was used
     }
     return false; // Indicates that pino should be used

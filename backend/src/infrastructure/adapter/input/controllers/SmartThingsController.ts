@@ -264,6 +264,13 @@ export class SmartThingsController {
             if (hue === undefined || saturation === undefined) {
                 return res.status(400).json({ message: 'Hue and saturation values are required' });
             }
+            // Security: Validate input ranges
+            if (typeof hue !== 'number' || hue < 0 || hue > 100) {
+                return res.status(400).json({ message: 'Hue must be a number between 0 and 100' });
+            }
+            if (typeof saturation !== 'number' || saturation < 0 || saturation > 100) {
+                return res.status(400).json({ message: 'Saturation must be a number between 0 and 100' });
+            }
             if (!userId || !dashboardId) {
                 return res.status(400).json({ message: 'User ID and Dashboard ID are required in headers' });
             }
@@ -326,6 +333,10 @@ export class SmartThingsController {
             if (colorTemperature === undefined) {
                 return res.status(400).json({ message: 'Color temperature is required' });
             }
+            // Security: Validate color temperature range  
+            if (typeof colorTemperature !== 'number' || colorTemperature < 1500 || colorTemperature > 6500) {
+                return res.status(400).json({ message: 'Color temperature must be a number between 1500K and 6500K' });
+            }
             if (!userId || !dashboardId) {
                 return res.status(400).json({ message: 'User ID and Dashboard ID are required in headers' });
             }
@@ -384,6 +395,10 @@ export class SmartThingsController {
             }
             if (level === undefined) {
                 return res.status(400).json({ message: 'Brightness level is required' });
+            }
+            // Security: Validate brightness level range
+            if (typeof level !== 'number' || level < 0 || level > 100) {
+                return res.status(400).json({ message: 'Brightness level must be a number between 0 and 100' });
             }
             if (!userId || !dashboardId) {
                 return res.status(400).json({ message: 'User ID and Dashboard ID are required in headers' });

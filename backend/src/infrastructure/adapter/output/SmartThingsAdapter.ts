@@ -168,6 +168,17 @@ export class SmartThingsAdapter implements SmartThingsRepository {
             const capabilities = device.components?.[0]?.capabilities || [];
             const capabilityIds = capabilities.map((cap: any) => cap.id);
 
+            // Debug: Log device capabilities to help troubleshoot color support
+            logger.debug('SmartThings device capabilities', {
+                deviceLabel: device.label || device.name,
+                deviceId: device.deviceId,
+                allCapabilities: capabilityIds,
+                hasColorControl: capabilityIds.includes('colorControl'),
+                hasColorTemperature: capabilityIds.includes('colorTemperature'),
+                hasSwitchLevel: capabilityIds.includes('switchLevel'),
+                deviceType: device.deviceTypeName
+            }, 'SmartThingsAdapter');
+
             return {
                 deviceId: device.deviceId,
                 name: device.name,
@@ -176,10 +187,16 @@ export class SmartThingsAdapter implements SmartThingsRepository {
                 deviceNetworkType: device.deviceNetworkType,
                 capabilities: capabilityIds,
                 status: device.status || {},
-                // Enhanced capability detection for color control
-                supportsColor: capabilityIds.includes('colorControl'),
-                supportsColorTemperature: capabilityIds.includes('colorTemperature'),
-                supportsBrightness: capabilityIds.includes('switchLevel')
+                // Enhanced capability detection for color control (multiple variants)
+                supportsColor: capabilityIds.some((cap: string) =>
+                    ['colorControl', 'colorMode', 'color', 'hue'].includes(cap)
+                ),
+                supportsColorTemperature: capabilityIds.some((cap: string) =>
+                    ['colorTemperature', 'colorTemperatureK', 'temperatureColor'].includes(cap)
+                ),
+                supportsBrightness: capabilityIds.some((cap: string) =>
+                    ['switchLevel', 'level', 'brightness', 'dimmer'].includes(cap)
+                )
             };
         });
     }
