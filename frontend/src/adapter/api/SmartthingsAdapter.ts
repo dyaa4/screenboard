@@ -112,15 +112,28 @@ export default class SmartThingsAdapter implements SmartThingsRepository {
       );
 
       for (const device of response.data) {
-        const { deviceId, deviceTypeName, label, name } = device;
+        const {
+          deviceId,
+          deviceTypeName,
+          label,
+          name,
+          capabilities,
+          supportsColor,
+          supportsColorTemperature,
+          supportsBrightness
+        } = device;
+
         const iOTdevice: IoTDevice = {
           deviceId: deviceId,
           name: name,
           label: label,
           type: deviceTypeName,
           provider: 'smartthings',
-          capabilities: [],
+          capabilities: capabilities || [],
           selected: false,
+          supportsColor: supportsColor || false,
+          supportsColorTemperature: supportsColorTemperature || false,
+          supportsBrightness: supportsBrightness || false,
         };
 
         devices.push(iOTdevice);
