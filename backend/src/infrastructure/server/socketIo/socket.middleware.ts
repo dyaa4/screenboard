@@ -42,7 +42,7 @@ export class SocketMiddleware {
             if (error instanceof TokenExpiredError) {
                 logger.info("Token expired, disconnecting socket")
             } else {
-                logger.error("Authentication error:", error)
+                logger.error("Authentication error:", error as Error)
             }
             socket.emit("auth_error", "Authentication failed. Please log in again.")
             socket.disconnect(true)

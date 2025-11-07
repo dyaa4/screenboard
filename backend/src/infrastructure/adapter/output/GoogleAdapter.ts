@@ -243,8 +243,11 @@ export class GoogleAdapter implements GoogleRepository {
    */
   async exchangeAuthCodeForTokens(code: string): Promise<IGoogleToken> {
     const tokenEndpoint = "https://oauth2.googleapis.com/token"
+    const timer = logger.startTimer('Google Token Exchange');
 
     try {
+      logger.apiCall('Google', '/token', 'POST');
+
       const response = await axios.post(tokenEndpoint, {
         code,
         client_id: this.clientId,
@@ -256,10 +259,15 @@ export class GoogleAdapter implements GoogleRepository {
       const { access_token, refresh_token, expires_in } = response.data
 
       if (!access_token || !refresh_token) {
+        logger.error('Google token exchange missing tokens', new Error("Missing tokens in response"), 'GoogleAdapter');
         throw new Error(
           "Missing access token or refresh token in the response."
         )
       }
+
+      logger.apiCall('Google', '/token', 'POST', response.status);
+      logger.success('Google token exchange successful', { expiresIn: expires_in }, 'GoogleAdapter');
+      timer();
 
       return {
         accessToken: access_token,
@@ -267,11 +275,9 @@ export class GoogleAdapter implements GoogleRepository {
         expiresIn: new Date().getTime() + expires_in * 1000,
       }
     } catch (error: any) {
-      console.error(
-        "Error exchanging authorization code for tokens:",
-        error.response?.data || error.message
-      )
-      throw new Error("Failed to exchange authorization code for tokens.")
+      logger.error('Google token exchange failed', error, 'GoogleAdapter');
+      logger.apiCall('Google', '/token', 'POST', error.response?.status);
+      throw new Error("Failed to exchange authorization code for tokens.");
     }
   }
 

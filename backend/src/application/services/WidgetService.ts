@@ -69,7 +69,7 @@ export class WidgetService {
       await this.handleMicrosoftCalendarEventRegistry(widget, userId, dashboardId);
       await this.handleSmartthingsEventRegistry(widget, userId, dashboardId);
     } catch (error) {
-      logger.error('Error subscribing to Widget Events', error);
+      logger.error('Error subscribing to Widget Events', error as Error);
     }
 
     // Restliche Props auf das Widget anwenden
