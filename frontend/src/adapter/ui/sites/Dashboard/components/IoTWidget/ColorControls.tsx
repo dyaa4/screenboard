@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Card, Slider, Button } from '@heroui/react';
 import { IoTDevice } from '../../../../../../domain/types';
 import { Layout } from '../../../../../../domain/entities/Layout';
@@ -110,14 +111,16 @@ export default function ColorControls({
                 <i className="fa-solid fa-palette"></i>
             </Button>
 
-            {/* Overlay Panel */}
-            {isPanelOpen && (
+            {/* Overlay Panel - Rendered as Portal to avoid clipping */}
+            {isPanelOpen && createPortal(
                 <div
                     ref={panelRef}
-                    className="absolute top-full right-0 mt-2 z-50 w-80 max-h-96 overflow-y-auto"
+                    className="fixed z-[9999] w-80 max-h-96 overflow-y-auto"
                     style={{
                         maxWidth: '320px',
-                        transform: 'translateX(0)',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
                     }}
                 >
                     <Card
@@ -346,7 +349,8 @@ export default function ColorControls({
                             )}
                         </div>
                     </Card>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

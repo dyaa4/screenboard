@@ -3,7 +3,7 @@ import NotConfiguredMessage from '@components/NotConfiguredMessage/NotConfigured
 import { Layout } from '../../../../../../domain/entities/Layout';
 import { Widget } from '../../../../../../domain/entities/Widget';
 import { IoTDevice } from '../../../../../../domain/types';
-import { Card, Chip } from '@heroui/react';
+import { Card, Chip, Button } from '@heroui/react';
 import { useSmartThings } from '@hooks/api/useSmartthings';
 import { JSX, useEffect, useState } from 'react';
 import MenuSection from '../MenuSection/MenuSection';
@@ -185,81 +185,82 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
     const deviceIcon = getDeviceIcon(device);
 
     return (
-      <Card
-        key={device.deviceId}
-        className="p-4 transition-shadow duration-300 shadow-lg hover:shadow-xl"
-        style={{
-          width: '160px', // Fixed width for all devices since color controls are now in overlay
-          minHeight: '120px',
-          ...getCustomColorCssClass(layout, theme),
-        }}
-      >
-        <div
-          className="flex flex-col h-full justify-between"
-          onClick={(e) => {
-            if (!deviceStates[device.deviceId]?.components?.main?.switch || hasError || deviceLoading[device.deviceId]) {
-              return;
-            }
-            e.stopPropagation();
-            toggleDevice(device.deviceId, 'switch', isOn ? 'off' : 'on', []);
+      <div key={device.deviceId} className="relative">
+        <Card
+          className="p-4 transition-shadow duration-300 shadow-lg hover:shadow-xl"
+          style={{
+            width: '160px', // Fixed width for all devices since color controls are now in overlay
+            minHeight: '120px',
+            ...getCustomColorCssClass(layout, theme),
           }}
-          style={{ cursor: (!deviceStates[device.deviceId]?.components?.main?.switch || hasError || deviceLoading[device.deviceId]) ? 'default' : 'pointer' }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <div
-              className={`text-2xl transition-colors duration-300 ${isOn ? 'text-success' : 'text-default-300'
-                }`}
-            >
-              <i className={deviceIcon}></i>
-            </div>
-            <div className="flex items-center gap-1">
-              {/* Color Controls Button */}
-              {(device.supportsColor || device.supportsColorTemperature || device.supportsBrightness) && (
-                <ColorControls
-                  device={device}
-                  layout={layout}
-                  onColorChange={setDeviceColor}
-                  onColorTemperatureChange={setDeviceColorTemperature}
-                  onBrightnessChange={setDeviceBrightness}
-                  isLoading={deviceLoading[device.deviceId]}
-                  hasError={!!commandErrors[device.deviceId]}
-                />
-              )}
-              {deviceLoading[device.deviceId] && (
-                <div className="animate-spin">
-                  <i className="fa-solid fa-spinner text-primary"></i>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <p
-              className={`${getFontSizeClass(layout?.fontSize)} font-semibold truncate`}
-              title={device.label || device.name}
-            >
-              {device.label || device.name}
-            </p>
-            {hasError ? (
-              <Chip size="sm" color="danger" variant="flat" className="text-xs">
-                <i className="fa-solid fa-xmark mr-1"></i> {t('sites.dashboard.components.iot.command_error')}
-              </Chip>
-            ) : (
-              <Chip
-                size="sm"
-                color={isOn ? 'success' : 'default'}
-                variant="flat"
-                className={`${getFontSizeClass(layout?.fontSize)} font-medium`}
+          <div
+            className="flex flex-col h-full justify-between"
+            onClick={(e) => {
+              if (!deviceStates[device.deviceId]?.components?.main?.switch || hasError || deviceLoading[device.deviceId]) {
+                return;
+              }
+              e.stopPropagation();
+              toggleDevice(device.deviceId, 'switch', isOn ? 'off' : 'on', []);
+            }}
+            style={{ cursor: (!deviceStates[device.deviceId]?.components?.main?.switch || hasError || deviceLoading[device.deviceId]) ? 'default' : 'pointer' }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div
+                className={`text-2xl transition-colors duration-300 ${isOn ? 'text-success' : 'text-default-300'
+                  }`}
               >
-                <i className={`fa-solid ${isOn ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}></i>
-                {isOn ? t('sites.dashboard.components.iot.on') : t('sites.dashboard.components.iot.off')}
-              </Chip>
-            )}
+                <i className={deviceIcon}></i>
+              </div>
+              <div className="flex items-center gap-1">
+                {/* Color Controls with Portal rendering */}
+                {(device.supportsColor || device.supportsColorTemperature || device.supportsBrightness) && (
+                  <ColorControls
+                    device={device}
+                    layout={layout}
+                    onColorChange={setDeviceColor}
+                    onColorTemperatureChange={setDeviceColorTemperature}
+                    onBrightnessChange={setDeviceBrightness}
+                    isLoading={deviceLoading[device.deviceId]}
+                    hasError={!!commandErrors[device.deviceId]}
+                  />
+                )}
+                {deviceLoading[device.deviceId] && (
+                  <div className="animate-spin">
+                    <i className="fa-solid fa-spinner text-primary"></i>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <p
+                className={`${getFontSizeClass(layout?.fontSize)} font-semibold truncate`}
+                title={device.label || device.name}
+              >
+                {device.label || device.name}
+              </p>
+              {hasError ? (
+                <Chip size="sm" color="danger" variant="flat" className="text-xs">
+                  <i className="fa-solid fa-xmark mr-1"></i> {t('sites.dashboard.components.iot.command_error')}
+                </Chip>
+              ) : (
+                <Chip
+                  size="sm"
+                  color={isOn ? 'success' : 'default'}
+                  variant="flat"
+                  className={`${getFontSizeClass(layout?.fontSize)} font-medium`}
+                >
+                  <i className={`fa-solid ${isOn ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}></i>
+                  {isOn ? t('sites.dashboard.components.iot.on') : t('sites.dashboard.components.iot.off')}
+                </Chip>
+              )}
+            </div>
           </div>
-        </div>
+        </Card>
 
 
-      </Card>
+      </div>
     );
   };
 
