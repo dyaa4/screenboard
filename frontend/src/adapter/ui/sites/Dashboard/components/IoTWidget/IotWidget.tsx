@@ -189,7 +189,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
         key={device.deviceId}
         className="p-4 transition-shadow duration-300 shadow-lg hover:shadow-xl"
         style={{
-          width: device.supportsColor || device.supportsColorTemperature || device.supportsBrightness ? '280px' : '160px',
+          width: '160px', // Fixed width for all devices since color controls are now in overlay
           minHeight: '120px',
           ...getCustomColorCssClass(layout, theme),
         }}
@@ -212,11 +212,25 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
             >
               <i className={deviceIcon}></i>
             </div>
-            {deviceLoading[device.deviceId] && (
-              <div className="animate-spin">
-                <i className="fa-solid fa-spinner text-primary"></i>
-              </div>
-            )}
+            <div className="flex items-center gap-1">
+              {/* Color Controls Button */}
+              {(device.supportsColor || device.supportsColorTemperature || device.supportsBrightness) && (
+                <ColorControls
+                  device={device}
+                  layout={layout}
+                  onColorChange={setDeviceColor}
+                  onColorTemperatureChange={setDeviceColorTemperature}
+                  onBrightnessChange={setDeviceBrightness}
+                  isLoading={deviceLoading[device.deviceId]}
+                  hasError={!!commandErrors[device.deviceId]}
+                />
+              )}
+              {deviceLoading[device.deviceId] && (
+                <div className="animate-spin">
+                  <i className="fa-solid fa-spinner text-primary"></i>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -244,18 +258,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
           </div>
         </div>
 
-        {/* Color Controls for capable devices */}
-        {(device.supportsColor || device.supportsColorTemperature || device.supportsBrightness) && (
-          <ColorControls
-            device={device}
-            layout={layout}
-            onColorChange={setDeviceColor}
-            onColorTemperatureChange={setDeviceColorTemperature}
-            onBrightnessChange={setDeviceBrightness}
-            isLoading={deviceLoading[device.deviceId]}
-            hasError={!!commandErrors[device.deviceId]}
-          />
-        )}
+
       </Card>
     );
   };
