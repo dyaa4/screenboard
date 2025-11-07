@@ -260,7 +260,7 @@ export class SmartThingsService {
     } catch (error: any) {
       // Nur löschen, wenn es sich um einen Authentifizierungsfehler handelt (401)
       if (error.response && error.response.status === 401) {
-        console.log(`Token ungültig (401), lösche Token für Benutzer ${userId} und Dashboard ${dashboardId}`);
+        logger.warn('Invalid SmartThings token (401), deleting token', { hasUserId: !!userId, hasDashboardId: !!dashboardId }, 'SmartThingsService');
         await this.tokenRepository.deleteToken(
           userId,
           dashboardId,
@@ -374,7 +374,7 @@ export class SmartThingsService {
     }
 
     // Token läuft bald ab oder ist bereits abgelaufen, aktualisieren
-    console.log(`Token für Benutzer ${userId} wird aktualisiert...`);
+    logger.info('Refreshing SmartThings token', { hasUserId: !!userId }, 'SmartThingsService');
     try {
       const { accessToken: newAccessToken, expiresIn, refreshToken: newRefreshToken } =
         await this.refreshAccessToken(userId, dashboardId, refreshToken);
@@ -390,17 +390,17 @@ export class SmartThingsService {
 
       return newAccessToken;
     } catch (error: any) {
-      console.error(`Fehler beim Aktualisieren des Tokens für Benutzer ${userId}:`, error);
+      logger.error('Failed to refresh SmartThings token', { hasUserId: !!userId, error: error.message }, 'SmartThingsService');
 
       if (
         (error.response && error.response.status === 400)
       ) {
-        console.log(`Refresh-Token ungültig, lösche Eintrag für User ${userId}`);
+        logger.warn('Invalid refresh token, deleting entry', { hasUserId: !!userId }, 'SmartThingsService');
         await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.SMARTTHINGS);
       }
 
       // Wenn der Token noch existiert, versuchen wir es mit dem vorhandenen Token
-      console.log(`Verwende vorhandenes Token trotz Aktualisierungsfehler.`);
+      logger.warn('Using existing token despite refresh error', {}, 'SmartThingsService');
       return accessToken;
     }
   }

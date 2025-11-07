@@ -23,7 +23,7 @@ export interface SmartThingsRepository {
   completeAuth(code: string, state: string): Promise<void>;
 
   // Color control methods
-  setDeviceColor(deviceId: string, hue: number, saturation: number): Promise<void>;
-  setDeviceColorTemperature(deviceId: string, colorTemperature: number): Promise<void>;
-  setDeviceBrightness(deviceId: string, level: number): Promise<void>;
+  setDeviceColor(dashboardId: string, deviceId: string, hue: number, saturation: number): Promise<void>;
+  setDeviceColorTemperature(dashboardId: string, deviceId: string, colorTemperature: number): Promise<void>;
+  setDeviceBrightness(dashboardId: string, deviceId: string, level: number): Promise<void>;
 }

@@ -51,13 +51,13 @@ router.get("/smartthings/:dashboardId/devices/:deviceId/status", (req, res) =>
     smartThingsController.getDeviceStatus(req, res));
 
 // Color Control Endpoints
-router.post("/smartthings/device/:deviceId/color", (req, res) =>
+router.post("/smartthings/:dashboardId/device/:deviceId/color", (req, res) =>
     smartThingsController.setDeviceColor(req, res));
 
-router.post("/smartthings/device/:deviceId/color-temperature", (req, res) =>
+router.post("/smartthings/:dashboardId/device/:deviceId/color-temperature", (req, res) =>
     smartThingsController.setDeviceColorTemperature(req, res));
 
-router.post("/smartthings/device/:deviceId/brightness", (req, res) =>
+router.post("/smartthings/:dashboardId/device/:deviceId/brightness", (req, res) =>
     smartThingsController.setDeviceBrightness(req, res));
 
 export default router;

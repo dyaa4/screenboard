@@ -34,7 +34,7 @@ export default function ColorControls({
     const [colorTemperature, setColorTemperature] = useState(3000);
     const [brightness, setBrightness] = useState(100);
 
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true); // Start expanded for better UX
 
     // Convert HSB to HSL for CSS display
     const getPreviewColor = useCallback(() => {
@@ -128,8 +128,9 @@ export default function ColorControls({
                                         {t('sites.dashboard.components.iot.color')}
                                     </label>
                                     <div
-                                        className="w-6 h-6 rounded-full border-2 border-gray-300"
+                                        className="w-10 h-10 rounded-lg border-2 border-gray-300 shadow-sm cursor-pointer transition-transform hover:scale-105"
                                         style={{ backgroundColor: getPreviewColor() }}
+                                        title={`Hue: ${Math.round(hue)}, Saturation: ${Math.round(saturation)}%`}
                                     />
                                 </div>
 
@@ -176,6 +177,39 @@ export default function ColorControls({
                                         <span className="text-xs w-8">{Math.round(saturation)}</span>
                                     </div>
                                 </div>
+
+                                {/* Quick Color Presets */}
+                                <div className="pt-2">
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { name: 'Rot', hue: 0, saturation: 100, color: '#ff0000' },
+                                            { name: 'Grün', hue: 33, saturation: 100, color: '#00ff00' },
+                                            { name: 'Blau', hue: 67, saturation: 100, color: '#0000ff' },
+                                            { name: 'Gelb', hue: 17, saturation: 100, color: '#ffff00' },
+                                            { name: 'Lila', hue: 83, saturation: 100, color: '#8000ff' },
+                                            { name: 'Cyan', hue: 50, saturation: 100, color: '#00ffff' },
+                                            { name: 'Pink', hue: 92, saturation: 100, color: '#ff00ff' },
+                                            { name: 'Orange', hue: 8, saturation: 100, color: '#ff8000' },
+                                        ].map((preset) => (
+                                            <Button
+                                                key={preset.name}
+                                                size="sm"
+                                                variant="flat"
+                                                className="min-w-0 px-2 h-8"
+                                                onPress={() => handleColorChange(preset.hue, preset.saturation)}
+                                                isDisabled={isLoading || hasError}
+                                                style={{
+                                                    backgroundColor: preset.color,
+                                                    border: '2px solid rgba(255,255,255,0.3)',
+                                                    minWidth: '24px',
+                                                }}
+                                                title={preset.name}
+                                            >
+                                                <span className="sr-only">{preset.name}</span>
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -188,8 +222,9 @@ export default function ColorControls({
                                         {t('sites.dashboard.components.iot.color_temperature')}
                                     </label>
                                     <div
-                                        className="w-6 h-6 rounded-full border-2 border-gray-300"
+                                        className="w-10 h-10 rounded-lg border-2 border-gray-300 shadow-sm transition-transform hover:scale-105"
                                         style={{ backgroundColor: getColorTemperaturePreview() }}
+                                        title={`${colorTemperature}K`}
                                     />
                                 </div>
 
@@ -239,6 +274,28 @@ export default function ColorControls({
                                         }}
                                     />
                                     <span className="text-xs w-8">{Math.round(brightness)}%</span>
+                                </div>
+
+                                {/* Quick Brightness Presets */}
+                                <div className="flex gap-2">
+                                    {[
+                                        { name: '10%', value: 10 },
+                                        { name: '25%', value: 25 },
+                                        { name: '50%', value: 50 },
+                                        { name: '75%', value: 75 },
+                                        { name: '100%', value: 100 },
+                                    ].map((preset) => (
+                                        <Button
+                                            key={preset.name}
+                                            size="sm"
+                                            variant="ghost"
+                                            className="min-w-0 px-2 text-xs h-6"
+                                            onPress={() => handleBrightnessChange(preset.value)}
+                                            isDisabled={isLoading || hasError}
+                                        >
+                                            {preset.name}
+                                        </Button>
+                                    ))}
                                 </div>
                             </div>
                         )}

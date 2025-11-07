@@ -215,9 +215,13 @@ export const useSmartThings = (
       });
 
       try {
+        if (!dashboardId) {
+          throw new Error('Dashboard ID is required');
+        }
+
         await container
           .resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME)
-          .setDeviceColor(deviceId, hue, saturation);
+          .setDeviceColor(dashboardId, deviceId, hue, saturation);
       } catch (err) {
         console.error('Error setting device color:', err);
 
@@ -261,9 +265,13 @@ export const useSmartThings = (
       });
 
       try {
+        if (!dashboardId) {
+          throw new Error('Dashboard ID is required');
+        }
+
         await container
           .resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME)
-          .setDeviceColorTemperature(deviceId, colorTemperature);
+          .setDeviceColorTemperature(dashboardId, deviceId, colorTemperature);
       } catch (err) {
         console.error('Error setting device color temperature:', err);
 
@@ -306,9 +314,13 @@ export const useSmartThings = (
       });
 
       try {
+        if (!dashboardId) {
+          throw new Error('Dashboard ID is required');
+        }
+
         await container
           .resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME)
-          .setDeviceBrightness(deviceId, level);
+          .setDeviceBrightness(dashboardId, deviceId, level);
       } catch (err) {
         console.error('Error setting device brightness:', err);
 

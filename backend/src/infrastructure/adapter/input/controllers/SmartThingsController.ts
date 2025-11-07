@@ -155,6 +155,11 @@ export class SmartThingsController {
             const dashboardId = req.params.dashboardId
 
             if (!userId || !dashboardId) {
+                logger.warn('SmartThings getDevices: Missing required parameters', {
+                    userId: !!userId,
+                    dashboardId: !!dashboardId,
+                    authPayload: !!req.auth?.payload
+                }, 'SmartThingsController');
                 res.status(400).json({ message: "User ID and Dashboard ID are required" });
                 return;
             }
@@ -162,6 +167,7 @@ export class SmartThingsController {
             const devices = await this.smartThingsService.getDevices(userId, dashboardId)
             res.json(devices)
         } catch (error: any) {
+            logger.error('SmartThings getDevices failed', error, 'SmartThingsController');
             res.status(500).json({ error: error.message })
         }
     }
@@ -215,7 +221,7 @@ export class SmartThingsController {
 
 
     async handleWebhook(req: Request, res: Response) {
-        console.log("Incoming SmartThings webhook:", req.body);
+        logger.info("Incoming SmartThings webhook", { messageType: req.body?.messageType, lifecycle: req.body?.lifecycle }, 'SmartThingsController');
 
         if (req.body.messageType === 'CONFIRMATION') {
             return res.status(200).send(req.body.confirmationData.confirmationUrl);
@@ -249,7 +255,8 @@ export class SmartThingsController {
         try {
             const { deviceId } = req.params;
             const { hue, saturation } = req.body;
-            const { userId, dashboardId } = req.headers as any;
+            const userId = req.auth?.payload?.sub;
+            const dashboardId = req.params.dashboardId || req.body.dashboardId;
 
             if (!deviceId) {
                 return res.status(400).json({ message: 'Device ID is required' });
@@ -310,13 +317,14 @@ export class SmartThingsController {
         try {
             const { deviceId } = req.params;
             const { colorTemperature } = req.body;
-            const { userId, dashboardId } = req.headers as any;
+            const userId = req.auth?.payload?.sub;
+            const dashboardId = req.params.dashboardId || req.body.dashboardId;
 
             if (!deviceId) {
                 return res.status(400).json({ message: 'Device ID is required' });
             }
             if (colorTemperature === undefined) {
-                return res.status(400).json({ message: 'Color temperature value is required' });
+                return res.status(400).json({ message: 'Color temperature is required' });
             }
             if (!userId || !dashboardId) {
                 return res.status(400).json({ message: 'User ID and Dashboard ID are required in headers' });
@@ -368,13 +376,14 @@ export class SmartThingsController {
         try {
             const { deviceId } = req.params;
             const { level } = req.body;
-            const { userId, dashboardId } = req.headers as any;
+            const userId = req.auth?.payload?.sub;
+            const dashboardId = req.params.dashboardId || req.body.dashboardId;
 
             if (!deviceId) {
                 return res.status(400).json({ message: 'Device ID is required' });
             }
             if (level === undefined) {
-                return res.status(400).json({ message: 'Brightness level value is required' });
+                return res.status(400).json({ message: 'Brightness level is required' });
             }
             if (!userId || !dashboardId) {
                 return res.status(400).json({ message: 'User ID and Dashboard ID are required in headers' });
