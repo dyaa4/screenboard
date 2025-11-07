@@ -280,10 +280,22 @@ export class MicrosoftController {
    */
   async handleCalendarWebhook(req: Request, res: Response): Promise<void> {
     try {
+      console.log('🔔 Microsoft Graph webhook request received:', {
+        method: req.method,
+        url: req.url,
+        headers: {
+          'content-type': req.headers['content-type'],
+          'user-agent': req.headers['user-agent'],
+          'x-forwarded-for': req.headers['x-forwarded-for']
+        },
+        query: req.query,
+        bodyLength: JSON.stringify(req.body).length
+      });
+
       // Microsoft Graph webhook validation (when setting up subscription)
       const validationToken = req.query.validationToken;
       if (validationToken) {
-        console.log('Microsoft Graph webhook validation requested');
+        console.log('✅ Microsoft Graph webhook validation requested:', validationToken);
         res.status(200).send(validationToken);
         return;
       }
@@ -291,14 +303,25 @@ export class MicrosoftController {
       // Process actual webhook notifications
       const notifications = req.body.value;
       if (!notifications || !Array.isArray(notifications)) {
+        console.error('❌ Invalid notification payload:', req.body);
         res.status(400).json({ error: 'Invalid notification payload' });
         return;
       }
 
-      console.log('Processing Microsoft Graph webhook notifications:', notifications.length);
+      console.log('📋 Processing Microsoft Graph webhook notifications:', {
+        count: notifications.length,
+        notifications: notifications.map(n => ({
+          subscriptionId: n.subscriptionId,
+          changeType: n.changeType,
+          resource: n.resource,
+          clientState: n.clientState
+        }))
+      });
 
       for (const notification of notifications) {
         const { subscriptionId, changeType, resource, clientState } = notification;
+
+        console.log(`🔄 Processing notification: ${changeType} for ${resource}`);
 
         await this.microsoftService.handleCalendarWebhook({
           subscriptionId,
@@ -308,9 +331,10 @@ export class MicrosoftController {
         });
       }
 
+      console.log('✅ All Microsoft Graph notifications processed successfully');
       res.status(202).json({ message: 'Notifications processed' });
     } catch (error: any) {
-      console.error('Error processing Microsoft Graph webhook:', error);
+      console.error('🚨 Error processing Microsoft Graph webhook:', error);
       res.status(500).json({
         error: 'Failed to process webhook notification',
         details: error.message

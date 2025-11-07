@@ -40,6 +40,11 @@ router.get("/events/microsoft/user", (req, res) =>
 );
 
 // Microsoft Graph Webhook & Subscription Routes
+// Microsoft Graph needs BOTH GET (for validation) and POST (for notifications)
+router.get("/microsoft/calendar/webhook", (req, res) =>
+  microsoftController.handleCalendarWebhook(req, res)
+);
+
 router.post("/microsoft/calendar/webhook", (req, res) =>
   microsoftController.handleCalendarWebhook(req, res)
 );
