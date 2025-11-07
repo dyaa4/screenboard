@@ -12,7 +12,7 @@ interface UseEventsReturn {
     loading: boolean;
     isNotConfigured: boolean;
     error: string | null;
-    loadEvents: () => Promise<void>;
+    loadEvents: (isInitialLoad?: boolean) => Promise<void>;
 }
 
 /**
@@ -28,14 +28,19 @@ export const useEvents = (widget: Widget): UseEventsReturn => {
 
     const settings = widget.settings as EventWidgetSettings;
 
-    const loadEvents = useCallback(async () => {
+    const loadEvents = useCallback(async (isInitialLoad = false) => {
         try {
-            setLoading(true);
+            // Only show loading skeleton on initial load, not on WebSocket refreshes
+            if (isInitialLoad) {
+                setLoading(true);
+            }
             setError(null);
 
             if (!settings.type) {
                 setIsNotConfigured(true);
-                setLoading(false);
+                if (isInitialLoad) {
+                    setLoading(false);
+                }
                 return;
             }
 
@@ -45,7 +50,9 @@ export const useEvents = (widget: Widget): UseEventsReturn => {
             if (settings.type === EventType.GOOGLE) {
                 if (!settings.calendarId) {
                     setIsNotConfigured(true);
-                    setLoading(false);
+                    if (isInitialLoad) {
+                        setLoading(false);
+                    }
                     return;
                 }
 
@@ -60,7 +67,9 @@ export const useEvents = (widget: Widget): UseEventsReturn => {
             else if (settings.type === EventType.ICAL) {
                 if (!settings.icalLink) {
                     setIsNotConfigured(true);
-                    setLoading(false);
+                    if (isInitialLoad) {
+                        setLoading(false);
+                    }
                     return;
                 }
 
@@ -74,7 +83,9 @@ export const useEvents = (widget: Widget): UseEventsReturn => {
             else if (settings.type === EventType.MICROSOFT) {
                 if (!settings.calendarId) {
                     setIsNotConfigured(true);
-                    setLoading(false);
+                    if (isInitialLoad) {
+                        setLoading(false);
+                    }
                     return;
                 }
 
@@ -86,7 +97,9 @@ export const useEvents = (widget: Widget): UseEventsReturn => {
                 setIsNotConfigured(false);
             } else {
                 setIsNotConfigured(true);
-                setLoading(false);
+                if (isInitialLoad) {
+                    setLoading(false);
+                }
                 return;
             }
 
@@ -100,22 +113,32 @@ export const useEvents = (widget: Widget): UseEventsReturn => {
                 });
 
             setEvents(futureEvents);
-            setLoading(false);
-        } catch (err) {
+            if (isInitialLoad) {
+                setLoading(false);
+            }
+        } catch (err: any) {
             console.error('Error loading events:', err);
-            setError(err instanceof Error ? err.message : 'Failed to load events');
-            setLoading(false);
+
+            // Handle Microsoft authentication errors specifically
+            if ((err?.status === 401 || err?.needsReauth) && settings.type === EventType.MICROSOFT) {
+                setError('Microsoft Calendar authentication expired. Please reconfigure the widget and sign in again.');
+            } else {
+                setError(err instanceof Error ? err.message : 'Failed to load events');
+            }
+            if (isInitialLoad) {
+                setLoading(false);
+            }
         }
     }, [widget.dashboardId, settings]);
 
     useEffect(() => {
-        // Initial load
-        loadEvents();
+        // Initial load with skeleton
+        loadEvents(true);
 
-        // Auto-polling for iCal events every 5 minutes
+        // Auto-polling for iCal events every 5 minutes (without skeleton)
         if (settings.type === EventType.ICAL) {
             const pollInterval = setInterval(() => {
-                loadEvents();
+                loadEvents(false);
             }, 5 * 60 * 1000); // 5 minutes
 
             // Cleanup interval on unmount or settings change

@@ -27,10 +27,11 @@ export const useMicrosoftCalendar = (
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
     const handleApiError = useCallback((error: any) => {
-        if (error?.response?.status === 401) {
+        if (error?.response?.status === 401 || error?.status === 401 || error?.needsReauth) {
             setIsLoggedIn(false);
             setUser(null);
             setCalendars([]);
+            setError('Microsoft Calendar authentication expired. Please sign in again.');
         } else {
             console.error('API Error:', error);
             setError('Ein Fehler ist aufgetreten');

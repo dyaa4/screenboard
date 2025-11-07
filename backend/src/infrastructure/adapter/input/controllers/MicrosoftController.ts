@@ -187,12 +187,16 @@ export class MicrosoftController {
 
       res.status(200).json(simpleEvents);
     } catch (error: any) {
-      console.error('Microsoft calendar events error:', error);
+      logger.error('Microsoft calendar events failed', error, 'MicrosoftController');
 
-      if (error.message.includes('authenticate')) {
+      // Check for authentication/authorization errors
+      if (error.message.includes('authenticate') ||
+        error.message.includes('Re-authentication required') ||
+        error.message.includes('invalid or expired')) {
         res.status(401).json({
           error: 'Microsoft Calendar authentication required',
-          details: error.message
+          details: 'Your Microsoft access token has expired. Please sign in again.',
+          needsReauth: true
         });
       } else {
         res.status(500).json({

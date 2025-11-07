@@ -23,8 +23,9 @@ const createReadableLog = (level: string, message: string, meta: any = {}) => {
         const context = meta.context || 'APP';
         const module = meta.module || 'LOG';
         console.log(`[${time}] ${level} [${context}:${module}] ${message}`);
-        return;
+        return true; // Indicates that readable log was used
     }
+    return false; // Indicates that pino should be used
 };
 
 /**
@@ -36,8 +37,11 @@ class EnhancedLogger {
     // Standard Logging Methods
     info(message: string, meta?: object, context?: string) {
         const formattedMessage = this.formatMessage(message, context);
-        createReadableLog('INFO', formattedMessage, { ...meta, context, module: 'INFO' });
-        this.baseLogger.info({ ...meta, context, module: 'INFO' }, formattedMessage);
+        const logMeta = { ...meta, context, module: 'INFO' };
+
+        if (!createReadableLog('INFO', formattedMessage, logMeta)) {
+            this.baseLogger.info(logMeta, formattedMessage);
+        }
     }
 
     error(message: string, error?: Error | object, context?: string) {
@@ -48,26 +52,37 @@ class EnhancedLogger {
             module: 'ERROR',
             stack: error instanceof Error ? error.stack : undefined
         };
-        createReadableLog('ERROR', formattedMessage, errorMeta);
-        this.baseLogger.error(errorMeta, formattedMessage);
+
+        if (!createReadableLog('ERROR', formattedMessage, errorMeta)) {
+            this.baseLogger.error(errorMeta, formattedMessage);
+        }
     }
 
     warn(message: string, meta?: object, context?: string) {
         const formattedMessage = this.formatMessage(message, context);
-        createReadableLog('WARN', formattedMessage, { ...meta, context, module: 'WARN' });
-        this.baseLogger.warn({ ...meta, context, module: 'WARN' }, formattedMessage);
+        const logMeta = { ...meta, context, module: 'WARN' };
+
+        if (!createReadableLog('WARN', formattedMessage, logMeta)) {
+            this.baseLogger.warn(logMeta, formattedMessage);
+        }
     }
 
     debug(message: string, meta?: object, context?: string) {
         const formattedMessage = this.formatMessage(message, context);
-        createReadableLog('DEBUG', formattedMessage, { ...meta, context, module: 'DEBUG' });
-        this.baseLogger.debug({ ...meta, context, module: 'DEBUG' }, formattedMessage);
+        const logMeta = { ...meta, context, module: 'DEBUG' };
+
+        if (!createReadableLog('DEBUG', formattedMessage, logMeta)) {
+            this.baseLogger.debug(logMeta, formattedMessage);
+        }
     }
 
     success(message: string, meta?: object, context?: string) {
         const formattedMessage = this.formatMessage(`✅ ${message}`, context);
-        createReadableLog('SUCCESS', formattedMessage, { ...meta, context, module: 'SUCCESS' });
-        this.baseLogger.info({ ...meta, context, module: 'SUCCESS' }, formattedMessage);
+        const logMeta = { ...meta, context, module: 'SUCCESS' };
+
+        if (!createReadableLog('SUCCESS', formattedMessage, logMeta)) {
+            this.baseLogger.info(logMeta, formattedMessage);
+        }
     }
 
     // Category-Specific Logging Methods

@@ -40,17 +40,26 @@ function Calendar({ widget, layout }: KalenderProps): JSX.Element {
     );
 
     const messageHandler = () => {
-      loadEvents();
+      loadEvents(false); // WebSocket refresh without skeleton
     };
 
-    // Register both Google and Microsoft calendar event handlers
-    communicationService.receiveGoogleCalendarMessage(messageHandler);
-    communicationService.receiveMicrosoftCalendarMessage(messageHandler);
+    // Register event handlers based on widget type to prevent duplicate events
+    const settings = widget.settings as any;
+
+    if (settings?.type === 'google') {
+      communicationService.receiveGoogleCalendarMessage(messageHandler);
+    } else if (settings?.type === 'microsoft') {
+      communicationService.receiveMicrosoftCalendarMessage(messageHandler);
+    }
+
     communicationService.connect(widget.dashboardId);
 
     return () => {
-      communicationService.abmelden('google-calendar-event');
-      communicationService.abmelden('microsoft-calendar-event');
+      if (settings?.type === 'google') {
+        communicationService.abmelden('google-calendar-event');
+      } else if (settings?.type === 'microsoft') {
+        communicationService.abmelden('microsoft-calendar-event');
+      }
     };
   }, [widget.dashboardId, loadEvents]);
 
