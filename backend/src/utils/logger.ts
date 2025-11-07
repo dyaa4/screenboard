@@ -6,23 +6,30 @@ import pino from 'pino';
  */
 
 // Enhanced Logger Configuration
+const isProduction = process.env.NODE_ENV === 'production';
+
 const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
-    transport: {
-        target: 'pino-pretty',
-        options: {
-            colorize: true,
-            translateTime: 'yyyy-mm-dd HH:MM:ss',
-            ignore: 'pid,hostname',
-            messageFormat: (log: any, messageKey: string) => {
-                const message = log[messageKey];
-                const context = log.context || '';
-                const module = log.module || '';
-
-                return `${context ? `[${context}]` : ''} ${module ? `{${module}}` : ''} ${message}`;
+    ...(isProduction 
+        ? {
+            // Production: Simple JSON logging ohne pino-pretty
+            formatters: {
+                level: (label) => ({ level: label.toUpperCase() }),
+            },
+            timestamp: pino.stdTimeFunctions.isoTime,
+        }
+        : {
+            // Development: Pretty printing mit pino-pretty
+            transport: {
+                target: 'pino-pretty',
+                options: {
+                    colorize: true,
+                    translateTime: 'yyyy-mm-dd HH:MM:ss',
+                    ignore: 'pid,hostname',
+                }
             }
         }
-    }
+    )
 });
 
 /**
@@ -33,28 +40,33 @@ class EnhancedLogger {
 
     // Standard Logging Methods
     info(message: string, meta?: object, context?: string) {
-        this.baseLogger.info({ ...meta, context, module: 'INFO' }, message);
+        const formattedMessage = this.formatMessage(message, context);
+        this.baseLogger.info({ ...meta, context, module: 'INFO' }, formattedMessage);
     }
 
     error(message: string, error?: Error | object, context?: string) {
+        const formattedMessage = this.formatMessage(message, context);
         this.baseLogger.error({
             ...error,
             context,
             module: 'ERROR',
             stack: error instanceof Error ? error.stack : undefined
-        }, message);
+        }, formattedMessage);
     }
 
     warn(message: string, meta?: object, context?: string) {
-        this.baseLogger.warn({ ...meta, context, module: 'WARN' }, message);
+        const formattedMessage = this.formatMessage(message, context);
+        this.baseLogger.warn({ ...meta, context, module: 'WARN' }, formattedMessage);
     }
 
     debug(message: string, meta?: object, context?: string) {
-        this.baseLogger.debug({ ...meta, context, module: 'DEBUG' }, message);
+        const formattedMessage = this.formatMessage(message, context);
+        this.baseLogger.debug({ ...meta, context, module: 'DEBUG' }, formattedMessage);
     }
 
     success(message: string, meta?: object, context?: string) {
-        this.baseLogger.info({ ...meta, context, module: 'SUCCESS' }, `✅ ${message}`);
+        const formattedMessage = this.formatMessage(`✅ ${message}`, context);
+        this.baseLogger.info({ ...meta, context, module: 'SUCCESS' }, formattedMessage);
     }
 
     // Category-Specific Logging Methods
@@ -195,6 +207,18 @@ class EnhancedLogger {
     }
 
     // Helper Methods
+    private formatMessage(message: string, context?: string): string {
+        const isProduction = process.env.NODE_ENV === 'production';
+        
+        if (isProduction) {
+            // Production: Simple message format
+            return context ? `[${context}] ${message}` : message;
+        } else {
+            // Development: Original message (pino-pretty will handle formatting)
+            return message;
+        }
+    }
+
     private getStatusEmoji(statusCode: number): string {
         if (statusCode >= 200 && statusCode < 300) return '✅';
         if (statusCode >= 300 && statusCode < 400) return '↗️';
