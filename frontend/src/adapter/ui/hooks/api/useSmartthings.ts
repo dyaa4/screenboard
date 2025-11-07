@@ -15,6 +15,10 @@ interface UseSmartThingsReturn {
   isLoggedIn: boolean;
   executeCommand: (deviceId: string, command: any) => Promise<void>;
   getDeviceStatus: (deviceId: string) => Promise<any>;
+  // Color control methods
+  setDeviceColor: (deviceId: string, hue: number, saturation: number) => Promise<void>;
+  setDeviceColorTemperature: (deviceId: string, colorTemperature: number) => Promise<void>;
+  setDeviceBrightness: (deviceId: string, level: number) => Promise<void>;
 }
 
 export const useSmartThings = (
@@ -191,6 +195,145 @@ export const useSmartThings = (
     [validateDashboardId, handleApiError],
   );
 
+  // === COLOR CONTROL METHODS ===
+
+  /**
+   * Sets the color of a device using hue and saturation
+   */
+  const setDeviceColor = useCallback(
+    async (deviceId: string, hue: number, saturation: number) => {
+      setDeviceLoading((prev) => ({
+        ...prev,
+        [deviceId]: true,
+      }));
+
+      // Clear any existing errors
+      setCommandErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[deviceId];
+        return newErrors;
+      });
+
+      try {
+        await container
+          .resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME)
+          .setDeviceColor(deviceId, hue, saturation);
+      } catch (err) {
+        console.error('Error setting device color:', err);
+
+        // Set device-specific error for 2 seconds
+        setCommandErrors((prev) => ({
+          ...prev,
+          [deviceId]: 'Color update failed',
+        }));
+
+        setTimeout(() => {
+          setCommandErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[deviceId];
+            return newErrors;
+          });
+        }, 2000);
+      } finally {
+        setDeviceLoading((prev) => ({
+          ...prev,
+          [deviceId]: false,
+        }));
+      }
+    },
+    [],
+  );
+
+  /**
+   * Sets the color temperature of a device
+   */
+  const setDeviceColorTemperature = useCallback(
+    async (deviceId: string, colorTemperature: number) => {
+      setDeviceLoading((prev) => ({
+        ...prev,
+        [deviceId]: true,
+      }));
+
+      setCommandErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[deviceId];
+        return newErrors;
+      });
+
+      try {
+        await container
+          .resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME)
+          .setDeviceColorTemperature(deviceId, colorTemperature);
+      } catch (err) {
+        console.error('Error setting device color temperature:', err);
+
+        setCommandErrors((prev) => ({
+          ...prev,
+          [deviceId]: 'Temperature update failed',
+        }));
+
+        setTimeout(() => {
+          setCommandErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[deviceId];
+            return newErrors;
+          });
+        }, 2000);
+      } finally {
+        setDeviceLoading((prev) => ({
+          ...prev,
+          [deviceId]: false,
+        }));
+      }
+    },
+    [],
+  );
+
+  /**
+   * Sets the brightness level of a device
+   */
+  const setDeviceBrightness = useCallback(
+    async (deviceId: string, level: number) => {
+      setDeviceLoading((prev) => ({
+        ...prev,
+        [deviceId]: true,
+      }));
+
+      setCommandErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[deviceId];
+        return newErrors;
+      });
+
+      try {
+        await container
+          .resolve<SmartThingsRepository>(SMARTTHINGS_REPOSITORY_NAME)
+          .setDeviceBrightness(deviceId, level);
+      } catch (err) {
+        console.error('Error setting device brightness:', err);
+
+        setCommandErrors((prev) => ({
+          ...prev,
+          [deviceId]: 'Brightness update failed',
+        }));
+
+        setTimeout(() => {
+          setCommandErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[deviceId];
+            return newErrors;
+          });
+        }, 2000);
+      } finally {
+        setDeviceLoading((prev) => ({
+          ...prev,
+          [deviceId]: false,
+        }));
+      }
+    },
+    [],
+  );
+
   /**
    * Logs the user out
    */
@@ -351,5 +494,9 @@ export const useSmartThings = (
     deviceLoading, // Geändert: Umbenennung von executeCommandLoading zu deviceLoading
     commandErrors,
     getDeviceStatus,
+    // Color control methods
+    setDeviceColor,
+    setDeviceColorTemperature,
+    setDeviceBrightness,
   };
 };

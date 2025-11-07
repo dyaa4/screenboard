@@ -209,7 +209,11 @@
           "turn_on": "Turn on",
           "status": "Status",
           "no_selected_device": "No devices available",
-          "command_error": "Error"
+          "command_error": "Error",
+          "color_controls": "Color Controls",
+          "color": "Color",
+          "color_temperature": "Color Temperature",
+          "brightness": "Brightness"
         },
         "weatherWidget": {
           "notConfigured": "Error loading the data, please check the settings for this widget"

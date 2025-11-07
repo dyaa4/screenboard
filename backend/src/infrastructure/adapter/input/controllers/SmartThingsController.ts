@@ -235,4 +235,184 @@ export class SmartThingsController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    // === COLOR CONTROL ENDPOINTS ===
+
+    /**
+     * Set device color using hue and saturation values
+     * POST /api/smartthings/device/:deviceId/color
+     * Body: { hue: number, saturation: number }
+     */
+    async setDeviceColor(req: Request, res: Response) {
+        const timer = logger.startTimer('SmartThings Set Device Color');
+
+        try {
+            const { deviceId } = req.params;
+            const { hue, saturation } = req.body;
+            const { userId, dashboardId } = req.headers as any;
+
+            if (!deviceId) {
+                return res.status(400).json({ message: 'Device ID is required' });
+            }
+            if (hue === undefined || saturation === undefined) {
+                return res.status(400).json({ message: 'Hue and saturation values are required' });
+            }
+            if (!userId || !dashboardId) {
+                return res.status(400).json({ message: 'User ID and Dashboard ID are required in headers' });
+            }
+
+            logger.info('Setting SmartThings device color', {
+                deviceId,
+                hue,
+                saturation,
+                userId,
+                dashboardId
+            }, 'SmartThingsController');
+
+            await this.smartThingsService.setDeviceColor(
+                userId,
+                dashboardId,
+                deviceId,
+                Number(hue),
+                Number(saturation)
+            );
+
+            res.status(200).json({
+                message: 'Device color set successfully',
+                deviceId,
+                hue: Number(hue),
+                saturation: Number(saturation)
+            });
+
+        } catch (error: any) {
+            logger.error('Failed to set SmartThings device color', {
+                error: error.message,
+                deviceId: req.params.deviceId
+            }, 'SmartThingsController');
+
+            res.status(500).json({
+                message: 'Failed to set device color',
+                error: error.message
+            });
+        } finally {
+            timer();
+        }
+    }
+
+    /**
+     * Set device color temperature in Kelvin
+     * POST /api/smartthings/device/:deviceId/color-temperature
+     * Body: { colorTemperature: number }
+     */
+    async setDeviceColorTemperature(req: Request, res: Response) {
+        const timer = logger.startTimer('SmartThings Set Device Color Temperature');
+
+        try {
+            const { deviceId } = req.params;
+            const { colorTemperature } = req.body;
+            const { userId, dashboardId } = req.headers as any;
+
+            if (!deviceId) {
+                return res.status(400).json({ message: 'Device ID is required' });
+            }
+            if (colorTemperature === undefined) {
+                return res.status(400).json({ message: 'Color temperature value is required' });
+            }
+            if (!userId || !dashboardId) {
+                return res.status(400).json({ message: 'User ID and Dashboard ID are required in headers' });
+            }
+
+            logger.info('Setting SmartThings device color temperature', {
+                deviceId,
+                colorTemperature,
+                userId,
+                dashboardId
+            }, 'SmartThingsController');
+
+            await this.smartThingsService.setDeviceColorTemperature(
+                userId,
+                dashboardId,
+                deviceId,
+                Number(colorTemperature)
+            );
+
+            res.status(200).json({
+                message: 'Device color temperature set successfully',
+                deviceId,
+                colorTemperature: Number(colorTemperature)
+            });
+
+        } catch (error: any) {
+            logger.error('Failed to set SmartThings device color temperature', {
+                error: error.message,
+                deviceId: req.params.deviceId
+            }, 'SmartThingsController');
+
+            res.status(500).json({
+                message: 'Failed to set device color temperature',
+                error: error.message
+            });
+        } finally {
+            timer();
+        }
+    }
+
+    /**
+     * Set device brightness level
+     * POST /api/smartthings/device/:deviceId/brightness
+     * Body: { level: number }
+     */
+    async setDeviceBrightness(req: Request, res: Response) {
+        const timer = logger.startTimer('SmartThings Set Device Brightness');
+
+        try {
+            const { deviceId } = req.params;
+            const { level } = req.body;
+            const { userId, dashboardId } = req.headers as any;
+
+            if (!deviceId) {
+                return res.status(400).json({ message: 'Device ID is required' });
+            }
+            if (level === undefined) {
+                return res.status(400).json({ message: 'Brightness level value is required' });
+            }
+            if (!userId || !dashboardId) {
+                return res.status(400).json({ message: 'User ID and Dashboard ID are required in headers' });
+            }
+
+            logger.info('Setting SmartThings device brightness', {
+                deviceId,
+                level,
+                userId,
+                dashboardId
+            }, 'SmartThingsController');
+
+            await this.smartThingsService.setDeviceBrightness(
+                userId,
+                dashboardId,
+                deviceId,
+                Number(level)
+            );
+
+            res.status(200).json({
+                message: 'Device brightness set successfully',
+                deviceId,
+                level: Number(level)
+            });
+
+        } catch (error: any) {
+            logger.error('Failed to set SmartThings device brightness', {
+                error: error.message,
+                deviceId: req.params.deviceId
+            }, 'SmartThingsController');
+
+            res.status(500).json({
+                message: 'Failed to set device brightness',
+                error: error.message
+            });
+        } finally {
+            timer();
+        }
+    }
+
 }

@@ -210,7 +210,11 @@
           "turn_on": "Anschalten",
           "status": "Status",
           "no_selected_device": "Keine Geräte verfügbar",
-          "command_error": "Fehler"
+          "command_error": "Fehler",
+          "color_controls": "Farbsteuerung",
+          "color": "Farbe",
+          "color_temperature": "Farbtemperatur",
+          "brightness": "Helligkeit"
         },
         "weatherWidget": {
           "notConfigured": "Fehler beim Laden der Daten, bitte prüfen Sie die Einstellungen zu diesem Widget"

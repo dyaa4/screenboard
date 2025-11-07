@@ -218,6 +218,96 @@ export default class SmartThingsAdapter implements SmartThingsRepository {
     }
   }
 
+  // === COLOR CONTROL METHODS ===
+
+  async setDeviceColor(deviceId: string, hue: number, saturation: number): Promise<void> {
+    const appToken = await this.getAppToken();
+
+    try {
+      const response = await axios.post(
+        `${getApiUrl(`/api/smartthings/device/${deviceId}/color`)}`,
+        { hue, saturation },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${appToken}`,
+            // Add user and dashboard context from auth token
+            userId: await this.getUserId(),
+            dashboardId: await this.getDashboardId(),
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error setting SmartThings device color:', error);
+      throw new Error(`Failed to set device color: ${error.response?.data?.message || error.message}`);
+    }
+  }
+
+  async setDeviceColorTemperature(deviceId: string, colorTemperature: number): Promise<void> {
+    const appToken = await this.getAppToken();
+
+    try {
+      const response = await axios.post(
+        `${getApiUrl(`/api/smartthings/device/${deviceId}/color-temperature`)}`,
+        { colorTemperature },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${appToken}`,
+            // Add user and dashboard context from auth token
+            userId: await this.getUserId(),
+            dashboardId: await this.getDashboardId(),
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error setting SmartThings device color temperature:', error);
+      throw new Error(`Failed to set color temperature: ${error.response?.data?.message || error.message}`);
+    }
+  }
+
+  async setDeviceBrightness(deviceId: string, level: number): Promise<void> {
+    const appToken = await this.getAppToken();
+
+    try {
+      const response = await axios.post(
+        `${getApiUrl(`/api/smartthings/device/${deviceId}/brightness`)}`,
+        { level },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${appToken}`,
+            // Add user and dashboard context from auth token
+            userId: await this.getUserId(),
+            dashboardId: await this.getDashboardId(),
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error setting SmartThings device brightness:', error);
+      throw new Error(`Failed to set brightness: ${error.response?.data?.message || error.message}`);
+    }
+  }
+
+  // Helper methods to extract user and dashboard info from auth token
+  private async getUserId(): Promise<string> {
+    // This will need to be implemented based on your auth system
+    // For now, return placeholder
+    return 'current-user-id';
+  }
+
+  private async getDashboardId(): Promise<string> {
+    // This will need to be implemented based on your routing system
+    // For now, return placeholder - could extract from URL or context
+    return 'current-dashboard-id';
+  }
+
   private async getAppToken(): Promise<string | null> {
     return await this.accessTokenUseCase.getAccessToken();
   }

@@ -1,7 +1,13 @@
 // SmartThingsAdapter.ts
 import logger from "../../../utils/logger"
 import { SmartThingsRepository } from "../../../domain/repositories/SmartThingsRepository"
-import { ISmartThingsToken, SmartThingsDeviceDTO, SmartThingsDeviceStatusDTO, SmartThingsSubscriptionDTO } from "../../../domain/types/SmartThingDtos"
+import {
+    ISmartThingsToken,
+    SmartThingsDeviceDTO,
+    SmartThingsDeviceStatusDTO,
+    SmartThingsSubscriptionDTO,
+    SmartThingsColorDTO
+} from "../../../domain/types/SmartThingDtos"
 import axios, { AxiosError } from "axios"
 
 
@@ -158,15 +164,24 @@ export class SmartThingsAdapter implements SmartThingsRepository {
             }
         )
 
-        return response.data.items.map((device: any) => ({
-            deviceId: device.deviceId,
-            name: device.name,
-            label: device.label,
-            deviceTypeName: device.deviceTypeName,
-            deviceNetworkType: device.deviceNetworkType,
-            capabilities: device.capabilities,
-            status: device.status
-        }))
+        return response.data.items.map((device: any) => {
+            const capabilities = device.components?.[0]?.capabilities || [];
+            const capabilityIds = capabilities.map((cap: any) => cap.id);
+
+            return {
+                deviceId: device.deviceId,
+                name: device.name,
+                label: device.label,
+                deviceTypeName: device.deviceTypeName,
+                deviceNetworkType: device.deviceNetworkType,
+                capabilities: capabilityIds,
+                status: device.status || {},
+                // Enhanced capability detection for color control
+                supportsColor: capabilityIds.includes('colorControl'),
+                supportsColorTemperature: capabilityIds.includes('colorTemperature'),
+                supportsBrightness: capabilityIds.includes('switchLevel')
+            };
+        });
     }
 
     async fetchDeviceStatus(
@@ -212,6 +227,165 @@ export class SmartThingsAdapter implements SmartThingsRepository {
         } catch (error: any) {
             console.error('Error deleting SmartThings subscription:', error.response?.data || error.message);
             // Wir werfen hier keinen Fehler, da die Subscription vielleicht schon gelöscht ist
+        }
+    }
+
+    // === COLOR CONTROL METHODS ===
+
+    /**
+     * Set device color using HSB values
+     * @param accessToken SmartThings access token
+     * @param deviceId Device ID to control
+     * @param color Color object with hue (0-100) and saturation (0-100)
+     */
+    async setDeviceColor(
+        accessToken: string,
+        deviceId: string,
+        color: SmartThingsColorDTO
+    ): Promise<void> {
+        const timer = logger.startTimer('SmartThings Set Color');
+
+        try {
+            logger.info('Setting device color', {
+                deviceId,
+                hue: color.hue,
+                saturation: color.saturation
+            }, 'SmartThingsAdapter');
+
+            const command = {
+                commands: [{
+                    component: "main",
+                    capability: "colorControl",
+                    command: "setColor",
+                    arguments: [{
+                        hue: Math.round(color.hue),
+                        saturation: Math.round(color.saturation)
+                    }]
+                }]
+            };
+
+            await axios.post(
+                `https://api.smartthings.com/v1/devices/${deviceId}/commands`,
+                command,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                }
+            );
+
+            logger.info('Device color set successfully', { deviceId }, 'SmartThingsAdapter');
+        } catch (error: any) {
+            logger.error('Failed to set device color', {
+                deviceId,
+                error: error.response?.data || error.message
+            }, 'SmartThingsAdapter');
+            throw new Error(`Failed to set device color: ${error.response?.data?.message || error.message}`);
+        } finally {
+            timer();
+        }
+    }
+
+    /**
+     * Set device color temperature in Kelvin
+     * @param accessToken SmartThings access token
+     * @param deviceId Device ID to control
+     * @param colorTemperature Color temperature in Kelvin (1500-6500)
+     */
+    async setDeviceColorTemperature(
+        accessToken: string,
+        deviceId: string,
+        colorTemperature: number
+    ): Promise<void> {
+        const timer = logger.startTimer('SmartThings Set Color Temperature');
+
+        try {
+            logger.info('Setting device color temperature', {
+                deviceId,
+                colorTemperature
+            }, 'SmartThingsAdapter');
+
+            const command = {
+                commands: [{
+                    component: "main",
+                    capability: "colorTemperature",
+                    command: "setColorTemperature",
+                    arguments: [Math.round(colorTemperature)]
+                }]
+            };
+
+            await axios.post(
+                `https://api.smartthings.com/v1/devices/${deviceId}/commands`,
+                command,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                }
+            );
+
+            logger.info('Device color temperature set successfully', { deviceId }, 'SmartThingsAdapter');
+        } catch (error: any) {
+            logger.error('Failed to set device color temperature', {
+                deviceId,
+                error: error.response?.data || error.message
+            }, 'SmartThingsAdapter');
+            throw new Error(`Failed to set color temperature: ${error.response?.data?.message || error.message}`);
+        } finally {
+            timer();
+        }
+    }
+
+    /**
+     * Set device brightness level
+     * @param accessToken SmartThings access token
+     * @param deviceId Device ID to control
+     * @param level Brightness level (0-100)
+     */
+    async setDeviceBrightness(
+        accessToken: string,
+        deviceId: string,
+        level: number
+    ): Promise<void> {
+        const timer = logger.startTimer('SmartThings Set Brightness');
+
+        try {
+            logger.info('Setting device brightness', {
+                deviceId,
+                level
+            }, 'SmartThingsAdapter');
+
+            const command = {
+                commands: [{
+                    component: "main",
+                    capability: "switchLevel",
+                    command: "setLevel",
+                    arguments: [Math.round(Math.max(0, Math.min(100, level)))]
+                }]
+            };
+
+            await axios.post(
+                `https://api.smartthings.com/v1/devices/${deviceId}/commands`,
+                command,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                }
+            );
+
+            logger.info('Device brightness set successfully', { deviceId }, 'SmartThingsAdapter');
+        } catch (error: any) {
+            logger.error('Failed to set device brightness', {
+                deviceId,
+                error: error.response?.data || error.message
+            }, 'SmartThingsAdapter');
+            throw new Error(`Failed to set brightness: ${error.response?.data?.message || error.message}`);
+        } finally {
+            timer();
         }
     }
 

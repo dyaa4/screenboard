@@ -15,7 +15,11 @@ export interface SmartThingsDeviceDTO {
     deviceTypeName: string
     deviceNetworkType: string
     capabilities: string[]
-    status: any
+    status: SmartThingsDeviceStatusDTO
+    // Color and brightness support
+    supportsColor?: boolean
+    supportsColorTemperature?: boolean
+    supportsBrightness?: boolean
 }
 
 export interface SmartThingsSubscriptionDTO {
@@ -34,6 +38,49 @@ export interface SmartThingsDeviceStatusDTO {
             }
         }
     }
+}
+
+// Color Control DTOs
+export interface SmartThingsColorDTO {
+    hue: number        // 0-100
+    saturation: number // 0-100
+}
+
+export interface SmartThingsColorTemperatureDTO {
+    colorTemperature: number // Kelvin (1500-6500)
+}
+
+export interface SmartThingsBrightnessDTO {
+    level: number // 0-100
+}
+
+// Command DTOs for device control
+export interface SmartThingsDeviceCommandDTO {
+    component?: string
+    capability: string
+    command: string
+    arguments?: any[]
+}
+
+export interface SmartThingsColorCommandDTO extends SmartThingsDeviceCommandDTO {
+    capability: 'colorControl'
+    command: 'setColor'
+    arguments: [{
+        hue: number
+        saturation: number
+    }]
+}
+
+export interface SmartThingsColorTemperatureCommandDTO extends SmartThingsDeviceCommandDTO {
+    capability: 'colorTemperature'
+    command: 'setColorTemperature'
+    arguments: [number]
+}
+
+export interface SmartThingsBrightnessCommandDTO extends SmartThingsDeviceCommandDTO {
+    capability: 'switchLevel'
+    command: 'setLevel'
+    arguments: [number]
 }
 
 export interface WebhookSmartthingsEvent {

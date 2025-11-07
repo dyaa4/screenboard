@@ -459,4 +459,196 @@ export class SmartThingsService {
     }
   }
 
+  // === COLOR CONTROL SERVICE METHODS ===
+
+  /**
+   * Set device color using hue and saturation
+   * @param userId Current user ID
+   * @param dashboardId Current dashboard ID
+   * @param deviceId Device ID to control
+   * @param hue Hue value (0-100)
+   * @param saturation Saturation value (0-100)
+   */
+  async setDeviceColor(
+    userId: string,
+    dashboardId: string,
+    deviceId: string,
+    hue: number,
+    saturation: number
+  ): Promise<void> {
+    const timer = logger.startTimer('SmartThings Set Device Color');
+
+    try {
+      logger.info('Setting device color via service', {
+        userId,
+        dashboardId,
+        deviceId,
+        hue,
+        saturation
+      }, 'SmartThingsService');
+
+      // Validate input values
+      if (hue < 0 || hue > 100) {
+        throw new Error('Hue must be between 0 and 100');
+      }
+      if (saturation < 0 || saturation > 100) {
+        throw new Error('Saturation must be between 0 and 100');
+      }
+
+      const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
+
+      await this.smartThingsRepository.setDeviceColor(
+        accessToken,
+        deviceId,
+        { hue, saturation }
+      );
+
+      // Emit real-time update to clients
+      emitToUserDashboard(
+        `${userId}-${dashboardId}`,
+        "smartthings-color-changed",
+        {
+          deviceId,
+          hue,
+          saturation,
+          timestamp: new Date().toISOString(),
+        }
+      );
+
+      logger.info('Device color updated successfully', { deviceId }, 'SmartThingsService');
+    } catch (error: any) {
+      logger.error('Failed to set device color', {
+        userId,
+        dashboardId,
+        deviceId,
+        error: error.message
+      }, 'SmartThingsService');
+      throw error;
+    } finally {
+      timer();
+    }
+  }
+
+  /**
+   * Set device color temperature
+   * @param userId Current user ID
+   * @param dashboardId Current dashboard ID
+   * @param deviceId Device ID to control
+   * @param colorTemperature Color temperature in Kelvin (1500-6500)
+   */
+  async setDeviceColorTemperature(
+    userId: string,
+    dashboardId: string,
+    deviceId: string,
+    colorTemperature: number
+  ): Promise<void> {
+    const timer = logger.startTimer('SmartThings Set Device Color Temperature');
+
+    try {
+      logger.info('Setting device color temperature via service', {
+        userId,
+        dashboardId,
+        deviceId,
+        colorTemperature
+      }, 'SmartThingsService');
+
+      // Validate input value
+      if (colorTemperature < 1500 || colorTemperature > 6500) {
+        throw new Error('Color temperature must be between 1500K and 6500K');
+      }
+
+      const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
+
+      await this.smartThingsRepository.setDeviceColorTemperature(
+        accessToken,
+        deviceId,
+        colorTemperature
+      );
+
+      // Emit real-time update to clients
+      emitToUserDashboard(
+        `${userId}-${dashboardId}`,
+        "smartthings-color-temperature-changed",
+        {
+          deviceId,
+          colorTemperature,
+          timestamp: new Date().toISOString(),
+        }
+      );
+
+      logger.info('Device color temperature updated successfully', { deviceId }, 'SmartThingsService');
+    } catch (error: any) {
+      logger.error('Failed to set device color temperature', {
+        userId,
+        dashboardId,
+        deviceId,
+        error: error.message
+      }, 'SmartThingsService');
+      throw error;
+    } finally {
+      timer();
+    }
+  }
+
+  /**
+   * Set device brightness level
+   * @param userId Current user ID
+   * @param dashboardId Current dashboard ID
+   * @param deviceId Device ID to control
+   * @param level Brightness level (0-100)
+   */
+  async setDeviceBrightness(
+    userId: string,
+    dashboardId: string,
+    deviceId: string,
+    level: number
+  ): Promise<void> {
+    const timer = logger.startTimer('SmartThings Set Device Brightness');
+
+    try {
+      logger.info('Setting device brightness via service', {
+        userId,
+        dashboardId,
+        deviceId,
+        level
+      }, 'SmartThingsService');
+
+      // Validate input value
+      if (level < 0 || level > 100) {
+        throw new Error('Brightness level must be between 0 and 100');
+      }
+
+      const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
+
+      await this.smartThingsRepository.setDeviceBrightness(
+        accessToken,
+        deviceId,
+        level
+      );
+
+      // Emit real-time update to clients
+      emitToUserDashboard(
+        `${userId}-${dashboardId}`,
+        "smartthings-brightness-changed",
+        {
+          deviceId,
+          level,
+          timestamp: new Date().toISOString(),
+        }
+      );
+
+      logger.info('Device brightness updated successfully', { deviceId }, 'SmartThingsService');
+    } catch (error: any) {
+      logger.error('Failed to set device brightness', {
+        userId,
+        dashboardId,
+        deviceId,
+        error: error.message
+      }, 'SmartThingsService');
+      throw error;
+    } finally {
+      timer();
+    }
+  }
+
 }

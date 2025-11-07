@@ -12,6 +12,10 @@ export interface IoTDevice {
   provider: IoTProvider;
   status?: Record<string, Record<string, any>>;
   selected: boolean;
+  // Color control capabilities
+  supportsColor?: boolean;
+  supportsColorTemperature?: boolean;
+  supportsBrightness?: boolean;
 }
 
 export interface IoTWidgetSettings {

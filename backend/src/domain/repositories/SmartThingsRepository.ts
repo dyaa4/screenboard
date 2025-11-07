@@ -1,4 +1,10 @@
-import { ISmartThingsToken, SmartThingsDeviceDTO, SmartThingsDeviceStatusDTO, SmartThingsSubscriptionDTO } from "../../domain/types/SmartThingDtos"
+import {
+    ISmartThingsToken,
+    SmartThingsDeviceDTO,
+    SmartThingsDeviceStatusDTO,
+    SmartThingsSubscriptionDTO,
+    SmartThingsColorDTO
+} from "../../domain/types/SmartThingDtos"
 
 export interface SmartThingsRepository {
     exchangeAuthCodeForTokens(code: string): Promise<ISmartThingsToken>
@@ -15,5 +21,22 @@ export interface SmartThingsRepository {
         accessToken: string,
         subscriptionId: string,
         installedAppId: string
+    ): Promise<void>
+
+    // Color control methods
+    setDeviceColor(
+        accessToken: string,
+        deviceId: string,
+        color: SmartThingsColorDTO
+    ): Promise<void>
+    setDeviceColorTemperature(
+        accessToken: string,
+        deviceId: string,
+        colorTemperature: number
+    ): Promise<void>
+    setDeviceBrightness(
+        accessToken: string,
+        deviceId: string,
+        level: number
     ): Promise<void>
 }

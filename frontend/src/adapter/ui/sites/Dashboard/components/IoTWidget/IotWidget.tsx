@@ -18,6 +18,7 @@ import { container } from 'tsyringe';
 import { COMMUNICATION_REPOSITORY_NAME } from '@common/constants';
 import { CommunicationRepository } from '../../../../../../application/repositories/communicationRepository';
 import WidgetSkeleton from '../WidgetSkeleton/WidgetSkeleton';
+import ColorControls from './ColorControls';
 
 export interface IoTWidgetProps {
   widget: Widget;
@@ -34,6 +35,10 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
     deviceLoading,
     commandErrors,
     isLoggedIn,
+    // Color control methods
+    setDeviceColor,
+    setDeviceColorTemperature,
+    setDeviceBrightness,
   } = useSmartThings(widget.dashboardId);
 
   const { theme } = useTheme();
@@ -184,8 +189,8 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
         key={device.deviceId}
         className="p-4 transition-shadow duration-300 shadow-lg hover:shadow-xl"
         style={{
-          width: '160px',
-          height: '120px',
+          width: device.supportsColor || device.supportsColorTemperature || device.supportsBrightness ? '280px' : '160px',
+          minHeight: '120px',
           ...getCustomColorCssClass(layout, theme),
         }}
       >
@@ -238,6 +243,19 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
             )}
           </div>
         </div>
+
+        {/* Color Controls for capable devices */}
+        {(device.supportsColor || device.supportsColorTemperature || device.supportsBrightness) && (
+          <ColorControls
+            device={device}
+            layout={layout}
+            onColorChange={setDeviceColor}
+            onColorTemperatureChange={setDeviceColorTemperature}
+            onBrightnessChange={setDeviceBrightness}
+            isLoading={deviceLoading[device.deviceId]}
+            hasError={!!commandErrors[device.deviceId]}
+          />
+        )}
       </Card>
     );
   };
