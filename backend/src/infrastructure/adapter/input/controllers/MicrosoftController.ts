@@ -187,16 +187,25 @@ export class MicrosoftController {
 
       res.status(200).json(simpleEvents);
     } catch (error: any) {
-      logger.error('Microsoft calendar events failed', error, 'MicrosoftController');
+      logger.error('Microsoft calendar events failed wieso ist das invalid grant ich kann das token nicht aktualliseren !', error, 'MicrosoftController');
 
-      // Check for authentication/authorization errors
-      if (error.message.includes('authenticate') ||
+      // Check for specific Microsoft re-authentication errors
+      if (error.message.includes('MICROSOFT_REAUTH_REQUIRED') ||
+        error.message.includes('INVALID_REFRESH_TOKEN') ||
+        error.message.includes('authenticate') ||
         error.message.includes('Re-authentication required') ||
         error.message.includes('invalid or expired')) {
         res.status(401).json({
-          error: 'Microsoft Calendar authentication required',
-          details: 'Your Microsoft access token has expired. Please sign in again.',
-          needsReauth: true
+          error: 'Microsoft Calendar re-authentication required',
+          details: 'Your Microsoft Calendar access has expired. Please sign in again to restore access.',
+          needsReauth: true,
+          errorType: 'MICROSOFT_TOKEN_EXPIRED'
+        });
+      } else if (error.message.includes('MICROSOFT_CONFIG_ERROR')) {
+        res.status(500).json({
+          error: 'Microsoft Calendar configuration error',
+          details: 'There is an issue with the Microsoft Calendar integration setup. Please contact support.',
+          errorType: 'CONFIG_ERROR'
         });
       } else {
         res.status(500).json({
@@ -233,12 +242,18 @@ export class MicrosoftController {
       // Extract the value array from Microsoft Graph response to match frontend expectations
       res.status(200).json(calendars.value || []);
     } catch (error: any) {
-      console.error('Microsoft calendars error:', error);
+      logger.error('Microsoft calendars error', error, 'MicrosoftController');
 
-      if (error.message.includes('authenticate')) {
+      // Check for specific Microsoft re-authentication errors
+      if (error.message.includes('MICROSOFT_REAUTH_REQUIRED') ||
+        error.message.includes('INVALID_REFRESH_TOKEN') ||
+        error.message.includes('authenticate') ||
+        error.message.includes('Re-authentication required')) {
         res.status(401).json({
-          error: 'Microsoft Calendar authentication required',
-          details: error.message
+          error: 'Microsoft Calendar re-authentication required',
+          details: 'Your Microsoft Calendar access has expired. Please sign in again to restore access.',
+          needsReauth: true,
+          errorType: 'MICROSOFT_TOKEN_EXPIRED'
         });
       } else {
         res.status(500).json({
@@ -274,16 +289,22 @@ export class MicrosoftController {
 
       res.status(200).json(userInfo);
     } catch (error: any) {
-      console.error('Microsoft user info error:', error);
+      logger.error('Microsoft user info error', error, 'MicrosoftController');
 
-      if (error.message.includes('authenticate')) {
+      // Check for specific Microsoft re-authentication errors
+      if (error.message.includes('MICROSOFT_REAUTH_REQUIRED') ||
+        error.message.includes('INVALID_REFRESH_TOKEN') ||
+        error.message.includes('authenticate') ||
+        error.message.includes('Re-authentication required')) {
         res.status(401).json({
-          error: 'Microsoft Calendar authentication required',
-          details: error.message
+          error: 'Microsoft Calendar re-authentication required',
+          details: 'Your Microsoft Calendar access has expired. Please sign in again to restore access.',
+          needsReauth: true,
+          errorType: 'MICROSOFT_TOKEN_EXPIRED'
         });
       } else {
         res.status(500).json({
-          error: 'Failed to fetch Microsoft user information',
+          error: 'Failed to fetch Microsoft user info',
           details: error.message
         });
       }

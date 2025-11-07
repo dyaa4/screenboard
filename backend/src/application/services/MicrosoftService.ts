@@ -199,11 +199,26 @@ export class MicrosoftService {
     refreshToken: string
   ): Promise<IMicrosoftToken> {
     try {
+      // Debug: Log refresh token info (first/last 10 chars for security)
+      console.log(`🔄 Attempting Microsoft token refresh for user ${userId}`);
+      console.log(`🔑 Refresh token format: ${refreshToken.substring(0, 10)}...${refreshToken.substring(refreshToken.length - 10)}`);
+      console.log(`📏 Refresh token length: ${refreshToken.length}`);
+
       return await this.microsoftRepository.refreshAccessToken(refreshToken);
-    } catch (error) {
-      // If refresh token is invalid, delete the token
+    } catch (error: any) {
+      console.log(`❌ Microsoft token refresh failed:`, error.response?.data || error.message);
+
+      // If refresh token is invalid, delete the token and provide specific error
       await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.MICROSOFT);
-      throw new Error("Microsoft refresh token is invalid or expired. Re-authentication required.");
+
+      // Pass through specific error types for better error handling
+      if (error.message.includes('INVALID_REFRESH_TOKEN')) {
+        throw new Error("MICROSOFT_REAUTH_REQUIRED: Your Microsoft Calendar access has expired. Please sign in again to continue.");
+      } else if (error.message.includes('INVALID_CLIENT')) {
+        throw new Error("MICROSOFT_CONFIG_ERROR: Microsoft OAuth configuration error. Please contact support.");
+      } else {
+        throw new Error("MICROSOFT_REFRESH_FAILED: Unable to refresh Microsoft Calendar access. Re-authentication required.");
+      }
     }
   }
 

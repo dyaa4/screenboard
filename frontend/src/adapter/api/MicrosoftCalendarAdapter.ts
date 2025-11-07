@@ -64,11 +64,13 @@ export class MicrosoftCalendarAdapter implements MicrosoftRepository {
             return events;
         } catch (error: any) {
             if (error.response?.status === 401) {
-                console.log('Microsoft Calendar token expired');
-                // Create a more user-friendly error for expired tokens
-                const authError = new Error('Microsoft Calendar authentication expired. Please sign in again.');
+                console.log('Microsoft Calendar token expired - re-authentication required');
+                // Create a more user-friendly error for expired tokens with details from backend
+                const errorMessage = error.response?.data?.details || 'Microsoft Calendar authentication expired. Please sign in again.';
+                const authError = new Error(errorMessage);
                 (authError as any).needsReauth = true;
                 (authError as any).status = 401;
+                (authError as any).errorType = error.response?.data?.errorType || 'MICROSOFT_TOKEN_EXPIRED';
                 throw authError;
             }
             console.error('Error fetching Microsoft Calendar events:', error);
