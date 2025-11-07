@@ -43,11 +43,14 @@ function Calendar({ widget, layout }: KalenderProps): JSX.Element {
       loadEvents();
     };
 
+    // Register both Google and Microsoft calendar event handlers
     communicationService.receiveGoogleCalendarMessage(messageHandler);
+    communicationService.receiveMicrosoftCalendarMessage(messageHandler);
     communicationService.connect(widget.dashboardId);
 
     return () => {
       communicationService.abmelden('google-calendar-event');
+      communicationService.abmelden('microsoft-calendar-event');
     };
   }, [widget.dashboardId, loadEvents]);
 

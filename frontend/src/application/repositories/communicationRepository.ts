@@ -9,6 +9,7 @@ export interface CommunicationRepository {
 
   receiveCommunicationMessage(callback: (message: string) => void): void;
   receiveGoogleCalendarMessage(callback: (message: string) => void): void;
+  receiveMicrosoftCalendarMessage(callback: (message: string) => void): void;
   receiveSmartThingsMessage(callback: (event: any) => void): void;
 
   receiveRefresh(callback: () => void): void;

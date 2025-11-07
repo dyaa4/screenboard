@@ -13,6 +13,8 @@ export default class CommunicationAdapter implements CommunicationRepository {
   private receiveCallback: ((message: string) => void) | null = null;
   private receiveGoogleCalendarCallback: ((message: string) => void) | null =
     null;
+  private receiveMicrosoftCalendarCallback: ((message: string) => void) | null =
+    null;
   private receiveRefreshDashboardCallback: ((message: string) => void) | null =
     null;
   private receiveSmartThingsCallback: ((event: any) => void) | null = null;
@@ -20,7 +22,7 @@ export default class CommunicationAdapter implements CommunicationRepository {
   constructor(
     @inject(FETCH_ACCESS_TOKEN_INPUT_PORT)
     private readonly accessTokenUseCase: FetchAccessTokenInputPort,
-  ) {}
+  ) { }
 
   /**
    * Baut eine Socket-Verbindung zum Server auf.
@@ -82,6 +84,11 @@ export default class CommunicationAdapter implements CommunicationRepository {
     this.socket.on('google-calendar-event', (data: string) => {
       console.log('Google Calendar event:', data);
       this.receiveGoogleCalendarCallback?.(data);
+    });
+
+    this.socket.on('microsoft-calendar-event', (data: string) => {
+      console.log('Microsoft Calendar event:', data);
+      this.receiveMicrosoftCalendarCallback?.(data);
     });
 
     this.socket.on('smartthings-device-event', (event: any) => {
@@ -158,6 +165,17 @@ export default class CommunicationAdapter implements CommunicationRepository {
   ): void {
     this.receiveGoogleCalendarCallback = callback;
   }
+
+  /**
+   * Registriert einen Callback für eingehende 'microsoft-calendar-event'-Events.
+   * @param callback Die Callback-Funktion
+   */
+  public receiveMicrosoftCalendarMessage(
+    callback: (message: string) => void,
+  ): void {
+    this.receiveMicrosoftCalendarCallback = callback;
+  }
+
   /**
    *  Registriert einen Callback für eingehende 'smartthings-device-event'-Events.
    * @param callback Die Callback-Funktion für SmartThings-Events
