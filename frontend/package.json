@@ -28,6 +28,7 @@
     "@tailwindcss/vite": "^4.1.11",
     "@tuya/connector": "^1.0.4",
     "@uiw/react-color-circle": "^2.7.1",
+    "@vitejs/plugin-react": "^4.3.4",
     "axios": "^1.10.0",
     "classnames": "^2.5.1",
     "crypto-js": "^4.2.0",
@@ -63,6 +64,9 @@
     "styled-components": "^6.1.19",
     "tsconfig-paths": "^4.2.0",
     "tsyringe": "^4.10.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0",
+    "vite-plugin-pwa": "^0.21.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -80,7 +84,6 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",
-    "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.2.0",
     "dotenv": "^17.2.3",
     "eslint": "^9.31.0",
@@ -89,10 +92,7 @@
     "prettier": "^3.5.3",
     "sass": "^1.85.1",
     "tailwindcss": "^4.1.11",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.0",
-    "vite-plugin-pwa": "^0.21.1"
+    "ts-node": "^10.9.2"
   },
   "_moduleAliases": {
     "@config": "dist/config",

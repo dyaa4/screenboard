@@ -1,4 +1,5 @@
-import * as CryptoJS from 'crypto-js';
+// @ts-ignore
+import CryptoJS from 'crypto-js';
 import { EncryptionService } from '../../../application/services/EncryptionService';
 
 /**

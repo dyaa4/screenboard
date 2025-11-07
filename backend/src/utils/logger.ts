@@ -6,30 +6,12 @@ import pino from 'pino';
  */
 
 // Enhanced Logger Configuration
-const isProduction = process.env.NODE_ENV === 'production';
-
 const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
-    ...(isProduction
-        ? {
-            // Production: Simple JSON logging ohne pino-pretty
-            formatters: {
-                level: (label) => ({ level: label.toUpperCase() }),
-            },
-            timestamp: pino.stdTimeFunctions.isoTime,
-        }
-        : {
-            // Development: Pretty printing mit pino-pretty
-            transport: {
-                target: 'pino-pretty',
-                options: {
-                    colorize: true,
-                    translateTime: 'yyyy-mm-dd HH:MM:ss',
-                    ignore: 'pid,hostname',
-                }
-            }
-        }
-    )
+    formatters: {
+        level: (label) => ({ level: label.toUpperCase() }),
+    },
+    timestamp: pino.stdTimeFunctions.isoTime,
 });
 
 /**
