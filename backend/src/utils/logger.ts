@@ -6,6 +6,8 @@ import pino from 'pino';
  */
 
 // Enhanced Logger Configuration
+const isProduction = process.env.NODE_ENV === 'production';
+
 const logger = pino({
     level: process.env.LOG_LEVEL || 'info',
     formatters: {
@@ -13,6 +15,17 @@ const logger = pino({
     },
     timestamp: pino.stdTimeFunctions.isoTime,
 });
+
+// Alternative: Console Logger für bessere Lesbarkeit in Production
+const createReadableLog = (level: string, message: string, meta: any = {}) => {
+    if (isProduction && process.env.READABLE_LOGS === 'true') {
+        const time = new Date().toISOString().substring(11, 19);
+        const context = meta.context || 'APP';
+        const module = meta.module || 'LOG';
+        console.log(`[${time}] ${level} [${context}:${module}] ${message}`);
+        return;
+    }
+};
 
 /**
  * Enhanced Logger Class with Categories and Colors
@@ -23,31 +36,37 @@ class EnhancedLogger {
     // Standard Logging Methods
     info(message: string, meta?: object, context?: string) {
         const formattedMessage = this.formatMessage(message, context);
+        createReadableLog('INFO', formattedMessage, { ...meta, context, module: 'INFO' });
         this.baseLogger.info({ ...meta, context, module: 'INFO' }, formattedMessage);
     }
 
     error(message: string, error?: Error | object, context?: string) {
         const formattedMessage = this.formatMessage(message, context);
-        this.baseLogger.error({
+        const errorMeta = {
             ...error,
             context,
             module: 'ERROR',
             stack: error instanceof Error ? error.stack : undefined
-        }, formattedMessage);
+        };
+        createReadableLog('ERROR', formattedMessage, errorMeta);
+        this.baseLogger.error(errorMeta, formattedMessage);
     }
 
     warn(message: string, meta?: object, context?: string) {
         const formattedMessage = this.formatMessage(message, context);
+        createReadableLog('WARN', formattedMessage, { ...meta, context, module: 'WARN' });
         this.baseLogger.warn({ ...meta, context, module: 'WARN' }, formattedMessage);
     }
 
     debug(message: string, meta?: object, context?: string) {
         const formattedMessage = this.formatMessage(message, context);
+        createReadableLog('DEBUG', formattedMessage, { ...meta, context, module: 'DEBUG' });
         this.baseLogger.debug({ ...meta, context, module: 'DEBUG' }, formattedMessage);
     }
 
     success(message: string, meta?: object, context?: string) {
         const formattedMessage = this.formatMessage(`✅ ${message}`, context);
+        createReadableLog('SUCCESS', formattedMessage, { ...meta, context, module: 'SUCCESS' });
         this.baseLogger.info({ ...meta, context, module: 'SUCCESS' }, formattedMessage);
     }
 
