@@ -2,6 +2,7 @@ import { SpotifyRepository } from "../../../domain/repositories/SpotifyRepositor
 import { ISpotifyToken } from "../../../domain/types/ISpotifyToken";
 import { SpotifyTokenDto } from "../../../infrastructure/dtos/SpotifyTokenDto";
 import axios from "axios";
+import logger from "../../../utils/logger";
 
 export class SpotifyAdapter implements SpotifyRepository {
   private clientId: string;
@@ -19,7 +20,11 @@ export class SpotifyAdapter implements SpotifyRepository {
   }
 
   async getTokens(code: string): Promise<ISpotifyToken> {
+    const timer = logger.startTimer('Spotify API Token Request');
+
     try {
+      logger.apiCall('Spotify', '/api/token', 'POST');
+
       const response = await axios.post(
         "https://accounts.spotify.com/api/token",
         new URLSearchParams({
@@ -35,13 +40,19 @@ export class SpotifyAdapter implements SpotifyRepository {
         }
       );
       const SpotifyToken: SpotifyTokenDto = response.data;
+
+      logger.apiCall('Spotify', '/api/token', 'POST', response.status);
+      logger.success('Spotify tokens received', { expiresIn: SpotifyToken.expires_in }, 'SpotifyAdapter');
+
+      timer();
       return {
         accessToken: SpotifyToken.access_token,
         refreshToken: SpotifyToken.refresh_token,
         expiresIn: SpotifyToken.expires_in,
       };
     } catch (error) {
-      console.error("Error getting Spotify tokens:", error);
+      logger.error('Spotify token request failed', error as Error, 'SpotifyAdapter');
+      logger.apiCall('Spotify', '/api/token', 'POST', (error as any).response?.status);
       throw new Error("Failed to get Spotify tokens");
     }
   }

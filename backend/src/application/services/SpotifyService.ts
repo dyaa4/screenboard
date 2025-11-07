@@ -5,6 +5,7 @@ import { ISpotifyToken } from "../../domain/types/ISpotifyToken";
 import { SERVICES } from "../../domain/valueObjects/serviceToken";
 import { TokenRepository } from "../../infrastructure/repositories/TokenRepository";
 import { isAxiosError } from "axios";
+import logger from "../../utils/logger";
 
 export class SpotifyService {
   constructor(
@@ -35,7 +36,12 @@ export class SpotifyService {
   }
 
   async getTokens(code: string, userId: string, dashboardId: string): Promise<ISpotifyToken> {
+    const timer = logger.startTimer('Spotify Token Exchange');
+
     try {
+      logger.service('SpotifyService', 'getTokens', true, undefined, { userId, dashboardId });
+      logger.apiCall('Spotify', '/api/token', 'POST');
+
       // Tokens von Spotify holen
       //expiresIn is the time in seconds until the token expires
       const { accessToken, refreshToken, expiresIn } = await this.spotifyRepository.getTokens(
@@ -43,6 +49,8 @@ export class SpotifyService {
         userId,
         dashboardId
       );
+
+      logger.token('create', 'Spotify', userId);
 
       // Token Entity erstellen
       const token = new Token(
@@ -57,8 +65,13 @@ export class SpotifyService {
       // Token speichern
       await this.tokenRepository.create(token as ITokenDocument);
 
+      logger.success('Spotify tokens obtained and saved', { userId, dashboardId, expiresIn }, 'SpotifyService');
+      timer();
       return { accessToken, refreshToken, expiresIn };
     } catch (error) {
+      logger.error('Spotify token exchange failed', error as Error, 'SpotifyService');
+      logger.service('SpotifyService', 'getTokens', false);
+
       if (error instanceof Error) {
         throw new Error(`Failed to get Spotify tokens: ${error.message}`);
       }

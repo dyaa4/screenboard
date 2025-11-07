@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { SmartThingsService } from "../../../../application/services/SmartThingsService";
+import logger from "../../../../utils/logger";
 
 export class SmartThingsController {
     constructor(private readonly smartThingsService: SmartThingsService) { }
@@ -10,12 +11,19 @@ export class SmartThingsController {
      * dashboardId and userId (same as server-side flow). Returns JSON success.
      */
     async handleClientCallback(req: Request, res: Response) {
+        const timer = logger.startTimer('SmartThings OAuth Callback');
+
         try {
             const { code, state } = req.body;
+
+            logger.auth('SmartThings OAuth callback attempt', undefined, 'SmartThings');
+
             if (!code) {
+                logger.warn('SmartThings callback missing code', {}, 'SmartThingsController');
                 return res.status(400).json({ message: `Code is required` });
             }
             if (!state) {
+                logger.warn('SmartThings callback missing state', {}, 'SmartThingsController');
                 return res.status(400).json({ message: `State is required` });
             }
 
@@ -23,13 +31,17 @@ export class SmartThingsController {
             try {
                 stateData = JSON.parse(Buffer.from(state as string, 'base64').toString());
             } catch (e) {
+                logger.warn('SmartThings callback invalid state parameter', { error: (e as Error).message }, 'SmartThingsController');
                 return res.status(400).json({ message: "Invalid state parameter" });
             }
 
             const { dashboardId, userId } = stateData;
             if (!dashboardId || !userId) {
+                logger.warn('SmartThings callback missing dashboardId or userId', { dashboardId: !!dashboardId, userId: !!userId }, 'SmartThingsController');
                 return res.status(400).json({ message: "dashboardId or userId missing in state" });
             }
+
+            logger.info('Processing SmartThings auth callback', { userId, dashboardId }, 'SmartThingsController');
 
             await this.smartThingsService.handleAuthCallback(
                 userId,
@@ -37,9 +49,12 @@ export class SmartThingsController {
                 code as string
             );
 
+            logger.auth('SmartThings OAuth callback successful', userId, 'SmartThings', true);
+            timer();
             return res.json({ success: true });
         } catch (error: any) {
-            console.error('handleClientCallback error', error);
+            logger.error('SmartThings OAuth callback failed', error, 'SmartThingsController');
+            logger.auth('SmartThings OAuth callback failed', undefined, 'SmartThings', false);
             res.status(500).json({ error: error.message });
         }
     }

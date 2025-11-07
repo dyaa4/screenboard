@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { MicrosoftService } from '../../../../application/services/MicrosoftService';
+import logger from '../../../../utils/logger';
 
 /**
  * MicrosoftController - Infrastructure Layer (Input Adapter)
@@ -13,22 +14,29 @@ export class MicrosoftController {
    * Handle Microsoft OAuth login callback
    */
   async handleLogin(req: Request, res: Response): Promise<void> {
+    const timer = logger.startTimer('Microsoft OAuth Login');
+
     try {
       const { code } = req.body;
       const userId = req.auth?.payload?.sub;
       const { dashboardId } = req.query;
 
+      logger.auth('Microsoft OAuth login attempt', userId, 'Microsoft');
+
       if (!code) {
+        logger.warn('Microsoft auth code missing', { userId, dashboardId }, 'MicrosoftController');
         res.status(400).json({ error: 'Microsoft auth code is missing' });
         return;
       }
 
       if (!userId) {
+        logger.warn('UserId missing in Microsoft auth', { dashboardId }, 'MicrosoftController');
         res.status(400).json({ error: 'userId is missing' });
         return;
       }
 
       if (!dashboardId) {
+        logger.warn('DashboardId missing in Microsoft auth', { userId }, 'MicrosoftController');
         res.status(400).json({ error: 'dashboardId is missing' });
         return;
       }
@@ -39,9 +47,12 @@ export class MicrosoftController {
         code
       );
 
+      logger.auth('Microsoft OAuth login successful', userId, 'Microsoft', true);
       res.status(204).json();
+      timer();
     } catch (error: any) {
-      console.error('Microsoft login error:', error);
+      logger.error('Microsoft login error', error, 'MicrosoftController');
+      logger.auth('Microsoft OAuth login failed', req.auth?.payload?.sub, 'Microsoft', false);
       res.status(500).json({
         error: 'Failed to authenticate with Microsoft Calendar',
         details: error.message
@@ -280,22 +291,21 @@ export class MicrosoftController {
    */
   async handleCalendarWebhook(req: Request, res: Response): Promise<void> {
     try {
-      console.log('🔔 Microsoft Graph webhook request received:', {
+      logger.webhook('Microsoft', 'request_received', 'received', {
         method: req.method,
         url: req.url,
-        headers: {
-          'content-type': req.headers['content-type'],
-          'user-agent': req.headers['user-agent'],
-          'x-forwarded-for': req.headers['x-forwarded-for']
-        },
-        query: req.query,
+        contentType: req.headers['content-type'],
+        userAgent: req.headers['user-agent'],
+        forwarded: req.headers['x-forwarded-for'],
         bodyLength: JSON.stringify(req.body).length
       });
 
       // Microsoft Graph webhook validation (when setting up subscription)
       const validationToken = req.query.validationToken;
       if (validationToken) {
-        console.log('✅ Microsoft Graph webhook validation requested:', validationToken);
+        logger.webhook('Microsoft', 'validation_request', 'processed', {
+          validationToken: validationToken.toString()
+        });
         res.status(200).send(validationToken);
         return;
       }
@@ -303,25 +313,29 @@ export class MicrosoftController {
       // Process actual webhook notifications
       const notifications = req.body.value;
       if (!notifications || !Array.isArray(notifications)) {
-        console.error('❌ Invalid notification payload:', req.body);
+        logger.error('Invalid Microsoft webhook payload', req.body, 'MicrosoftController');
+        logger.webhook('Microsoft', 'invalid_payload', 'failed');
         res.status(400).json({ error: 'Invalid notification payload' });
         return;
       }
 
-      console.log('📋 Processing Microsoft Graph webhook notifications:', {
-        count: notifications.length,
+      logger.info(`Processing ${notifications.length} Microsoft webhook notifications`, {
         notifications: notifications.map(n => ({
           subscriptionId: n.subscriptionId,
           changeType: n.changeType,
           resource: n.resource,
           clientState: n.clientState
         }))
-      });
+      }, 'MicrosoftController');
 
       for (const notification of notifications) {
         const { subscriptionId, changeType, resource, clientState } = notification;
 
-        console.log(`🔄 Processing notification: ${changeType} for ${resource}`);
+        logger.webhook('Microsoft', `${changeType}_notification`, 'processed', {
+          subscriptionId,
+          resource,
+          clientState
+        });
 
         await this.microsoftService.handleCalendarWebhook({
           subscriptionId,
@@ -331,36 +345,48 @@ export class MicrosoftController {
         });
       }
 
-      console.log('✅ All Microsoft Graph notifications processed successfully');
+      logger.webhook('Microsoft', 'all_notifications', 'processed', {
+        count: notifications.length
+      });
       res.status(202).json({ message: 'Notifications processed' });
     } catch (error: any) {
-      console.error('🚨 Error processing Microsoft Graph webhook:', error);
+      logger.error('Microsoft Graph webhook processing failed', error, 'MicrosoftController');
+      logger.webhook('Microsoft', 'processing_error', 'failed', { error: error.message });
       res.status(500).json({
         error: 'Failed to process webhook notification',
         details: error.message
       });
     }
-  }
-
-  /**
+  }  /**
    * Subscribe to Microsoft Calendar events
    */
   async subscribeToCalendarEvents(req: Request, res: Response): Promise<void> {
+    const timer = logger.startTimer('Microsoft Calendar Subscription');
+
     try {
       const { dashboardId, calendarId } = req.query;
       const userId = req.auth?.payload?.sub;
 
+      logger.info('Microsoft calendar subscription attempt', {
+        userId,
+        dashboardId,
+        calendarId
+      }, 'MicrosoftController');
+
       if (!userId) {
+        logger.warn('UserId missing in subscription request', { dashboardId, calendarId }, 'MicrosoftController');
         res.status(400).json({ error: 'userId is missing' });
         return;
       }
 
       if (!dashboardId) {
+        logger.warn('DashboardId missing in subscription request', { userId, calendarId }, 'MicrosoftController');
         res.status(400).json({ error: 'dashboardId is missing' });
         return;
       }
 
       if (!calendarId) {
+        logger.warn('CalendarId missing in subscription request', { userId, dashboardId }, 'MicrosoftController');
         res.status(400).json({ error: 'calendarId is missing' });
         return;
       }
@@ -371,9 +397,17 @@ export class MicrosoftController {
         calendarId as string
       );
 
+      logger.success('Microsoft calendar subscription created', {
+        subscriptionId: subscription.id,
+        userId,
+        dashboardId,
+        calendarId
+      }, 'MicrosoftController');
+
       res.status(201).json(subscription);
+      timer();
     } catch (error: any) {
-      console.error('Microsoft calendar subscription error:', error);
+      logger.error('Microsoft calendar subscription failed', error, 'MicrosoftController');
 
       if (error.message.includes('authenticate')) {
         res.status(401).json({

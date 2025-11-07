@@ -7,6 +7,7 @@ import {
 import { GoogleUserInfoDTO } from "../../../infrastructure/dtos/GoogleUserInfoDTO"
 import axios from "axios"
 import { GoogleRepository } from "../../../domain/repositories/GoogleRepository"
+import logger from "../../../utils/logger"
 
 export class GoogleAdapter implements GoogleRepository {
   private readonly clientId: string | undefined

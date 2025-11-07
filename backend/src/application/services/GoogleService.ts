@@ -12,6 +12,7 @@ import { IGoogleToken } from "../../domain/types/IGoogleToken"
 import { ITokenDocument } from "../../domain/types/ITokenDocument"
 import { Token } from "../../domain/entities/Token"
 import { emitToUserDashboard } from "../../infrastructure/server/socketIo"
+import logger from "../../utils/logger"
 
 export class GoogleService {
   constructor(
@@ -92,22 +93,39 @@ export class GoogleService {
     dashboardId: string,
     code: string
   ): Promise<void> {
-    const googleTokens =
-      await this.googleRepository.exchangeAuthCodeForTokens(code)
-    // the expiresIn is in ms
-    const { accessToken, refreshToken, expiresIn } = googleTokens
-    // Token Entity erstellen
-    const token = new Token(
-      accessToken,
-      refreshToken,
-      new Date(expiresIn),
-      userId,
-      dashboardId,
-      SERVICES.GOOGLE
-    )
+    const timer = logger.startTimer('Google Auth Code Exchange');
 
-    // Token speichern
-    await this.tokenRepository.create(token as ITokenDocument)
+    try {
+      logger.service('GoogleService', 'handleAuthCode', true, undefined, { userId, dashboardId });
+      logger.apiCall('Google', '/oauth2/token', 'POST');
+
+      const googleTokens = await this.googleRepository.exchangeAuthCodeForTokens(code);
+
+      // the expiresIn is in ms
+      const { accessToken, refreshToken, expiresIn } = googleTokens;
+
+      logger.token('create', 'Google', userId);
+
+      // Token Entity erstellen
+      const token = new Token(
+        accessToken,
+        refreshToken,
+        new Date(expiresIn),
+        userId,
+        dashboardId,
+        SERVICES.GOOGLE
+      );
+
+      // Token speichern
+      await this.tokenRepository.create(token as ITokenDocument);
+
+      logger.success('Google auth code processed successfully', { userId, dashboardId }, 'GoogleService');
+      timer();
+    } catch (error) {
+      logger.error('Google auth code processing failed', error as Error, 'GoogleService');
+      logger.service('GoogleService', 'handleAuthCode', false);
+      throw error;
+    }
   }
 
   async getEvents(

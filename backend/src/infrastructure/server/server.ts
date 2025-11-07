@@ -10,6 +10,7 @@ import { Express } from 'express';
 import { setupSocketIO } from './socketIo';
 import path from 'path';
 import { setupRoutes } from './routes';
+import logger from '../../utils/logger';
 
 
 export class Server {
@@ -23,19 +24,30 @@ export class Server {
 
   async start(): Promise<void> {
     try {
+      logger.system('Starting ScreenBoard Backend Server');
+
       await this.setupServer();
       await connectDB();
 
       this.httpServer.listen(config.port, config.host, () => {
-        console.log(`Server is running on ${config.host}:${config.port}`);
+        logger.success(`Server is running on ${config.host}:${config.port}`, {
+          port: config.port,
+          host: config.host,
+          env: process.env.NODE_ENV || 'development'
+        }, 'Server');
       });
     } catch (error) {
-      console.error('Error starting server:', error);
+      logger.error('Error starting server', error as Error, 'Server');
       process.exit(1);
     }
   }
 
   private async setupServer(): Promise<void> {
+    logger.info('Setting up server middleware and routes', {}, 'Server');
+
+    // Add request logging middleware first
+    this.app.use(logger.expressMiddleware());
+
     setupMiddleware(this.app);
     setupProxy(this.app);
     setupRoutes(this.app);
@@ -44,6 +56,8 @@ export class Server {
 
     // statische Dateien (Frontend build)
     this.setupStaticAssets();
+
+    logger.success('Server setup completed', {}, 'Server');
   }
 
   /**

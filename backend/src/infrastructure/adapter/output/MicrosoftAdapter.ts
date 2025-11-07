@@ -4,6 +4,7 @@ import { MicrosoftEventDTO, MicrosoftTokenDTO } from '../../dtos/MicrosoftEventD
 import { MicrosoftCalendarListDto } from '../../dtos/MicrosoftCalendarListDTO';
 import { MicrosoftUserInfoDTO } from '../../dtos/MicrosoftUserInfoDTO';
 import { MicrosoftSubscriptionDTO } from '../../dtos/MicrosoftSubscriptionDTO';
+import logger from '../../../utils/logger';
 
 /**
  * MicrosoftAdapter - Infrastructure Layer
@@ -205,6 +206,8 @@ export class MicrosoftAdapter implements MicrosoftRepository {
     userId: string,
     dashboardId: string
   ): Promise<MicrosoftSubscriptionDTO> {
+    const timer = logger.startTimer('Microsoft Graph Subscription Creation');
+
     try {
       // Remove auth0| prefix from userId for cleaner identification
       const userIdWithoutAuth0 = userId.replace("auth0|", "");
@@ -222,12 +225,17 @@ export class MicrosoftAdapter implements MicrosoftRepository {
         clientState: userIdWithDashboardId, // Used to validate notifications
       };
 
-      console.log('Creating Microsoft Graph subscription:', {
+      logger.info('Creating Microsoft Graph subscription', {
         resource: subscription.resource,
         notificationUrl: subscription.notificationUrl,
         expirationDateTime: subscription.expirationDateTime,
-        clientState: subscription.clientState
-      });
+        clientState: subscription.clientState,
+        userId,
+        calendarId,
+        dashboardId
+      }, 'MicrosoftAdapter');
+
+      logger.apiCall('Microsoft Graph', '/subscriptions', 'POST');
 
       const response = await axios.post(
         'https://graph.microsoft.com/v1.0/subscriptions',
@@ -240,10 +248,18 @@ export class MicrosoftAdapter implements MicrosoftRepository {
         }
       );
 
-      console.log('Microsoft Graph subscription created:', response.data);
+      timer();
+      logger.apiCall('Microsoft Graph', '/subscriptions', 'POST', response.status);
+      logger.success('Microsoft Graph subscription created', {
+        subscriptionId: response.data.id,
+        resource: response.data.resource,
+        expirationDateTime: response.data.expirationDateTime
+      }, 'MicrosoftAdapter');
+
       return response.data;
     } catch (error: any) {
-      console.error('Error creating Microsoft Graph subscription:', error.response?.data || error.message);
+      logger.error('Microsoft Graph subscription creation failed', error, 'MicrosoftAdapter');
+      logger.apiCall('Microsoft Graph', '/subscriptions', 'POST', error.response?.status);
       throw new Error('Failed to create Microsoft Graph subscription');
     }
   }

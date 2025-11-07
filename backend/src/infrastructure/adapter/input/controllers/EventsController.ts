@@ -1,33 +1,42 @@
 import { EventsService } from "../../../../application/services/EventsService"
 import { Request, Response } from "express"
+import logger from "../../../../utils/logger"
 
 export class EventsController {
     constructor(private eventsService: EventsService) { }
 
     async fetchICalEvents(req: Request, res: Response): Promise<void> {
-        const { url } = req.query
-
-        if (!url || typeof url !== 'string') {
-            res.status(400).json({
-                error: 'Missing or invalid iCal URL',
-                message: 'Please provide a valid iCal feed URL',
-            })
-            return
-        }
+        const timer = logger.startTimer('Fetch iCal Events');
 
         try {
-            // Log request info for debugging
-            const authHeader = req.headers.authorization
-            console.log('[iCal Events] Request received:', {
-                url,
-                hasAuth: !!authHeader,
-                authType: authHeader?.split(' ')[0],
-            })
+            const { url } = req.query
 
-            const events = await this.eventsService.fetchICalEvents(url)
-            res.json(events)
+            logger.info('iCal events fetch request', {
+                url: typeof url === 'string' ? url.substring(0, 100) + '...' : url,
+                userId: req.auth?.payload?.sub
+            }, 'EventsController');
+
+            if (!url || typeof url !== 'string') {
+                logger.warn('iCal fetch missing or invalid URL', { urlType: typeof url }, 'EventsController');
+                res.status(400).json({
+                    error: 'Missing or invalid iCal URL',
+                    message: 'Please provide a valid iCal feed URL',
+                })
+                return
+            }
+
+            logger.apiCall('External', 'iCal Feed', 'GET');
+            const events = await this.eventsService.fetchICalEvents(url);
+
+            logger.success('iCal events fetched successfully', {
+                eventCount: events.length,
+                url: url.substring(0, 50) + '...'
+            }, 'EventsController');
+
+            res.json(events);
+            timer();
         } catch (error: any) {
-            console.error('Error fetching iCal events:', error)
+            logger.error('iCal events fetch failed', error, 'EventsController');
 
             // Handle specific errors
             if (error.message?.includes('Invalid URL')) {

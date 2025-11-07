@@ -1,6 +1,7 @@
 import { ITokenRepository } from '../../domain/repositories/ITokenRepository';
 import { ITokenDocument } from '../../domain/types/ITokenDocument';
 import { EncryptionService } from '../../application/services/EncryptionService';
+import logger from '../../utils/logger';
 
 import TokenModel from '../../infrastructure/database/TokenModel';
 
@@ -8,15 +9,28 @@ export class TokenRepository implements ITokenRepository {
     constructor(private encryptionService: EncryptionService) { }
 
     async create(token: ITokenDocument): Promise<ITokenDocument> {
-        // Encrypt sensitive tokens before saving
-        const encryptedToken = {
-            ...token,
-            accessToken: this.encryptionService.encrypt(token.accessToken),
-            refreshToken: this.encryptionService.encrypt(token.refreshToken)
-        };
+        const timer = logger.startTimer('Token Creation');
 
-        console.log('🔐 Creating token with encrypted access/refresh tokens');
-        return TokenModel.create(encryptedToken);
+        try {
+            // Encrypt sensitive tokens before saving
+            logger.token('encrypt', token.serviceId, token.userId);
+
+            const encryptedToken = {
+                ...token,
+                accessToken: this.encryptionService.encrypt(token.accessToken),
+                refreshToken: this.encryptionService.encrypt(token.refreshToken)
+            };
+
+            logger.token('create', token.serviceId, token.userId);
+            const result = await TokenModel.create(encryptedToken);
+
+            logger.database('CREATE', 'tokens', undefined, 1);
+            timer();
+            return result;
+        } catch (error) {
+            logger.error('Token creation failed', error as Error, 'TokenRepository');
+            throw error;
+        }
     }
 
     async findToken(
@@ -24,14 +38,29 @@ export class TokenRepository implements ITokenRepository {
         dashboardId: string,
         serviceId: string,
     ): Promise<ITokenDocument | null> {
-        const encryptedToken = await TokenModel.findOne({ userId, dashboardId, serviceId }).exec();
+        const timer = logger.startTimer('Token Lookup');
 
-        if (!encryptedToken) {
-            return null;
+        try {
+            logger.database('FIND', 'tokens');
+            const encryptedToken = await TokenModel.findOne({ userId, dashboardId, serviceId }).exec();
+
+            if (!encryptedToken) {
+                logger.info('Token not found', { userId, dashboardId, serviceId }, 'TokenRepository');
+                timer();
+                return null;
+            }
+
+            // Decrypt tokens before returning
+            logger.token('decrypt', serviceId, userId);
+            const result = await this.decryptTokenDocument(encryptedToken);
+
+            logger.database('FIND', 'tokens', undefined, 1);
+            timer();
+            return result;
+        } catch (error) {
+            logger.error('Token lookup failed', error as Error, 'TokenRepository');
+            throw error;
         }
-
-        // Decrypt tokens before returning
-        return this.decryptTokenDocument(encryptedToken);
     }
 
     async findTokenById(

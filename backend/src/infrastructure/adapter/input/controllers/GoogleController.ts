@@ -1,38 +1,50 @@
 import { GoogleService } from "../../../../application/services/GoogleService"
 import { Request, Response } from "express"
+import logger from "../../../../utils/logger"
 
 export class GoogleController {
   constructor(private googleService: GoogleService) { }
 
   async handleLogin(req: Request, res: Response): Promise<void> {
-    const { googleAuthCode } = req.body
-    const userId = req.auth?.payload?.sub
-    const { dashboardId } = req.query
-
-    if (!googleAuthCode) {
-      res.status(400).json({ error: "googleAuthCode fehlt" })
-      return
-    }
-
-    if (!userId) {
-      res.status(400).json({ error: "userId fehlt" })
-      return
-    }
-
-    if (!dashboardId) {
-      res.status(400).json({ error: "dashboardId fehlt" })
-      return
-    }
+    const timer = logger.startTimer('Google OAuth Login')
 
     try {
+      const { googleAuthCode } = req.body
+      const userId = req.auth?.payload?.sub
+      const { dashboardId } = req.query
+
+      logger.auth('Google OAuth login attempt', userId, 'Google')
+
+      if (!googleAuthCode) {
+        logger.warn('Google auth code missing', { userId, dashboardId }, 'GoogleController')
+        res.status(400).json({ error: "googleAuthCode fehlt" })
+        return
+      }
+
+      if (!userId) {
+        logger.warn('UserId missing in Google auth', { dashboardId }, 'GoogleController')
+        res.status(400).json({ error: "userId fehlt" })
+        return
+      }
+
+      if (!dashboardId) {
+        logger.warn('DashboardId missing in Google auth', { userId }, 'GoogleController')
+        res.status(400).json({ error: "dashboardId fehlt" })
+        return
+      }
+
       await this.googleService.handleGoogleAuthCode(
         userId,
         dashboardId as string,
         googleAuthCode
       )
+
+      logger.auth('Google OAuth login successful', userId, 'Google', true)
       res.status(204).json()
+      timer()
     } catch (error) {
-      console.error("Fehler bei der Authentifizierung:", error)
+      logger.error('Google login error', error as Error, 'GoogleController')
+      logger.auth('Google OAuth login failed', req.auth?.payload?.sub, 'Google', false)
       res.status(500).json({ error: "Fehler bei der Authentifizierung" })
     }
   }
@@ -176,10 +188,21 @@ export class GoogleController {
 
   async handleCalendarWebhook(req: Request, res: Response): Promise<void> {
     try {
+      logger.webhook('Google', 'request_received', 'received', {
+        method: req.method,
+        url: req.url,
+        headers: {
+          'x-goog-channel-token': req.headers["x-goog-channel-token"] ? '***' : undefined,
+          'x-goog-channel-id': req.headers["x-goog-channel-id"],
+          'x-goog-resource-id': req.headers["x-goog-resource-id"]
+        }
+      })
+
       const channelToken = req.headers["x-goog-channel-token"]
 
       if (!channelToken) {
-        console.log("Fehler beim Verarbeiten des Webhooks: x-goog-channel-token fehlt")
+        logger.warn('Google webhook missing channel token', {}, 'GoogleController')
+        logger.webhook('Google', 'missing_token', 'failed')
         res.status(400).json({ error: "x-goog-channel-token fehlt" })
         return
       }
@@ -188,17 +211,25 @@ export class GoogleController {
       const resourceId = req.headers["x-goog-resource-id"];
 
       if (typeof id !== 'string' || typeof resourceId !== 'string') {
-        console.log("Fehler beim Verarbeiten des Webhooks: Ungültige Header-Werte")
+        logger.warn('Google webhook invalid header values', { id: typeof id, resourceId: typeof resourceId }, 'GoogleController')
+        logger.webhook('Google', 'invalid_headers', 'failed')
         res.status(400).json({ error: "Ungültige Header-Werte" })
         return
       }
 
+      logger.webhook('Google', 'calendar_notification', 'processed', {
+        channelId: id,
+        resourceId
+      })
+
       const data = { id, resourceId }
       await this.googleService.handleCalendarWebhook(data)
 
+      logger.webhook('Google', 'calendar_webhook', 'processed')
       res.json({ message: "Webhook erfolgreich verarbeitet" })
     } catch (error) {
-      console.error("Fehler beim Verarbeiten des Webhooks:", error)
+      logger.error('Google calendar webhook processing failed', error as Error, 'GoogleController')
+      logger.webhook('Google', 'processing_error', 'failed', { error: (error as Error).message })
       res.status(500).json({ error: "Fehler beim Verarbeiten des Webhooks" })
     }
   }

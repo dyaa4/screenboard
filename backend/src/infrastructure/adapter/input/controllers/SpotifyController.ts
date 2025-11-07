@@ -1,37 +1,58 @@
 import { SpotifyService } from "../../../../application/services/SpotifyService";
 import { Request, Response } from "express";
+import logger from "../../../../utils/logger";
 
 export class SpotifyController {
   constructor(private spotifyService: SpotifyService) { }
 
   async handleCallback(req: Request, res: Response): Promise<void> {
-    const userId = req.auth?.payload?.sub;
-    const { code, dashboardId } = req.query;
+    const timer = logger.startTimer('Spotify OAuth Callback');
 
-    // Validierung
-    if (!userId || !dashboardId || typeof dashboardId !== "string") {
-      res.status(400).json({ message: "User ID and Dashboard ID are required" });
-      return;
-    }
-
-    if (typeof code !== "string") {
-      res.status(400).json({ error: "Invalid code" });
-      return;
-    }
     try {
+      const userId = req.auth?.payload?.sub;
+      const { code, dashboardId } = req.query;
+
+      logger.auth('Spotify OAuth callback attempt', userId, 'Spotify');
+
+      // Validierung
+      if (!userId || !dashboardId || typeof dashboardId !== "string") {
+        logger.warn('Spotify callback missing user/dashboard ID', { userId: !!userId, dashboardId }, 'SpotifyController');
+        res.status(400).json({ message: "User ID and Dashboard ID are required" });
+        return;
+      }
+
+      if (typeof code !== "string") {
+        logger.warn('Spotify callback invalid code', { codeType: typeof code }, 'SpotifyController');
+        res.status(400).json({ error: "Invalid code" });
+        return;
+      }
+
       // Spotify Tokens erhalten und speichern
       await this.spotifyService.getTokens(code, userId, dashboardId);
+
+      logger.auth('Spotify OAuth callback successful', userId, 'Spotify', true);
       res.json(true);
+      timer();
     } catch (error) {
-      console.error("Error getting Spotify tokens:", error);
+      logger.error('Spotify OAuth callback failed', error as Error, 'SpotifyController');
+      logger.auth('Spotify OAuth callback failed', req.auth?.payload?.sub, 'Spotify', false);
       res.status(400).json({ error: "Failed to get Spotify tokens" });
     }
   }
 
   initiateLogin(_req: Request, res: Response): void {
-    // Login URL von Spotify erhalten
-    const loginUrl = this.spotifyService.getLoginUrl();
-    res.json({ loginUrl });
+    try {
+      logger.info('Spotify login URL requested', {}, 'SpotifyController');
+
+      // Login URL von Spotify erhalten
+      const loginUrl = this.spotifyService.getLoginUrl();
+
+      logger.success('Spotify login URL generated', { url: loginUrl.substring(0, 50) + '...' }, 'SpotifyController');
+      res.json({ loginUrl });
+    } catch (error) {
+      logger.error('Spotify login URL generation failed', error as Error, 'SpotifyController');
+      res.status(500).json({ error: "Failed to generate login URL" });
+    }
   }
 
   async setActiveDevice(req: Request, res: Response): Promise<void> {
