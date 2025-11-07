@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ES2020",
-    "types": ["node", "express"],
+    "types": ["node"],
     "typeRoots": ["./node_modules/@types"],
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
