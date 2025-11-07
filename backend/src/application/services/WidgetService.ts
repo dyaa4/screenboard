@@ -10,10 +10,17 @@ import logger from '../../utils/logger';
 import { EventSubscriptionService } from './EventSubscriptionService';
 import { GoogleService } from './GoogleService';
 import { SmartThingsService } from './SmartThingsService';
+import { MicrosoftService } from './MicrosoftService';
 
 
 export class WidgetService {
-  constructor(private widgetRepository: IWidgetRepository, private googleService: GoogleService, private smartthingsService: SmartThingsService, private eventSubscriptionService: EventSubscriptionService) { }
+  constructor(
+    private widgetRepository: IWidgetRepository,
+    private googleService: GoogleService,
+    private smartthingsService: SmartThingsService,
+    private eventSubscriptionService: EventSubscriptionService,
+    private microsoftService: MicrosoftService
+  ) { }
 
 
   async createWidget(widget: IWidgetDocument): Promise<IWidgetDocument> {
@@ -126,7 +133,7 @@ export class WidgetService {
    * @param dashboardId  The dashboard ID
    * @returns  {Promise<void>}
    */
-  private async handleMicrosoftCalendarEventRegistry(widget: IWidgetDocument, _userId: string, dashboardId: string) {
+  private async handleMicrosoftCalendarEventRegistry(widget: IWidgetDocument, userId: string, dashboardId: string) {
     const isMicrosoftEventWidget =
       widget.type === WidgetTypeEnum.EVENTS &&
       widget.settings.type === EventType.MICROSOFT &&
@@ -134,10 +141,23 @@ export class WidgetService {
 
     if (!isMicrosoftEventWidget) return;
 
-    // Microsoft Calendar doesn't need event subscriptions like Google Calendar
-    // Microsoft Calendar events are fetched on-demand via Microsoft Graph API
-    // No additional event subscription setup required
-    logger.info(`Microsoft Calendar widget configured for dashboard ${dashboardId} with calendar ${widget.settings.calendarId}`);
+    try {
+      // Create Microsoft Graph subscription for real-time updates
+      const subscription = await this.microsoftService.subscribeToCalendarEvents(
+        userId,
+        dashboardId,
+        widget.settings.calendarId
+      );
+
+      logger.success(`Microsoft Calendar subscription created for dashboard ${dashboardId}`, {
+        subscriptionId: subscription.id,
+        calendarId: widget.settings.calendarId,
+        expirationDateTime: subscription.expirationDateTime
+      });
+    } catch (error: any) {
+      logger.error(`Failed to create Microsoft Calendar subscription for dashboard ${dashboardId}`, error);
+      // Don't throw error - widget should still work with polling
+    }
   }
 
   /**
