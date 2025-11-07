@@ -5,7 +5,6 @@ import { Layout } from '../../../../../../domain/entities/Layout';
 import { getCustomColorCssClass } from '@adapter/ui/helpers/generalHelper';
 import { getFontSizeClass } from '@sites/Dashboard/helper';
 import { useTheme } from 'next-themes';
-import { t } from '@adapter/ui/i18n/i18n';
 
 interface ColorControlsProps {
     device: IoTDevice;
