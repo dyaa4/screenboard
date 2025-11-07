@@ -110,7 +110,7 @@ export class MicrosoftService {
   async cleanup(userId: string, dashboardId: string): Promise<void> {
     try {
       console.log(`🧹 Starting Microsoft subscription cleanup for user ${userId}, dashboard ${dashboardId}`);
-      
+
       // Get access token
       const token = await this.tokenRepository.findToken(
         userId,
@@ -130,7 +130,7 @@ export class MicrosoftService {
       );
 
       // Filter for Microsoft subscriptions (identified by serviceId)
-      const microsoftSubscriptions = subscriptions.filter((sub: any) => 
+      const microsoftSubscriptions = subscriptions.filter((sub: any) =>
         sub.serviceId === SERVICES.MICROSOFT && sub.resourceId
       );
 
@@ -142,17 +142,17 @@ export class MicrosoftService {
           console.warn('⚠️ Subscription missing resourceId, skipping:', subscription);
           continue;
         }
-        
+
         try {
           // Use resourceId as subscriptionId for Microsoft Graph
           await this.microsoftRepository.deleteSubscription(
             token.accessToken,
             subscription.resourceId
           );
-          
+
           // Remove from our database - use deleteByResourceId method
           await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
-          
+
           console.log(`✅ Cleaned up Microsoft subscription: ${subscription.resourceId}`);
         } catch (error) {
           console.error(`❌ Failed to cleanup Microsoft subscription ${subscription.resourceId}:`, error);
