@@ -29,7 +29,7 @@ export interface IAppContext {
 
 export const AppContext = React.createContext<IAppContext>({
   userStatus: UserStatus.LoggedOut,
-  setUserStatusTo: () => {},
+  setUserStatusTo: () => { },
 });
 
 const getRotationStyle = (rotation: number) => {
@@ -134,7 +134,7 @@ const Dashboard: React.FC = () => {
             <Pin layout={layout} />
 
             <Widgets layout={layout} dashboard={dashboard} />
-            <Background layout={layout} />
+            <Background layout={layout} />12345
             <div id="sign-in-button-wrapper">
               <UserStatusButton
                 icon="fa-solid fa-arrow-right-to-bracket"

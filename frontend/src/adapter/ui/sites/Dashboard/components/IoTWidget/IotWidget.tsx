@@ -176,6 +176,77 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
     }
   };
 
+  // Wrapper-Funktionen die den Device-Status nach Änderungen aktualisieren
+  const handleSetDeviceColor = async (deviceId: string, hue: number, saturation: number) => {
+    await setDeviceColor(deviceId, hue, saturation);
+    
+    // Nach Farbänderung wird das Licht automatisch eingeschaltet
+    // Aktualisiere den lokalen State um das zu reflektieren
+    setDeviceStates((prev) => ({
+      ...prev,
+      [deviceId]: {
+        ...prev[deviceId],
+        components: {
+          ...prev[deviceId]?.components,
+          main: {
+            ...prev[deviceId]?.components?.main,
+            switch: {
+              switch: {
+                value: 'on', // Licht ist nach Farbänderung an
+              },
+            },
+          },
+        },
+      },
+    }));
+  };
+
+  const handleSetDeviceBrightness = async (deviceId: string, level: number) => {
+    await setDeviceBrightness(deviceId, level);
+    
+    // Nach Helligkeitsänderung wird das Licht automatisch eingeschaltet
+    setDeviceStates((prev) => ({
+      ...prev,
+      [deviceId]: {
+        ...prev[deviceId],
+        components: {
+          ...prev[deviceId]?.components,
+          main: {
+            ...prev[deviceId]?.components?.main,
+            switch: {
+              switch: {
+                value: 'on', // Licht ist nach Helligkeitsänderung an
+              },
+            },
+          },
+        },
+      },
+    }));
+  };
+
+  const handleSetDeviceColorTemperature = async (deviceId: string, colorTemperature: number) => {
+    await setDeviceColorTemperature(deviceId, colorTemperature);
+    
+    // Nach Farbtemperatur-Änderung wird das Licht automatisch eingeschaltet
+    setDeviceStates((prev) => ({
+      ...prev,
+      [deviceId]: {
+        ...prev[deviceId],
+        components: {
+          ...prev[deviceId]?.components,
+          main: {
+            ...prev[deviceId]?.components?.main,
+            switch: {
+              switch: {
+                value: 'on', // Licht ist nach Farbtemperatur-Änderung an
+              },
+            },
+          },
+        },
+      },
+    }));
+  };
+
   const isDeviceOn = (deviceId: string) =>
     deviceStates[deviceId]?.components?.main?.switch?.switch?.value === 'on';
 
@@ -213,17 +284,19 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
                 <i className={deviceIcon}></i>
               </div>
               <div className="flex items-center gap-1">
-                {/* Color Controls with Portal rendering */}
+                {/* Color Controls with Portal rendering - Prevent event propagation */}
                 {(device.supportsColor || device.supportsColorTemperature || device.supportsBrightness) && (
-                  <ColorControls
-                    device={device}
-                    layout={layout}
-                    onColorChange={setDeviceColor}
-                    onColorTemperatureChange={setDeviceColorTemperature}
-                    onBrightnessChange={setDeviceBrightness}
-                    isLoading={deviceLoading[device.deviceId]}
-                    hasError={!!commandErrors[device.deviceId]}
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ColorControls
+                      device={device}
+                      layout={layout}
+                      onColorChange={handleSetDeviceColor}
+                      onColorTemperatureChange={handleSetDeviceColorTemperature}
+                      onBrightnessChange={handleSetDeviceBrightness}
+                      isLoading={deviceLoading[device.deviceId]}
+                      hasError={!!commandErrors[device.deviceId]}
+                    />
+                  </div>
                 )}
                 {deviceLoading[device.deviceId] && (
                   <div className="animate-spin">

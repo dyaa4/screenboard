@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useContext, useRef } from 'react';
+import { useEffect, useState, useCallback, useContext, useRef, ReactElement } from 'react';
 import { AppContext } from '../../Dashboard';
 import { UserStatus } from '../helper';
 import { Layout } from '@domain/entities/Layout';
@@ -29,7 +29,7 @@ export interface BackgroundProps {
   layout: Layout | undefined;
 }
 
-export const Background = ({ layout }: BackgroundProps): JSX.Element => {
+export const Background = ({ layout }: BackgroundProps): ReactElement => {
   const { userStatus, setUserStatusTo } = useContext(AppContext);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
   const [nextImageIndex, setNextImageIndex] = useState<number>(1);
