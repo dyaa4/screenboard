@@ -102,9 +102,17 @@ export class GoogleService {
     const now = Date.now();
 
     if (cleanupTime <= now) {
+      // Refresh token expires very soon, cleanup immediately but only once
       logger.warn('Google refresh token expires very soon, cleaning up immediately',
         { userId, dashboardId, estimatedRefreshExpiration }, 'GoogleService');
-      this.performProactiveCleanup(userId, dashboardId);
+
+      // Set a dummy timeout to mark this cleanup as scheduled (prevents multiple immediate cleanups)
+      this.tokenExpirationCleanupJobs.set(cleanupJobKey, setTimeout(() => { }, 0));
+
+      // Execute cleanup asynchronously to prevent blocking
+      setImmediate(async () => {
+        await this.performProactiveCleanup(userId, dashboardId);
+      });
       return;
     }
 
@@ -125,6 +133,19 @@ export class GoogleService {
    * Perform proactive Google cleanup while refresh token is still valid
    */
   private async performProactiveCleanup(userId: string, dashboardId: string): Promise<void> {
+    const cleanupJobKey = `cleanup-${userId}-${dashboardId}`;
+
+    // Check if token still exists before attempting cleanup
+    const existingToken = await this.tokenRepository.findToken(userId, dashboardId, SERVICES.GOOGLE);
+    if (!existingToken) {
+      logger.info('Google token already cleaned up, skipping proactive cleanup',
+        { userId, dashboardId }, 'GoogleService');
+
+      // Remove the cleanup job since it's no longer needed
+      this.tokenExpirationCleanupJobs.delete(cleanupJobKey);
+      return;
+    }
+
     logger.info('Starting proactive Google subscription cleanup (refresh token expires in 60min)',
       { userId, dashboardId }, 'GoogleService');
 
@@ -135,6 +156,9 @@ export class GoogleService {
     } catch (error) {
       logger.error('Proactive Google subscription cleanup failed',
         error as Error, 'GoogleService');
+    } finally {
+      // Always remove the cleanup job after execution
+      this.tokenExpirationCleanupJobs.delete(cleanupJobKey);
     }
   }
 

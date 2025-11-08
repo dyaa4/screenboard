@@ -48,6 +48,8 @@ export default class CommunicationAdapter implements CommunicationRepository {
     });
 
     this.setupListeners();
+
+    // Nur starten wenn wir ein gültiges Token haben und die Verbindung aufgebaut ist
     this.startTokenCheck();
   }
 
@@ -58,14 +60,31 @@ export default class CommunicationAdapter implements CommunicationRepository {
   private startTokenCheck() {
     this.tokenCheckInterval && clearInterval(this.tokenCheckInterval);
     this.tokenCheckInterval = setInterval(
-      () => {
+      async () => {
+        // Erst prüfen, ob ein gültiges Token verfügbar ist
+        const token = await this.accessTokenUseCase.getAccessToken();
+
+        if (!token) {
+          console.log('Token check: No valid token available, stopping token check interval...');
+          this.stopTokenCheck();
+          return;
+        }
+
         if (this.isConnected()) {
           console.log('Token check: reconnecting...');
-          this.reconnect();
+          await this.reconnect();
         }
       },
       10 * 60 * 1000,
     );
+  }
+
+  private stopTokenCheck() {
+    if (this.tokenCheckInterval) {
+      clearInterval(this.tokenCheckInterval);
+      this.tokenCheckInterval = null;
+      console.log('Token check interval stopped');
+    }
   }
 
   /**
@@ -107,12 +126,24 @@ export default class CommunicationAdapter implements CommunicationRepository {
 
     this.socket.on('disconnect', (reason) => {
       console.log('Socket disconnected. Reason:', reason);
+      // Bei bestimmten Disconnect-Gründen Token-Check stoppen
+      if (reason === 'io server disconnect' || reason === 'transport close') {
+        this.stopTokenCheck();
+      }
     });
 
     this.socket.on('connect_error', async (error) => {
       console.error('Connection error:', error);
       if (error.message === 'Authentication error') {
-        await this.reconnect();
+        try {
+          await this.reconnect();
+        } catch (reconnectError) {
+          console.error('Reconnect failed:', reconnectError);
+          this.stopTokenCheck();
+        }
+      } else {
+        // Bei anderen Verbindungsfehlern auch Token-Check stoppen
+        this.stopTokenCheck();
       }
     });
   }
@@ -221,26 +252,33 @@ export default class CommunicationAdapter implements CommunicationRepository {
   public async reconnect(): Promise<void> {
     if (!this.currentDashboardId) {
       console.warn('No dashboardId available for reconnect.');
+      this.stopTokenCheck();
       return;
     }
 
-    // Frischen Token holen
-    const token = await this.accessTokenUseCase.getAccessToken();
-    if (!token) {
-      console.error('No token available. Cannot reconnect socket.');
-      return;
+    try {
+      // Frischen Token holen
+      const token = await this.accessTokenUseCase.getAccessToken();
+      if (!token) {
+        console.error('No token available. Cannot reconnect socket.');
+        this.stopTokenCheck();
+        return;
+      }
+
+      this.socket?.disconnect();
+
+      const socketUrl = import.meta.env.VITE_SERVER_API;
+      this.socket = io(socketUrl, {
+        auth: { token },
+        query: { dashboardId: this.currentDashboardId },
+        extraHeaders: { Authorization: `Bearer ${token}` },
+      });
+
+      this.setupListeners();
+    } catch (error) {
+      console.error('Failed to reconnect socket:', error);
+      this.stopTokenCheck();
     }
-
-    this.socket?.disconnect();
-
-    const socketUrl = import.meta.env.VITE_SERVER_API;
-    this.socket = io(socketUrl, {
-      auth: { token },
-      query: { dashboardId: this.currentDashboardId },
-      extraHeaders: { Authorization: `Bearer ${token}` },
-    });
-
-    this.setupListeners();
   }
   /**
    * Prüft, ob eine aktive Socket-Verbindung besteht.
