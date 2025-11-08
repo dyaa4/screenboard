@@ -5,16 +5,52 @@ import pino from 'pino';
  * Features: Colorful output, structured logging, performance tracking
  */
 
-// Enhanced Logger Configuration
-const logger = pino({
-    level: process.env.LOG_LEVEL || 'info',
-    formatters: {
-        level: (label) => ({ level: label.toUpperCase() }),
-    },
-    timestamp: pino.stdTimeFunctions.isoTime,
-});
+// Enhanced Logger Configuration with pino-pretty support
+let logger: pino.Logger;
 
-// Check if we should use readable logs instead of JSON
+try {
+    // Try to use pino-pretty for colorful logs (works in both dev and production)
+    logger = pino({
+        level: process.env.LOG_LEVEL || 'info',
+        formatters: {
+            level: (label) => ({ level: label.toUpperCase() }),
+        },
+        timestamp: pino.stdTimeFunctions.isoTime,
+        transport: {
+            target: 'pino-pretty',
+            options: {
+                colorize: true,
+                translateTime: 'HH:MM:ss',
+                ignore: 'pid,hostname',
+                messageFormat: '{if context}[{context}]{end}{if module}[{module}]{end} {msg}',
+                customPrettifiers: {
+                    // Add emoji support for log levels
+                    level: (logLevel: string) => {
+                        const emojis: { [key: string]: string } = {
+                            'INFO': 'ℹ️  INFO   ',
+                            'ERROR': '❌ ERROR  ',
+                            'WARN': '⚠️  WARN   ',
+                            'DEBUG': '🔍 DEBUG  ',
+                            'TRACE': '🔍 TRACE  '
+                        };
+                        return emojis[logLevel] || `📝 ${logLevel.padEnd(7)}`;
+                    }
+                }
+            }
+        }
+    });
+} catch (error) {
+    // Fallback to basic pino if pino-pretty is not available
+    logger = pino({
+        level: process.env.LOG_LEVEL || 'info',
+        formatters: {
+            level: (label) => ({ level: label.toUpperCase() }),
+        },
+        timestamp: pino.stdTimeFunctions.isoTime,
+    });
+}
+
+// Check if we should use readable logs instead of JSON (fallback for environments without pino-pretty)
 const useReadableLogs = process.env.READABLE_LOGS === 'true';
 
 // Enhanced Console Logger für bessere Lesbarkeit
