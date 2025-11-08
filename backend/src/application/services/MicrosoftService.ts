@@ -10,6 +10,7 @@ import { MicrosoftCalendarListDto } from "../../infrastructure/dtos/MicrosoftCal
 import { MicrosoftUserInfoDTO } from "../../infrastructure/dtos/MicrosoftUserInfoDTO";
 import { MicrosoftSubscriptionDTO } from "../../infrastructure/dtos/MicrosoftSubscriptionDTO";
 import { emitToUserDashboard } from "../../infrastructure/server/socketIo";
+import { IEventSubscriptionData } from "../../domain/types/IEventSubscriptionDocument";
 import logger from "../../utils/logger";
 
 /**
@@ -27,6 +28,92 @@ export class MicrosoftService {
 
 
   /**
+   * Refreshes all subscriptions for a user - deletes old ones and prepares for fresh ones
+   */
+  async refreshUserSubscriptions(
+    userId: string,
+    dashboardId: string,
+    newAccessToken: string
+  ): Promise<void> {
+    logger.info(`🔄 Refreshing Microsoft subscriptions for user ${userId}`);
+
+    try {
+      // 1. Get all active Microsoft subscriptions for this user
+      const activeSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
+        userId,
+        dashboardId
+      );
+
+      // Filter only Microsoft subscriptions
+      const microsoftSubscriptions = activeSubscriptions.filter(sub =>
+        sub.serviceId === SERVICES.MICROSOFT
+      );
+
+      if (microsoftSubscriptions.length === 0) {
+        logger.info(`✅ No active Microsoft subscriptions found for user ${userId}`);
+        return;
+      }
+
+      logger.info(`🗑️ Cleaning up ${microsoftSubscriptions.length} existing Microsoft subscriptions`);
+
+      // 2. Delete subscriptions at Microsoft (parallel for better performance)
+      const deletePromises = microsoftSubscriptions.map(async (subscription) => {
+        try {
+          if (subscription.resourceId) {
+            await this.microsoftRepository.deleteSubscription(
+              newAccessToken,
+              subscription.resourceId
+            );
+            logger.info(`✅ Deleted Microsoft subscription ${subscription.resourceId}`);
+          }
+        } catch (error) {
+          logger.warn(`⚠️ Failed to delete Microsoft subscription ${subscription.resourceId}:`, error as Error);
+          // Don't throw - we still want to clean from database
+        }
+      });
+
+      await Promise.allSettled(deletePromises);
+
+      // 3. Remove Microsoft subscriptions from database
+      for (const subscription of microsoftSubscriptions) {
+        if (subscription.resourceId) {
+          await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+        }
+      }
+
+      logger.info(`✅ Successfully refreshed Microsoft subscriptions for user ${userId}`);
+
+    } catch (error) {
+      logger.error(`❌ Failed to refresh Microsoft subscriptions for user ${userId}:`, error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Emergency cleanup when no valid token is available
+   */
+  private async emergencyCleanup(userId: string, dashboardId: string): Promise<void> {
+    logger.warn(`🚨 Emergency cleanup for Microsoft subscriptions: user ${userId}`);
+
+    const activeSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
+      userId,
+      dashboardId
+    );
+
+    const microsoftSubscriptions = activeSubscriptions.filter(sub =>
+      sub.serviceId === SERVICES.MICROSOFT
+    );
+
+    for (const subscription of microsoftSubscriptions) {
+      if (subscription.resourceId) {
+        await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+      }
+    }
+
+    logger.info(`✅ Emergency cleanup completed: removed ${microsoftSubscriptions.length} Microsoft subscriptions`);
+  }
+
+  /**
    * Handle Microsoft OAuth authorization code exchange
    * @param userId User identifier
    * @param dashboardId Dashboard identifier
@@ -38,6 +125,9 @@ export class MicrosoftService {
     code: string
   ): Promise<void> {
     const microsoftTokens = await this.microsoftRepository.exchangeAuthCodeForTokens(code);
+
+    // Clean up any existing subscriptions before setting up new ones
+    await this.refreshUserSubscriptions(userId, dashboardId, microsoftTokens.accessToken);
     const { accessToken, refreshToken, expiresIn } = microsoftTokens;
 
     // Calculate expiration date: current time + expiresIn seconds
@@ -113,71 +203,14 @@ export class MicrosoftService {
    * @param dashboardId Dashboard identifier
    */
   async cleanup(userId: string, dashboardId: string): Promise<void> {
+    // Try to refresh subscriptions with current token (cleanup at Microsoft)
     try {
-      logger.info('Microsoft subscription cleanup started',
-        { userId, dashboardId }, 'MicrosoftService');
-
-      // Get access token
-      const token = await this.tokenRepository.findToken(
-        userId,
-        dashboardId,
-        SERVICES.MICROSOFT
-      );
-
-      if (!token || !token.accessToken) {
-        logger.warn('No Microsoft token found for cleanup',
-          { userId, dashboardId }, 'MicrosoftService');
-        return;
-      }
-
-      // Get all Microsoft Calendar subscriptions for this user/dashboard
-      const subscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
-        userId,
-        dashboardId
-      );
-
-      // Filter for Microsoft subscriptions (identified by serviceId)
-      const microsoftSubscriptions = subscriptions.filter((sub: any) =>
-        sub.serviceId === SERVICES.MICROSOFT && sub.resourceId
-      );
-
-      logger.info(`Found ${microsoftSubscriptions.length} Microsoft subscriptions to cleanup`,
-        { userId, dashboardId, count: microsoftSubscriptions.length }, 'MicrosoftService');
-
-      // Delete each subscription from Microsoft Graph
-      for (const subscription of microsoftSubscriptions) {
-        if (!subscription.resourceId) {
-          logger.warn('Subscription missing resourceId, skipping',
-            { subscription }, 'MicrosoftService');
-          continue;
-        }
-
-        try {
-          // Use resourceId as subscriptionId for Microsoft Graph
-          await this.microsoftRepository.deleteSubscription(
-            token.accessToken,
-            subscription.resourceId
-          );
-
-          // Remove from our database - use deleteByResourceId method
-          await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
-
-          logger.success('Microsoft subscription cleaned up successfully',
-            { subscriptionId: subscription.resourceId, userId, dashboardId }, 'MicrosoftService');
-        } catch (error) {
-          logger.warn('Failed to cleanup Microsoft subscription but continuing',
-            { subscriptionId: subscription.resourceId, error: (error as Error).message }, 'MicrosoftService');
-          // Continue with other subscriptions even if one fails
-        }
-      }
-
-      logger.success('Microsoft subscription cleanup completed',
-        { userId, dashboardId, processedCount: microsoftSubscriptions.length }, 'MicrosoftService');
-
-
+      const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
+      await this.refreshUserSubscriptions(userId, dashboardId, accessToken);
     } catch (error) {
-      logger.error('Error during Microsoft subscription cleanup', error as Error, 'MicrosoftService');
-      // Don't throw - cleanup should not block logout
+      logger.warn(`⚠️ Could not cleanup Microsoft subscriptions with valid token, doing emergency cleanup:`, error as Error);
+      // Emergency cleanup - just remove from database
+      await this.emergencyCleanup(userId, dashboardId);
     }
   }
 
@@ -341,12 +374,40 @@ export class MicrosoftService {
       throw new Error("Microsoft Calendar authentication required");
     }
 
-    return await this.microsoftRepository.subscribeToCalendarEvents(
-      tokenDocument.accessToken,
-      calendarId,
-      userId,
-      dashboardId
-    );
+    try {
+      const subscription = await this.microsoftRepository.subscribeToCalendarEvents(
+        tokenDocument.accessToken,
+        calendarId,
+        userId,
+        dashboardId
+      );
+
+      // Save subscription to our database for tracking
+      const subscriptionData = {
+        userId,
+        dashboardId,
+        serviceId: SERVICES.MICROSOFT,
+        targetId: calendarId,
+        resourceId: subscription.id, // Microsoft uses 'id' as resourceId
+        expiration: new Date(subscription.expirationDateTime),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      await this.eventSubscriptionRepository.create(subscriptionData as IEventSubscriptionData);
+
+      logger.info(`✅ Microsoft calendar subscription saved to database`, {
+        userId,
+        dashboardId,
+        calendarId,
+        subscriptionId: subscription.id
+      });
+
+      return subscription;
+    } catch (error) {
+      logger.error("Error subscribing to Microsoft calendar events:", error as Error);
+      throw new Error("Failed to subscribe to Microsoft Calendar events.");
+    }
   }
 
   /**

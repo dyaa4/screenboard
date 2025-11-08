@@ -12,6 +12,7 @@ import { IGoogleToken } from "../../domain/types/IGoogleToken"
 import { ITokenDocument } from "../../domain/types/ITokenDocument"
 import { Token } from "../../domain/entities/Token"
 import { emitToUserDashboard } from "../../infrastructure/server/socketIo"
+import { IEventSubscriptionData } from "../../domain/types/IEventSubscriptionDocument"
 import logger from "../../utils/logger"
 
 export class GoogleService {
@@ -20,57 +21,69 @@ export class GoogleService {
     private tokenRepository: TokenRepository,
     private eventSubscriptionRepository: EventSubscriptionRepository,
   ) { }
-  private subscriptionRenewalJobs: Map<string, NodeJS.Timeout> = new Map();
-  // Konstante für die Erneuerungszeit (z.B. 6 Tage in ms, da Google maximal 7 Tage erlaubt)
-  private readonly RENEWAL_INTERVAL = 6 * 24 * 60 * 60 * 1000;
 
 
-  private scheduleSubscriptionRenewal(
+
+  /**
+   * Refreshes all subscriptions for a user - deletes old ones and prepares for fresh ones
+   */
+  async refreshUserSubscriptions(
     userId: string,
     dashboardId: string,
-    calendarId: string,
-    resourceId: string
-  ): void {
-    // Erstelle einen eindeutigen Schlüssel für diesen Job
-    const jobKey = `${userId}-${dashboardId}-${calendarId}`;
+    newAccessToken: string
+  ): Promise<void> {
+    logger.info(`🔄 Refreshing Google subscriptions for user ${userId}`);
 
-    // Lösche einen möglicherweise existierenden Job
-    const existingJob = this.subscriptionRenewalJobs.get(jobKey);
-    if (existingJob) {
-      clearTimeout(existingJob);
-    }
+    try {
+      // 1. Get all active Google subscriptions for this user
+      const activeSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
+        userId,
+        dashboardId
+      );
 
-    // Plane den neuen Erneuerungsjob
-    const renewalJob = setTimeout(async () => {
-      try {
-        const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
-
-        const newSubscription = await this.googleRepository.renewSubscription(
-          accessToken,
-          calendarId,
-          userId,
-          dashboardId,
-          resourceId
-        );
-
-        // Plane die nächste Erneuerung
-        this.scheduleSubscriptionRenewal(
-          userId,
-          dashboardId,
-          calendarId,
-          newSubscription.resourceId
-        );
-      } catch (error) {
-        console.error('Failed to renew subscription:', error);
-        // Versuche es in einer Stunde erneut
-        setTimeout(() => {
-          this.scheduleSubscriptionRenewal(userId, dashboardId, calendarId, resourceId);
-        }, 60 * 60 * 1000);
+      // Filter only Google subscriptions
+      const googleSubscriptions = activeSubscriptions.filter(sub =>
+        sub.serviceId === SERVICES.GOOGLE
+      ); if (googleSubscriptions.length === 0) {
+        logger.info(`✅ No active Google subscriptions found for user ${userId}`);
+        return;
       }
-    }, this.RENEWAL_INTERVAL);
 
-    // Speichere den Job
-    this.subscriptionRenewalJobs.set(jobKey, renewalJob);
+      logger.info(`🗑️ Cleaning up ${googleSubscriptions.length} existing Google subscriptions`);
+
+      // 2. Delete subscriptions at Google (parallel for better performance)
+      const deletePromises = googleSubscriptions.map(async (subscription) => {
+        try {
+          if (subscription.resourceId) {
+            await this.googleRepository.stopSubscriptionPublic(
+              newAccessToken,
+              subscription.resourceId,
+              userId,
+              dashboardId
+            );
+            logger.info(`✅ Deleted Google subscription ${subscription.resourceId}`);
+          }
+        } catch (error) {
+          logger.warn(`⚠️ Failed to delete Google subscription ${subscription.resourceId}:`, error as Error);
+          // Don't throw - we still want to clean from database
+        }
+      });
+
+      await Promise.allSettled(deletePromises);
+
+      // 3. Remove Google subscriptions from database
+      for (const subscription of googleSubscriptions) {
+        if (subscription.resourceId) {
+          await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+        }
+      }
+
+      logger.info(`✅ Successfully refreshed Google subscriptions for user ${userId}`);
+
+    } catch (error) {
+      logger.error(`❌ Failed to refresh Google subscriptions for user ${userId}:`, error as Error);
+      throw error;
+    }
   }
 
 
@@ -79,18 +92,42 @@ export class GoogleService {
 
   // Cleanup-Methode beim Ausloggen oder Beenden
   async cleanup(userId: string, dashboardId: string): Promise<void> {
+    // Try to refresh subscriptions with current token (cleanup at Google)
+    try {
+      const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
+      await this.refreshUserSubscriptions(userId, dashboardId, accessToken);
+    } catch (error) {
+      logger.warn(`⚠️ Could not cleanup Google subscriptions with valid token, doing emergency cleanup:`, error as Error);
+      // Emergency cleanup - just remove from database
+      await this.emergencyCleanup(userId, dashboardId);
+    }
+
     // Bestehende Logout-Logik
     await this.logout(userId, dashboardId);
+  }
 
-    // Lösche alle Renewal Jobs für diesen User und dieses Dashboard
-    for (const [jobKey, timeout] of this.subscriptionRenewalJobs.entries()) {
-      if (jobKey.startsWith(`${userId}-${dashboardId}`)) {
-        clearTimeout(timeout);
-        this.subscriptionRenewalJobs.delete(jobKey);
+  /**
+   * Emergency cleanup when no valid token is available
+   */
+  private async emergencyCleanup(userId: string, dashboardId: string): Promise<void> {
+    logger.warn(`🚨 Emergency cleanup for Google subscriptions: user ${userId}`);
+
+    const activeSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
+      userId,
+      dashboardId
+    );
+
+    const googleSubscriptions = activeSubscriptions.filter(sub =>
+      sub.serviceId === SERVICES.GOOGLE
+    );
+
+    for (const subscription of googleSubscriptions) {
+      if (subscription.resourceId) {
+        await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
       }
     }
 
-
+    logger.info(`✅ Emergency cleanup completed: removed ${googleSubscriptions.length} Google subscriptions`);
   }
 
 
@@ -106,6 +143,9 @@ export class GoogleService {
       logger.apiCall('Google', '/oauth2/token', 'POST');
 
       const googleTokens = await this.googleRepository.exchangeAuthCodeForTokens(code);
+
+      // Clean up any existing subscriptions before setting up new ones
+      await this.refreshUserSubscriptions(userId, dashboardId, googleTokens.accessToken);
 
       // the expiresIn is in ms
       const { accessToken, refreshToken, expiresIn } = googleTokens;
@@ -165,8 +205,26 @@ export class GoogleService {
         dashboardId
       );
 
-      // Plane die automatische Erneuerung
-      this.scheduleSubscriptionRenewal(userId, dashboardId, calendarId, subscription.resourceId);
+      // Save subscription to our database for tracking
+      const subscriptionData = {
+        userId,
+        dashboardId,
+        serviceId: SERVICES.GOOGLE,
+        targetId: calendarId,
+        resourceId: subscription.resourceId,
+        expiration: new Date(subscription.expiration),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      await this.eventSubscriptionRepository.create(subscriptionData as IEventSubscriptionData);
+
+      logger.info(`✅ Google calendar subscription saved to database`, {
+        userId,
+        dashboardId,
+        calendarId,
+        resourceId: subscription.resourceId
+      });
 
       return subscription;
     } catch (error) {

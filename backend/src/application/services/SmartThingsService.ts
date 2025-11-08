@@ -14,6 +14,7 @@ import {
   SmartThingsSubscriptionDTO,
   WebhookSmartthingsEvent,
 } from "../../domain/types/SmartThingDtos";
+import { IEventSubscriptionData } from "../../domain/types/IEventSubscriptionDocument";
 import logger from "../../utils/logger";
 import { EventSubscriptionService } from "./EventSubscriptionService";
 
@@ -38,7 +39,122 @@ export class SmartThingsService {
    */
 
 
+  /**
+   * Refreshes all subscriptions for a user - deletes old ones and prepares for fresh ones
+   */
+  async refreshUserSubscriptions(
+    userId: string,
+    dashboardId: string,
+    newAccessToken: string
+  ): Promise<void> {
+    logger.info(`🔄 Refreshing SmartThings subscriptions for user ${userId}`);
+
+    try {
+      // 1. Get all active SmartThings subscriptions for this user
+      const activeSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
+        userId,
+        dashboardId
+      );
+
+      // Filter only SmartThings subscriptions
+      const smartThingsSubscriptions = activeSubscriptions.filter(sub =>
+        sub.serviceId === SERVICES.SMARTTHINGS
+      );
+
+      if (smartThingsSubscriptions.length === 0) {
+        logger.info(`✅ No active SmartThings subscriptions found for user ${userId}`);
+        return;
+      }
+
+      logger.info(`🗑️ Cleaning up ${smartThingsSubscriptions.length} existing SmartThings subscriptions`);
+
+      // 2. Get the token to access installedAppId
+      const token = await this.tokenRepository.findToken(
+        userId,
+        dashboardId,
+        SERVICES.SMARTTHINGS
+      );
+
+      if (!token?.installedAppId) {
+        logger.warn(`⚠️ No installedAppId found for SmartThings cleanup, doing emergency cleanup only`);
+        // Just remove from database
+        for (const subscription of smartThingsSubscriptions) {
+          if (subscription.resourceId) {
+            await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+          }
+        }
+        return;
+      }
+
+      // 3. Delete subscriptions at SmartThings (parallel for better performance)
+      const deletePromises = smartThingsSubscriptions.map(async (subscription) => {
+        try {
+          if (subscription.resourceId) {
+            await this.smartThingsRepository.deleteDeviceSubscription(
+              newAccessToken,
+              subscription.resourceId,
+              token.installedAppId!
+            );
+            logger.info(`✅ Deleted SmartThings subscription ${subscription.resourceId}`);
+          }
+        } catch (error) {
+          logger.warn(`⚠️ Failed to delete SmartThings subscription ${subscription.resourceId}:`, error as Error);
+          // Don't throw - we still want to clean from database
+        }
+      });
+
+      await Promise.allSettled(deletePromises);
+
+      // 4. Remove SmartThings subscriptions from database
+      for (const subscription of smartThingsSubscriptions) {
+        if (subscription.resourceId) {
+          await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+        }
+      }
+
+      logger.info(`✅ Successfully refreshed SmartThings subscriptions for user ${userId}`);
+
+    } catch (error) {
+      logger.error(`❌ Failed to refresh SmartThings subscriptions for user ${userId}:`, error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Emergency cleanup when no valid token is available
+   */
+  private async emergencyCleanup(userId: string, dashboardId: string): Promise<void> {
+    logger.warn(`🚨 Emergency cleanup for SmartThings subscriptions: user ${userId}`);
+
+    const activeSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
+      userId,
+      dashboardId
+    );
+
+    const smartThingsSubscriptions = activeSubscriptions.filter(sub =>
+      sub.serviceId === SERVICES.SMARTTHINGS
+    );
+
+    for (const subscription of smartThingsSubscriptions) {
+      if (subscription.resourceId) {
+        await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+      }
+    }
+
+    logger.info(`✅ Emergency cleanup completed: removed ${smartThingsSubscriptions.length} SmartThings subscriptions`);
+  }
+
   async cleanup(userId: string, dashboardId: string): Promise<void> {
+    // Try to refresh subscriptions with current token (cleanup at SmartThings)
+    try {
+      const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
+      await this.refreshUserSubscriptions(userId, dashboardId, accessToken);
+    } catch (error) {
+      logger.warn(`⚠️ Could not cleanup SmartThings subscriptions with valid token, doing emergency cleanup:`, error as Error);
+      // Emergency cleanup - just remove from database
+      await this.emergencyCleanup(userId, dashboardId);
+    }
+
     await this.logout(userId, dashboardId);
   }
 
@@ -57,6 +173,9 @@ export class SmartThingsService {
       await this.smartThingsRepository.exchangeAuthCodeForTokens(code);
 
     const { accessToken, refreshToken, expiresIn, installedAppId } = smartThingsTokens;
+
+    // Clean up any existing subscriptions before setting up new ones
+    await this.refreshUserSubscriptions(userId, dashboardId, accessToken);
 
     const expirationDate = new Date(Date.now() + expiresIn * 1000);
 
@@ -155,6 +274,27 @@ export class SmartThingsService {
           deviceId,
           token?.installedAppId!
         );
+
+      // Save subscription to our database for tracking
+      const subscriptionData = {
+        userId,
+        dashboardId,
+        serviceId: SERVICES.SMARTTHINGS,
+        targetId: deviceId,
+        resourceId: subscription.resourceId,
+        expiration: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // SmartThings subscriptions don't expire but we set 1 year
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      await this.eventSubscriptionRepository.create(subscriptionData as IEventSubscriptionData);
+
+      logger.info(`✅ SmartThings device subscription saved to database`, {
+        userId,
+        dashboardId,
+        deviceId,
+        resourceId: subscription.resourceId
+      });
 
       return subscription;
     } catch (error) {
