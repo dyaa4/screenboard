@@ -799,8 +799,37 @@ body {
 // Universelle Overflow-Kontrolle für alle Widgets und Container
 #app-menu, #app-menu-content-wrapper, #app-menu-content {
   * {
-
     box-sizing: border-box;
+  }
+}
+
+// Rotation-spezifische CSS-Overrides für 90° und 270°
+#app.rotated-layout {
+  max-width: none !important; // Entfernt 100vw Beschränkung
+  overflow-x: auto !important; // Erlaubt horizontales Scrollen
+  width: 100% !important;
+  
+  #app-menu {
+    max-width: none !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    
+    #app-menu-content-wrapper {
+      max-width: none !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      
+      #app-menu-content {
+        max-width: none !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        
+        // Alle Child-Elemente sollen auch die volle Breite nutzen können
+        > * {
+          max-width: none !important;
+        }
+      }
+    }
   }
 }
 

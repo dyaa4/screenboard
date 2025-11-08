@@ -33,53 +33,61 @@ export const AppContext = React.createContext<IAppContext>({
 });
 
 const getRotationStyle = (rotation: number) => {
-  let transform = 'rotate(0deg)';
-  let width = '100%';
-  let height = '100%';
-  let top = '0';
-  let left = '0';
-  let marginTop = '0';
-  let marginLeft = '0';
+  const baseStyle = {
+    transformOrigin: 'center center',
+    width: '100%',
+    height: '100%',
+    overflow: 'auto' as 'auto', // Ermöglicht Scrollen in alle Richtungen
+    position: 'relative' as 'relative',
+  };
 
   switch (rotation) {
     case 90:
-      transform = 'rotate(90deg)';
-      width = '100vh';
-      height = '100vw';
-      top = '50%';
-      left = '50%';
-      marginTop = '-50vw';
-      marginLeft = '-50vh';
-      break;
+      return {
+        ...baseStyle,
+        transform: 'rotate(90deg)',
+        width: '100vh', // Nutzt volle Viewport-Höhe als Breite
+        height: '100vw', // Nutzt volle Viewport-Breite als Höhe  
+        position: 'fixed' as 'fixed',
+        top: '50%',
+        left: '50%',
+        marginTop: '-50vw', // Zentriert vertikal
+        marginLeft: '-50vh', // Zentriert horizontal
+        maxWidth: '100vh',
+        maxHeight: '100vw',
+        overflowX: 'auto' as 'auto',
+        overflowY: 'auto' as 'auto',
+        boxSizing: 'border-box' as 'border-box',
+      };
+
     case 180:
-      transform = 'rotate(180deg)';
-      break;
+      return {
+        ...baseStyle,
+        transform: 'rotate(180deg)',
+      };
+
     case 270:
-      transform = 'rotate(270deg)';
-      width = '100vh';
-      height = '100vw';
-      top = '50%';
-      left = '50%';
-      marginTop = '-50vw';
-      marginLeft = '-50vh';
-      break;
+      return {
+        ...baseStyle,
+        transform: 'rotate(270deg)',
+        width: '100vh', // Nutzt volle Viewport-Höhe als Breite
+        height: '100vw', // Nutzt volle Viewport-Breite als Höhe
+        position: 'fixed' as 'fixed',
+        top: '50%',
+        left: '50%',
+        marginTop: '-50vw', // Zentriert vertikal
+        marginLeft: '-50vh', // Zentriert horizontal  
+        maxWidth: '100vh',
+        maxHeight: '100vw',
+        overflowX: 'auto' as 'auto',
+        overflowY: 'auto' as 'auto',
+        boxSizing: 'border-box' as 'border-box',
+      };
+
     case 0:
     default:
-      transform = '';
-      break;
+      return baseStyle;
   }
-
-  return {
-    transform,
-    width,
-    height,
-    transformOrigin: 'center center',
-    position: 'absolute' as 'absolute',
-    top,
-    left,
-    marginTop,
-    marginLeft,
-  };
 };
 
 const Dashboard: React.FC = () => {
@@ -112,11 +120,59 @@ const Dashboard: React.FC = () => {
     setDashboardIdAsync();
   }, [dashboardId]);
 
-  const { rotationStyle, contentStyle } = useMemo(() => {
-    if (!layout) return { rotationStyle: {}, contentStyle: {} };
+  const { rotationStyle, contentStyle, appStyle } = useMemo(() => {
+    if (!layout) return { rotationStyle: {}, contentStyle: {}, appStyle: {} };
+
+    const getContentStyle = (rotation: number) => {
+      const baseContentStyle = {
+        width: '100%',
+        height: '100%',
+        overflow: 'visible' as 'visible',
+        position: 'relative' as 'relative',
+      };
+
+      // Bei 90° und 270° Rotation benötigen wir spezielle Content-Styles
+      if (rotation === 90 || rotation === 270) {
+        return {
+          ...baseContentStyle,
+          minWidth: '100%',
+          minHeight: '100%',
+          // Inhalte können über die rotierten Dimensionen hinausgehen
+          width: 'auto',
+          height: 'auto',
+        };
+      }
+
+      return baseContentStyle;
+    };
+
+    const getAppStyle = (rotation: number) => {
+      const baseAppStyle = {
+        width: '100%',
+        height: '100%',
+        minHeight: '100vh',
+      };
+
+      // Bei Rotation nutze die vollen rotated Dimensionen
+      if (rotation === 90 || rotation === 270) {
+        return {
+          ...baseAppStyle,
+          width: '100%', // Nutzt die volle rotierte Breite (100vh)
+          height: '100%', // Nutzt die volle rotierte Höhe (100vw)
+          minWidth: '100%',
+          minHeight: '100%',
+          maxWidth: 'none !important' as any, // Entfernt CSS-Beschränkungen
+          overflow: 'visible',
+        };
+      }
+
+      return baseAppStyle;
+    };
 
     return {
       rotationStyle: getRotationStyle(layout.rotation),
+      contentStyle: getContentStyle(layout.rotation),
+      appStyle: getAppStyle(layout.rotation),
     };
   }, [layout, currentLang]);
 
@@ -128,7 +184,11 @@ const Dashboard: React.FC = () => {
     <AppContext.Provider value={{ userStatus, setUserStatusTo }}>
       <div id="rotation-wrapper" style={rotationStyle}>
         <div id="content-wrapper" style={contentStyle}>
-          <div id="app" className={getStatusClass()}>
+          <div
+            id="app"
+            className={`${getStatusClass()} ${layout?.rotation === 90 || layout?.rotation === 270 ? 'rotated-layout' : ''}`}
+            style={appStyle}
+          >
             <MessageDialog dashboardId={dashboardId} />
 
             <Pin layout={layout} />
