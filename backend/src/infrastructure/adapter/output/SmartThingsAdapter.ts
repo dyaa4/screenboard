@@ -247,6 +247,46 @@ export class SmartThingsAdapter implements SmartThingsRepository {
         }
     }
 
+    /**
+     * Delete ALL subscriptions for an installed app (used during logout)
+     */
+    async deleteAllSubscriptionsForApp(
+        accessToken: string,
+        installedAppId: string
+    ): Promise<void> {
+        try {
+            console.log(`🗑️ Lösche ALLE Subscriptions für installedAppId: ${installedAppId}`);
+
+            // 1. Hole alle aktuellen Subscriptions von SmartThings
+            const response = await axios.get(
+                `https://api.smartthings.com/v1/installedapps/${installedAppId}/subscriptions`,
+                {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                }
+            );
+
+            const subscriptions = response.data.items || [];
+            console.log(`📊 Gefundene SmartThings Subscriptions: ${subscriptions.length}`);
+
+            // 2. Lösche jede Subscription
+            for (const subscription of subscriptions) {
+                try {
+                    await axios.delete(
+                        `https://api.smartthings.com/v1/installedapps/${installedAppId}/subscriptions/${subscription.id}`,
+                        {
+                            headers: { Authorization: `Bearer ${accessToken}` },
+                        }
+                    );
+                    console.log(`✅ Subscription ${subscription.id} gelöscht`);
+                } catch (error: any) {
+                    console.error(`❌ Fehler beim Löschen von Subscription ${subscription.id}:`, error.response?.data || error.message);
+                }
+            }
+        } catch (error: any) {
+            console.error('Error getting/deleting all SmartThings subscriptions:', error.response?.data || error.message);
+        }
+    }
+
     // === COLOR CONTROL METHODS ===
 
     /**

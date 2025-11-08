@@ -22,6 +22,10 @@ export interface SmartThingsRepository {
         subscriptionId: string,
         installedAppId: string
     ): Promise<void>
+    deleteAllSubscriptionsForApp(
+        accessToken: string,
+        installedAppId: string
+    ): Promise<void>
 
     // Color control methods
     setDeviceColor(

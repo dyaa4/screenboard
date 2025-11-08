@@ -319,25 +319,16 @@ export class SmartThingsService {
         SERVICES.SMARTTHINGS
       );
 
-      if (token && token.accessToken) {
-        // Hole alle Subscriptions für dieses Dashboard
-        const subscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(userId, dashboardId);
+      if (token && token.accessToken && token.installedAppId) {
+        console.log(`🗑️ LOGOUT: Lösche alle SmartThings Subscriptions für User ${userId}, Dashboard ${dashboardId}`);
 
-        // Stoppe alle Subscriptions bei SmartThings
-        for (const subscription of subscriptions) {
-          if (subscription.resourceId) {
-            try {
-              await this.smartThingsRepository.deleteDeviceSubscription(
-                token.accessToken,
-                subscription.resourceId,
-                token.installedAppId!
-              );
-            } catch (error) {
-              console.error('Error stopping SmartThings subscription:', error);
-              // Continue, um alle zu stoppen, auch wenn eine fehlschlägt
-            }
-          }
-        }
+        // Lösche ALLE Subscriptions direkt bei SmartThings (nicht nur die in unserer DB)
+        await this.smartThingsRepository.deleteAllSubscriptionsForApp(
+          token.accessToken,
+          token.installedAppId
+        );
+
+        console.log(`✅ LOGOUT: Alle SmartThings Subscriptions gelöscht`);
       }
     } catch (error) {
       console.error('Error during logout subscription cleanup:', error);

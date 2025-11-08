@@ -1,21 +1,21 @@
-import { t } from '@adapter/ui/i18n/i18n';
-import NotConfiguredMessage from '@components/NotConfiguredMessage/NotConfiguredMessage';
-import { Layout } from '../../../../../../domain/entities/Layout';
-import { Widget } from '../../../../../../domain/entities/Widget';
-import { IoTDevice } from '../../../../../../domain/types';
-import { Card, Chip, Button } from '@heroui/react';
-import { useSmartThings } from '@hooks/api/useSmartthings';
-import { JSX, useEffect, useState } from 'react';
-import MenuSection from '../MenuSection/MenuSection';
 import {
   getCustomColorCssClass,
   getDeviceIcon,
 } from '@adapter/ui/helpers/generalHelper';
+import { t } from '@adapter/ui/i18n/i18n';
+import NotConfiguredMessage from '@components/NotConfiguredMessage/NotConfiguredMessage';
+import { Card, Chip } from '@heroui/react';
+import { useSmartThings } from '@hooks/api/useSmartthings';
 import { getFontSizeClass } from '@sites/Dashboard/helper';
 import { useTheme } from 'next-themes';
+import { JSX, useEffect, useState } from 'react';
+import { Layout } from '../../../../../../domain/entities/Layout';
+import { Widget } from '../../../../../../domain/entities/Widget';
+import { IoTDevice } from '../../../../../../domain/types';
+import MenuSection from '../MenuSection/MenuSection';
 
-import { container } from 'tsyringe';
 import { COMMUNICATION_REPOSITORY_NAME } from '@common/constants';
+import { container } from 'tsyringe';
 import { CommunicationRepository } from '../../../../../../application/repositories/communicationRepository';
 import WidgetSkeleton from '../WidgetSkeleton/WidgetSkeleton';
 import ColorControls from './ColorControls';
@@ -68,6 +68,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
   useEffect(() => {
     if (isLoggedIn && apiDevices.length > 0) {
       const fetchAllDeviceStatuses = async () => {
+        console.log('🔄 Fetching device statuses for IoT Widget...');
         const states: Record<string, any> = {};
 
         for (const device of apiDevices) {
@@ -79,9 +80,10 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
             try {
               const status = await getDeviceStatus(device.deviceId);
               states[device.deviceId] = status;
+              console.log(`📊 Device ${device.deviceId} status:`, status);
             } catch (err) {
               console.error(
-                `Fehler beim Abrufen des Status für ${device.label || device.name}:`,
+                `❌ Fehler beim Abrufen des Status für ${device.label || device.name}:`,
                 err,
               );
             }
@@ -89,17 +91,47 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
         }
 
         setDeviceStates(states);
+        console.log('✅ All device statuses fetched');
       };
 
       fetchAllDeviceStatuses();
+    }
+  }, [
+    isLoggedIn,
+    apiDevices,
+    widget.settings?.devices,
+    getDeviceStatus,
+  ]);
 
-      // SmartThings Nachrichten live empfangen
-      const smartThingsMessageHandler = (event: any) => {
-        console.log('SmartThings event empfangen:', event);
+  // Separate useEffect für WebSocket-Verbindung
+  useEffect(() => {
+    if (!isLoggedIn || !widget.dashboardId) {
+      console.log('⚠️ Skipping WebSocket setup: not logged in or no dashboard ID');
+      return;
+    }
 
-        const structuredValue = {
+    console.log(`🔌 Setting up WebSocket for dashboard: ${widget.dashboardId}`);
+
+    // SmartThings Nachrichten live empfangen
+    const smartThingsMessageHandler = (event: any) => {
+      console.log('🔌 SmartThings WebSocket event empfangen:', event);
+
+      if (!event.deviceId || event.value === undefined) {
+        console.warn('❌ Invalid SmartThings event: missing deviceId or value');
+        return;
+      }
+
+      // Aktualisiere den Device-State optimistisch
+      setDeviceStates((prev) => {
+        const currentState = prev[event.deviceId] || {};
+
+        // Erstelle eine flexible Struktur basierend auf der aktuellen State
+        const updatedState = {
+          ...currentState,
           components: {
+            ...currentState.components,
             main: {
+              ...currentState.components?.main,
               switch: {
                 switch: {
                   value: event.value,
@@ -109,29 +141,35 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
           },
         };
 
-        // Beispiel: event enthält deviceId und Status-Update
-        if (event.deviceId && event.value !== undefined) {
-          setDeviceStates((prev) => ({
-            ...prev,
-            [event.deviceId]: structuredValue,
-          }));
-        }
-      };
+        console.log(`✅ Device ${event.deviceId} state updated: ${event.value}`);
 
-      communicationService.receiveSmartThingsMessage(smartThingsMessageHandler);
+        return {
+          ...prev,
+          [event.deviceId]: updatedState,
+        };
+      });
+    };
 
-      communicationService.connect(widget.dashboardId);
+    // WebSocket Handler registrieren
+    communicationService.receiveSmartThingsMessage(smartThingsMessageHandler);
 
-      // Cleanup beim Unmount
-      return () => {
-        communicationService.abmelden('smartthings-device-event');
-      };
-    }
+    // WebSocket Verbindung aufbauen
+    communicationService.connect(widget.dashboardId)
+      .then(() => {
+        console.log('✅ WebSocket connection established for IoT Widget');
+      })
+      .catch((error) => {
+        console.error('❌ WebSocket connection failed for IoT Widget:', error);
+      });
+
+    // Cleanup beim Unmount
+    return () => {
+      console.log('🧹 Cleaning up WebSocket for IoT Widget');
+      communicationService.abmelden('smartthings-device-event');
+    };
   }, [
     isLoggedIn,
-    apiDevices,
-    widget.settings?.devices,
-    getDeviceStatus,
+    widget.dashboardId,
     communicationService,
   ]);
 
@@ -179,7 +217,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
   // Wrapper-Funktionen die den Device-Status nach Änderungen aktualisieren
   const handleSetDeviceColor = async (deviceId: string, hue: number, saturation: number) => {
     await setDeviceColor(deviceId, hue, saturation);
-    
+
     // Nach Farbänderung wird das Licht automatisch eingeschaltet
     // Aktualisiere den lokalen State um das zu reflektieren
     setDeviceStates((prev) => ({
@@ -203,7 +241,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
 
   const handleSetDeviceBrightness = async (deviceId: string, level: number) => {
     await setDeviceBrightness(deviceId, level);
-    
+
     // Nach Helligkeitsänderung wird das Licht automatisch eingeschaltet
     setDeviceStates((prev) => ({
       ...prev,
@@ -226,7 +264,7 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
 
   const handleSetDeviceColorTemperature = async (deviceId: string, colorTemperature: number) => {
     await setDeviceColorTemperature(deviceId, colorTemperature);
-    
+
     // Nach Farbtemperatur-Änderung wird das Licht automatisch eingeschaltet
     setDeviceStates((prev) => ({
       ...prev,
