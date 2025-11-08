@@ -109,12 +109,12 @@ const PlayerContainer = ({
   theme?: string;
 }) => (
   <Card
-    className="w-full h-52 shadow-xl hover:shadow-2xl transition-shadow duration-500"
+    className="w-full h-48 sm:h-52 shadow-xl hover:shadow-2xl transition-shadow duration-500"
     style={{
       ...getCustomColorCssClass(layout, theme),
     }}
   >
-    <CardBody className="p-4 overflow-hidden">{children}</CardBody>
+    <CardBody className="p-3 sm:p-4 overflow-hidden">{children}</CardBody>
   </Card>
 );
 
@@ -154,62 +154,69 @@ const PlayerContent = ({
   formatDuration,
 }: PlayerContentProps) => (
   <>
-    <div className="flex items-center justify-between mb-4">
+    {/* Header - Responsive Spotify Status */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2">
       <div className="flex items-center">
-        <FaSpotify className="text-primary text-3xl mr-2" />
-        <span className="font-bold text-xl">
+        <FaSpotify className="text-primary text-2xl sm:text-3xl mr-2" />
+        <span className="font-bold text-lg sm:text-xl truncate">
           {isConnected
             ? t('sites.dashboard.components.musicWidget.connectedToSpotify')
             : t('sites.dashboard.components.musicWidget.connecting')}
         </span>
       </div>
       {currentTrack && (
-        <div className="text-sm text-default-600">
+        <div className="text-sm text-default-600 shrink-0">
           {formatDuration(progress)} / {formatDuration(trackDuration)}
         </div>
       )}
     </div>
+
     {currentTrack ? (
       <>
-        <div className="flex items-center mb-2">
-          <div className="flex items-center gap-2 flex-1 mr-2">
+        {/* Main Content - Responsive Layout */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center mb-3 gap-3">
+          {/* Album Art & Track Info */}
+          <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:w-auto">
             <Image
               src={currentTrack.album.images[0].url}
               alt={currentTrack.name}
-              className="w-20 h-20 rounded-lg mr-4"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg shrink-0"
             />
-            <div>
-              <h3 className="font-bold text-lg">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-base sm:text-lg truncate">
                 {currentTrack.name}
               </h3>
-              <p className="text-default-500">
+              <p className="text-default-500 text-sm truncate">
                 {currentTrack.artists
                   .map((artist: any) => artist.name)
                   .join(', ')}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-auto">
+
+          {/* Controls - Responsive */}
+          <div className="flex items-center gap-2 justify-center w-full sm:w-auto sm:shrink-0">
             <Button
               isIconOnly
               color="default"
               variant="flat"
               onPress={handlePrevious}
-              className="w-12 h-12"
+              className="w-10 h-10 sm:w-12 sm:h-12"
+              size="sm"
             >
-              <BiSkipPrevious size={24} />
+              <BiSkipPrevious size={20} />
             </Button>
             <Button
               isIconOnly
               color="primary"
               variant="flat"
               onPress={handlePlayPause}
-              className="w-16 h-16"
+              className="w-12 h-12 sm:w-16 sm:h-16"
             >
               {isPlaying ? (
-                <BiPause size={32} />
+                <BiPause size={24} />
               ) : (
-                <BiPlay size={32} />
+                <BiPlay size={24} />
               )}
             </Button>
             <Button
@@ -217,17 +224,21 @@ const PlayerContent = ({
               color="default"
               variant="flat"
               onPress={handleNext}
-              className="w-12 h-12"
+              className="w-10 h-10 sm:w-12 sm:h-12"
+              size="sm"
             >
-              <BiSkipNext size={24} />
+              <BiSkipNext size={20} />
             </Button>
           </div>
         </div>
+
+        {/* Progress Bar */}
         <Progress
           aria-label="Music progress"
           value={(progress / trackDuration) * 100}
           className="mb-2"
           color="success"
+          size="sm"
         />
       </>
     ) : (
@@ -237,30 +248,30 @@ const PlayerContent = ({
 );
 
 const NoTrackMessage = () => (
-  <div className="text-center">
-    <p className="text-xl font-bold mb-2">Kein Titel gefunden</p>
+  <div className="text-center px-2">
+    <p className="text-lg sm:text-xl font-bold mb-2">Kein Titel gefunden</p>
     <div className="flex flex-col gap-1 items-center justify-center">
-      <div className="flex items-center w-full max-w-md">
-        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mr-2 shrink-0">
+      <div className="flex items-start w-full max-w-md">
+        <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mr-2 shrink-0 mt-0.5">
           1
         </span>
-        <p className="text-left grow text-sm text-default-600">
+        <p className="text-left grow text-xs sm:text-sm text-default-600 leading-relaxed">
           Stellen Sie sicher, dass Sie Spotify Premium haben
         </p>
       </div>
-      <div className="flex items-center w-full max-w-md">
-        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mr-2 shrink-0">
+      <div className="flex items-start w-full max-w-md">
+        <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mr-2 shrink-0 mt-0.5">
           2
         </span>
-        <p className="text-left grow text-sm text-default-600">
+        <p className="text-left grow text-xs sm:text-sm text-default-600 leading-relaxed">
           Öffnen Sie Spotify auf Ihrem Gerät
         </p>
       </div>
-      <div className="flex items-center w-full max-w-md">
-        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mr-2 shrink-0">
+      <div className="flex items-start w-full max-w-md">
+        <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center mr-2 shrink-0 mt-0.5">
           3
         </span>
-        <p className="text-left grow text-sm text-default-600">
+        <p className="text-left grow text-xs sm:text-sm text-default-600 leading-relaxed">
           "Screen Board Player" als Wiedergabegerät auswählen
         </p>
       </div>

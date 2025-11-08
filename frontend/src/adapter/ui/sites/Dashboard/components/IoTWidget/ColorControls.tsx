@@ -76,20 +76,37 @@ export default function ColorControls({
         }
     }, [colorTemperature]);
 
+    // Only for actual color selection (not live preview)
     const handleColorChange = (newHue: number, newSaturation: number) => {
         setHue(newHue);
         setSaturation(newSaturation);
         onColorChange(device.deviceId, newHue, newSaturation);
     };
 
+    // Only for actual temperature selection (not live preview)  
     const handleColorTemperatureChange = (newTemp: number) => {
         setColorTemperature(newTemp);
         onColorTemperatureChange(device.deviceId, newTemp);
     };
 
+    // Only for actual brightness selection (not live preview)
     const handleBrightnessChange = (newLevel: number) => {
         setBrightness(newLevel);
         onBrightnessChange(device.deviceId, newLevel);
+    };
+
+    // Live preview handlers (don't trigger device change)
+    const handleLiveColorPreview = (newHue?: number, newSaturation?: number) => {
+        if (newHue !== undefined) setHue(newHue);
+        if (newSaturation !== undefined) setSaturation(newSaturation);
+    };
+
+    const handleLiveTemperaturePreview = (newTemp: number) => {
+        setColorTemperature(newTemp);
+    };
+
+    const handleLiveBrightnessPreview = (newLevel: number) => {
+        setBrightness(newLevel);
     };
 
     if (!device.supportsColor && !device.supportsColorTemperature && !device.supportsBrightness) {
@@ -117,7 +134,10 @@ export default function ColorControls({
                     {/* Backdrop with blur effect */}
                     <div
                         className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-md"
-                        onClick={() => setIsPanelOpen(false)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsPanelOpen(false);
+                        }}
                     />
 
                     {/* Main Panel */}
@@ -167,7 +187,7 @@ export default function ColorControls({
                                                 maxValue={100}
                                                 minValue={0}
                                                 value={brightness}
-                                                onChange={(value) => setBrightness(value as number)}
+                                                onChange={(value) => handleLiveBrightnessPreview(value as number)}
                                                 onChangeEnd={(value) => handleBrightnessChange(value as number)}
                                                 isDisabled={isLoading || hasError}
                                                 className="flex-1"
@@ -220,7 +240,7 @@ export default function ColorControls({
                                                     maxValue={100}
                                                     minValue={0}
                                                     value={hue}
-                                                    onChange={(value) => setHue(value as number)}
+                                                    onChange={(value) => handleLiveColorPreview(value as number, undefined)}
                                                     onChangeEnd={(value) => handleColorChange(value as number, saturation)}
                                                     isDisabled={isLoading || hasError}
                                                     className="flex-1"
@@ -239,7 +259,7 @@ export default function ColorControls({
                                                     maxValue={100}
                                                     minValue={0}
                                                     value={saturation}
-                                                    onChange={(value) => setSaturation(value as number)}
+                                                    onChange={(value) => handleLiveColorPreview(undefined, value as number)}
                                                     onChangeEnd={(value) => handleColorChange(hue, value as number)}
                                                     isDisabled={isLoading || hasError}
                                                     className="flex-1"
@@ -306,7 +326,7 @@ export default function ColorControls({
                                                 maxValue={6500}
                                                 minValue={1500}
                                                 value={colorTemperature}
-                                                onChange={(value) => setColorTemperature(value as number)}
+                                                onChange={(value) => handleLiveTemperaturePreview(value as number)}
                                                 onChangeEnd={(value) => handleColorTemperatureChange(value as number)}
                                                 isDisabled={isLoading || hasError}
                                                 className="flex-1"
@@ -340,22 +360,24 @@ export default function ColorControls({
                                     </div>
                                 )}
 
-                                {/* Status indicators */}
-                                {isLoading && (
-                                    <div className="flex items-center justify-center py-2">
-                                        <div className="animate-spin mr-2">
-                                            <i className="fa-solid fa-spinner"></i>
+                                {/* Status indicators - fixed height to prevent flicker */}
+                                <div className="h-8 flex items-center justify-center">
+                                    {isLoading && (
+                                        <div className="flex items-center">
+                                            <div className="animate-spin mr-2">
+                                                <i className="fa-solid fa-spinner"></i>
+                                            </div>
+                                            <span className="text-sm">Wird geändert...</span>
                                         </div>
-                                        <span className="text-sm">Wird geändert...</span>
-                                    </div>
-                                )}
+                                    )}
 
-                                {hasError && (
-                                    <div className="flex items-center justify-center py-2 text-red-500">
-                                        <i className="fa-solid fa-exclamation-triangle mr-2"></i>
-                                        <span className="text-sm">Fehler beim Ändern</span>
-                                    </div>
-                                )}
+                                    {hasError && (
+                                        <div className="flex items-center text-red-500">
+                                            <i className="fa-solid fa-exclamation-triangle mr-2"></i>
+                                            <span className="text-sm">Fehler beim Ändern</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </Card>
                     </div>

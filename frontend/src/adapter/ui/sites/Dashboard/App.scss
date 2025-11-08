@@ -678,10 +678,13 @@ body {
     #app-menu-content-wrapper {
       min-height: 80vh;
       padding: 25px;
+      overflow-x: hidden; // Verhindert horizontales Scrollen
+      max-width: 100vw; // Begrenzt auf Viewport-Breite
 
       #app-menu-content {
         margin: auto;
         position: relative;
+        max-width: 100%; // Verhindert Überlauf
       }
     }
   }
@@ -704,7 +707,8 @@ body {
 
     #app-menu {
       #app-menu-content-wrapper {
-        padding: 15px;
+        padding: 12px; // Reduziertes Padding für Tablets
+        overflow-x: hidden; // Verhindert horizontales Scrollen
 
         #app-menu-content {
           #restaurants-section {
@@ -784,10 +788,30 @@ body {
   }
 }
 
+@media (max-width: 640px) {
+  #app {
+    #app-menu {
+      #app-menu-content-wrapper {
+        padding: 8px; // Noch weniger Padding für kleine Displays
+        
+        #app-menu-content {
+          // Alle Widgets sollen auf kleinen Displays vollständig sichtbar sein
+          > div {
+            max-width: 100%;
+            overflow-x: hidden;
+          }
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 400px) {
   #app {
     #app-menu {
       #app-menu-content-wrapper {
+        padding: 6px; // Minimales Padding für sehr kleine Displays
+        
         #app-menu-content {
           #tools-section {
             .menu-section-content {
