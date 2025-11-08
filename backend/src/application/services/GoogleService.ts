@@ -21,12 +21,8 @@ export class GoogleService {
     private eventSubscriptionRepository: EventSubscriptionRepository,
   ) { }
   private subscriptionRenewalJobs: Map<string, NodeJS.Timeout> = new Map();
-  private tokenExpirationCleanupJobs: Map<string, NodeJS.Timeout> = new Map();
   // Konstante für die Erneuerungszeit (z.B. 6 Tage in ms, da Google maximal 7 Tage erlaubt)
   private readonly RENEWAL_INTERVAL = 6 * 24 * 60 * 60 * 1000;
-  private readonly CLEANUP_BEFORE_EXPIRATION = 60 * 60 * 1000; // 60 Minuten vor Token-Expiration
-  // Google Refresh-Token Lifespan: ~6 Monate (kann variieren je nach Nutzung)
-  private readonly GOOGLE_REFRESH_TOKEN_LIFESPAN = 180 * 24 * 60 * 60 * 1000; // 6 Monate
 
 
   private scheduleSubscriptionRenewal(
@@ -77,90 +73,9 @@ export class GoogleService {
     this.subscriptionRenewalJobs.set(jobKey, renewalJob);
   }
 
-  /**
-   * Schedule proactive subscription cleanup 60 minutes before refresh token expires
-   */
-  private scheduleRefreshTokenExpirationCleanup(
-    userId: string,
-    dashboardId: string,
-    tokenCreationDate: Date
-  ): void {
-    const cleanupJobKey = `cleanup-${userId}-${dashboardId}`;
 
-    // Clear existing cleanup job
-    const existingCleanupJob = this.tokenExpirationCleanupJobs.get(cleanupJobKey);
-    if (existingCleanupJob) {
-      clearTimeout(existingCleanupJob);
-    }
 
-    // Calculate estimated refresh token expiration based on creation date
-    const estimatedRefreshExpiration = new Date(
-      tokenCreationDate.getTime() + this.GOOGLE_REFRESH_TOKEN_LIFESPAN
-    );
 
-    const cleanupTime = estimatedRefreshExpiration.getTime() - this.CLEANUP_BEFORE_EXPIRATION;
-    const now = Date.now();
-
-    if (cleanupTime <= now) {
-      // Refresh token expires very soon, cleanup immediately but only once
-      logger.warn('Google refresh token expires very soon, cleaning up immediately',
-        { userId, dashboardId, estimatedRefreshExpiration }, 'GoogleService');
-
-      // Set a dummy timeout to mark this cleanup as scheduled (prevents multiple immediate cleanups)
-      this.tokenExpirationCleanupJobs.set(cleanupJobKey, setTimeout(() => { }, 0));
-
-      // Execute cleanup asynchronously to prevent blocking
-      setImmediate(async () => {
-        await this.performProactiveCleanup(userId, dashboardId);
-      });
-      return;
-    }
-
-    const timeUntilCleanup = cleanupTime - now;
-    const daysUntilCleanup = Math.floor(timeUntilCleanup / (24 * 60 * 60 * 1000));
-
-    logger.info('Scheduled Google proactive cleanup based on refresh token expiration',
-      { userId, dashboardId, daysUntilCleanup, estimatedRefreshExpiration }, 'GoogleService');
-
-    const cleanupJob = setTimeout(async () => {
-      await this.performProactiveCleanup(userId, dashboardId);
-    }, timeUntilCleanup);
-
-    this.tokenExpirationCleanupJobs.set(cleanupJobKey, cleanupJob);
-  }
-
-  /**
-   * Perform proactive Google cleanup while refresh token is still valid
-   */
-  private async performProactiveCleanup(userId: string, dashboardId: string): Promise<void> {
-    const cleanupJobKey = `cleanup-${userId}-${dashboardId}`;
-
-    // Check if token still exists before attempting cleanup
-    const existingToken = await this.tokenRepository.findToken(userId, dashboardId, SERVICES.GOOGLE);
-    if (!existingToken) {
-      logger.info('Google token already cleaned up, skipping proactive cleanup',
-        { userId, dashboardId }, 'GoogleService');
-
-      // Remove the cleanup job since it's no longer needed
-      this.tokenExpirationCleanupJobs.delete(cleanupJobKey);
-      return;
-    }
-
-    logger.info('Starting proactive Google subscription cleanup (refresh token expires in 60min)',
-      { userId, dashboardId }, 'GoogleService');
-
-    try {
-      await this.logout(userId, dashboardId);
-      logger.success('Proactive Google subscription cleanup completed',
-        { userId, dashboardId }, 'GoogleService');
-    } catch (error) {
-      logger.error('Proactive Google subscription cleanup failed',
-        error as Error, 'GoogleService');
-    } finally {
-      // Always remove the cleanup job after execution
-      this.tokenExpirationCleanupJobs.delete(cleanupJobKey);
-    }
-  }
 
   // Cleanup-Methode beim Ausloggen oder Beenden
   async cleanup(userId: string, dashboardId: string): Promise<void> {
@@ -175,13 +90,7 @@ export class GoogleService {
       }
     }
 
-    // Clear expiration cleanup jobs
-    const cleanupJobKey = `cleanup-${userId}-${dashboardId}`;
-    const cleanupJob = this.tokenExpirationCleanupJobs.get(cleanupJobKey);
-    if (cleanupJob) {
-      clearTimeout(cleanupJob);
-      this.tokenExpirationCleanupJobs.delete(cleanupJobKey);
-    }
+
   }
 
 
@@ -214,11 +123,9 @@ export class GoogleService {
       );
 
       // Token speichern
-      const createdToken = await this.tokenRepository.create(token as ITokenDocument);
+      await this.tokenRepository.create(token as ITokenDocument);
 
-      // Schedule proactive cleanup before refresh token expires (based on creation time)
-      const creationDate = createdToken.createdAt || new Date();
-      this.scheduleRefreshTokenExpirationCleanup(userId, dashboardId, creationDate);
+
 
       logger.success('Google auth code processed successfully', { userId, dashboardId }, 'GoogleService');
       timer();
@@ -395,9 +302,7 @@ export class GoogleService {
       newRefreshToken
     )
 
-    // Schedule new proactive cleanup for refreshed token (keep original creation date for refresh token expiration)
-    const originalCreationDate = token.createdAt || new Date();
-    this.scheduleRefreshTokenExpirationCleanup(userId, dashboardId, originalCreationDate);
+
 
     return newAccessToken
   }
