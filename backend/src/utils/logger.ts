@@ -5,42 +5,62 @@ import pino from 'pino';
  * Features: Colorful output, structured logging, performance tracking
  */
 
-// Enhanced Logger Configuration with pino-pretty support
+// Enhanced Logger Configuration - Custom Pretty Formatter for Production
 let logger: pino.Logger;
 
-try {
-    // Try to use pino-pretty for colorful logs (works in both dev and production)
-    logger = pino({
-        level: process.env.LOG_LEVEL || 'info',
-        formatters: {
-            level: (label) => ({ level: label.toUpperCase() }),
-        },
-        timestamp: pino.stdTimeFunctions.isoTime,
-        transport: {
-            target: 'pino-pretty',
-            options: {
-                colorize: true,
-                translateTime: 'HH:MM:ss',
-                ignore: 'pid,hostname',
-                messageFormat: '{if context}[{context}]{end}{if module}[{module}]{end} {msg}',
-                customPrettifiers: {
-                    // Add emoji support for log levels
-                    level: (logLevel: string) => {
-                        const emojis: { [key: string]: string } = {
-                            'INFO': 'ℹ️  INFO   ',
-                            'ERROR': '❌ ERROR  ',
-                            'WARN': '⚠️  WARN   ',
-                            'DEBUG': '🔍 DEBUG  ',
-                            'TRACE': '🔍 TRACE  '
-                        };
-                        return emojis[logLevel] || `📝 ${logLevel.padEnd(7)}`;
-                    }
-                }
+// Custom pretty formatter that works everywhere
+const prettyPrint = (obj: any): string => {
+    const time = new Date().toISOString().substring(11, 19);
+    const level = obj.level;
+    const msg = obj.msg || '';
+    const context = obj.context || 'APP';
+    const module = obj.module || 'LOG';
+
+    // Emoji mapping for levels
+    const emojis: { [key: string]: string } = {
+        '30': 'ℹ️  INFO   ', // INFO
+        '40': '⚠️  WARN   ', // WARN  
+        '50': '❌ ERROR  ', // ERROR
+        '60': '💀 FATAL  ', // FATAL
+        '20': '🔍 DEBUG  ', // DEBUG
+        '10': '🔍 TRACE  '  // TRACE
+    };
+
+    const levelIcon = emojis[level] || `📝 LEVEL${level.toString().padEnd(2)}`;
+    const contextInfo = context !== 'APP' ? `[${context}]` : '';
+    const moduleInfo = module !== 'LOG' ? `[${module}]` : '';
+
+    return `${levelIcon} [${time}] ${contextInfo}${moduleInfo} ${msg}`;
+};
+
+// Always use colorful logs (override for production)
+const enablePrettyLogs = process.env.DISABLE_PRETTY_LOGS !== 'true';
+
+if (enablePrettyLogs) {
+    // Custom stream that formats output
+    const prettyStream = {
+        write: (obj: string) => {
+            try {
+                const parsed = JSON.parse(obj);
+                console.log(prettyPrint(parsed));
+            } catch (error) {
+                // If parsing fails, output as-is
+                console.log(obj);
             }
         }
-    });
-} catch (error) {
-    // Fallback to basic pino if pino-pretty is not available
+    };
+
+    logger = pino({
+        level: process.env.LOG_LEVEL || 'info',
+        formatters: {
+            level: (label) => ({ level: label.toUpperCase() }),
+        },
+        timestamp: pino.stdTimeFunctions.isoTime,
+    }, prettyStream as any);
+
+    console.log('🎨 Custom colorful logging enabled');
+} else {
+    // Standard JSON logs for when explicitly disabled
     logger = pino({
         level: process.env.LOG_LEVEL || 'info',
         formatters: {
@@ -48,6 +68,7 @@ try {
         },
         timestamp: pino.stdTimeFunctions.isoTime,
     });
+    console.log('📋 JSON logging enabled');
 }
 
 // Check if we should use readable logs instead of JSON (fallback for environments without pino-pretty)

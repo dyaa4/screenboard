@@ -15,6 +15,7 @@ const ALLOWED_ORIGINS = [
   'https://www.screen-board.com',
   'http://localhost:3000',
   'http://localhost:5000',
+  'http://localhost:5173',
 ];
 
 const EXCLUDED_API_PATHS = ['/google/calendar/webhook', '/auth/smartthings/webhook', '/microsoft/calendar/webhook'];

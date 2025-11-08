@@ -7,26 +7,6 @@ import dotenv from 'dotenv';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  server: {
-    host: '0.0.0.0',
-    port: 5000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/socket.io': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        ws: true,
-      },
-    },
-  },
-  preview: {
-    host: '0.0.0.0',
-    port: 5000,
-    allowedHosts: ['.replit.dev', '.replit.app', '.repl.co'],
-  },
   build: {
     chunkSizeWarningLimit: 1000, // Setzt das Limit auf 1 MB (default: 500 KB)
     outDir: path.resolve(__dirname, '../backend/public'),
