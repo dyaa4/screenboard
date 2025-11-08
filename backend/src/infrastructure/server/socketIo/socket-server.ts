@@ -21,9 +21,8 @@ export class SocketServer {
                         'https://www.screen-board.com',
                         'http://localhost:5000',
                         'http://localhost:3000',
-                    ];
-
-                    if (!origin || allowedOrigins.includes(origin)) {
+                        'http://localhost:5173',
+                    ]; if (!origin || allowedOrigins.includes(origin)) {
                         callback(null, true);
                     } else if (origin && (origin.includes('.replit.dev') || origin.includes('.repl.co') || origin.includes('.replit.app'))) {
                         callback(null, true);
