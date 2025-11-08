@@ -26,7 +26,11 @@ export class SmartThingsService {
   ) { }
 
   private subscriptionRenewalJobs: Map<string, NodeJS.Timeout> = new Map();
+  private tokenExpirationCleanupJobs: Map<string, NodeJS.Timeout> = new Map();
   private readonly RENEWAL_INTERVAL = 6 * 24 * 60 * 60 * 1000; // 6 Tage
+  private readonly CLEANUP_BEFORE_EXPIRATION = 60 * 60 * 1000; // 60 Minuten vor Token-Expiration
+  // SmartThings Refresh-Token Lifespan: ~6 Monate (ähnlich wie Google)
+  private readonly SMARTTHINGS_REFRESH_TOKEN_LIFESPAN = 180 * 24 * 60 * 60 * 1000; // 6 Monate
 
 
   /**
@@ -106,14 +110,88 @@ export class SmartThingsService {
    * @param userId  the current user ID
    * @param dashboardId  the current dashboard ID
    */
+  /**
+   * Schedule proactive subscription cleanup 60 minutes before refresh token expires
+   * This ensures clean API-based deletion while token is still valid
+   */
+  private scheduleRefreshTokenExpirationCleanup(
+    userId: string,
+    dashboardId: string,
+    tokenCreationDate: Date
+  ): void {
+    const cleanupJobKey = `cleanup-${userId}-${dashboardId}`;
+
+    // Clear existing cleanup job if any
+    const existingCleanupJob = this.tokenExpirationCleanupJobs.get(cleanupJobKey);
+    if (existingCleanupJob) {
+      clearTimeout(existingCleanupJob);
+    }
+
+    // Calculate estimated refresh token expiration based on creation date
+    const estimatedRefreshExpiration = new Date(
+      tokenCreationDate.getTime() + this.SMARTTHINGS_REFRESH_TOKEN_LIFESPAN
+    );
+
+    // Calculate cleanup time: 60 minutes before refresh token expires
+    const cleanupTime = estimatedRefreshExpiration.getTime() - this.CLEANUP_BEFORE_EXPIRATION;
+    const now = Date.now();
+
+    if (cleanupTime <= now) {
+      // Refresh token expires very soon, cleanup immediately
+      logger.warn('SmartThings refresh token expires very soon, cleaning up subscriptions immediately',
+        { userId, dashboardId, estimatedRefreshExpiration }, 'SmartThingsService');
+      this.performProactiveCleanup(userId, dashboardId);
+      return;
+    }
+
+    const timeUntilCleanup = cleanupTime - now;
+    const daysUntilCleanup = Math.floor(timeUntilCleanup / (24 * 60 * 60 * 1000));
+
+    logger.info('Scheduled SmartThings proactive subscription cleanup based on refresh token expiration',
+      { userId, dashboardId, daysUntilCleanup, estimatedRefreshExpiration }, 'SmartThingsService');
+
+    const cleanupJob = setTimeout(async () => {
+      await this.performProactiveCleanup(userId, dashboardId);
+    }, timeUntilCleanup);
+
+    this.tokenExpirationCleanupJobs.set(cleanupJobKey, cleanupJob);
+  }
+
+  /**
+   * Perform proactive cleanup while refresh token is still valid
+   */
+  private async performProactiveCleanup(userId: string, dashboardId: string): Promise<void> {
+    logger.info('Starting proactive SmartThings subscription cleanup (refresh token expires in 60min)',
+      { userId, dashboardId }, 'SmartThingsService');
+
+    try {
+      // Use the existing logout logic which properly cleans up subscriptions
+      await this.logout(userId, dashboardId);
+      logger.success('Proactive subscription cleanup completed successfully',
+        { userId, dashboardId }, 'SmartThingsService');
+    } catch (error) {
+      logger.error('Proactive subscription cleanup failed',
+        error as Error, 'SmartThingsService');
+    }
+  }
+
   async cleanup(userId: string, dashboardId: string): Promise<void> {
     await this.logout(userId, dashboardId);
 
+    // Clear renewal jobs
     for (const [jobKey, timeout] of this.subscriptionRenewalJobs.entries()) {
       if (jobKey.startsWith(`${userId}-${dashboardId}`)) {
         clearTimeout(timeout);
         this.subscriptionRenewalJobs.delete(jobKey);
       }
+    }
+
+    // Clear expiration cleanup jobs
+    const cleanupJobKey = `cleanup-${userId}-${dashboardId}`;
+    const cleanupJob = this.tokenExpirationCleanupJobs.get(cleanupJobKey);
+    if (cleanupJob) {
+      clearTimeout(cleanupJob);
+      this.tokenExpirationCleanupJobs.delete(cleanupJobKey);
     }
   }
 
@@ -145,7 +223,11 @@ export class SmartThingsService {
       installedAppId
     );
 
-    await this.tokenRepository.create(token as ITokenDocument);
+    const createdToken = await this.tokenRepository.create(token as ITokenDocument);
+
+    // Plane proaktive Subscription-Cleanup 60 Minuten vor Refresh-Token-Expiration
+    const creationDate = createdToken.createdAt || new Date();
+    this.scheduleRefreshTokenExpirationCleanup(userId, dashboardId, creationDate);
   }
 
   /**
@@ -260,7 +342,19 @@ export class SmartThingsService {
     } catch (error: any) {
       // Nur löschen, wenn es sich um einen Authentifizierungsfehler handelt (401)
       if (error.response && error.response.status === 401) {
-        logger.warn('Invalid SmartThings token (401), deleting token', { hasUserId: !!userId, hasDashboardId: !!dashboardId }, 'SmartThingsService');
+        logger.warn('Invalid SmartThings token (401), cleaning up subscriptions and deleting token',
+          { hasUserId: !!userId, hasDashboardId: !!dashboardId }, 'SmartThingsService');
+
+        // CRITICAL: Cleanup local subscription records (API calls impossible with expired token)
+        try {
+          await this.eventSubscriptionRepository.deleteAllForUserDashboard(userId, dashboardId);
+          logger.info('Cleaned up local SmartThings subscription records on token expiration',
+            { userId, dashboardId }, 'SmartThingsService');
+        } catch (cleanupError) {
+          logger.warn('Failed to cleanup SmartThings subscription records on token expiration but continuing',
+            { userId, dashboardId, error: (cleanupError as Error).message }, 'SmartThingsService');
+        }
+
         await this.tokenRepository.deleteToken(
           userId,
           dashboardId,
@@ -387,6 +481,10 @@ export class SmartThingsService {
         expirationDate,
         newRefreshToken
       );
+
+      // Schedule new proactive cleanup for refreshed token (keep original creation date for refresh token expiration)
+      const originalCreationDate = token.createdAt || new Date();
+      this.scheduleRefreshTokenExpirationCleanup(userId, dashboardId, originalCreationDate);
 
       return newAccessToken;
     } catch (error: any) {

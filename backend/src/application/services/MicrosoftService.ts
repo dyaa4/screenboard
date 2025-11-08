@@ -24,6 +24,11 @@ export class MicrosoftService {
     private eventSubscriptionRepository: EventSubscriptionRepository,
   ) { }
 
+  private tokenExpirationCleanupJobs: Map<string, NodeJS.Timeout> = new Map();
+  private readonly CLEANUP_BEFORE_EXPIRATION = 60 * 60 * 1000; // 60 Minuten vor Token-Expiration
+  // Microsoft Refresh-Token Lifespan: ~90 Tage (standard für Microsoft Graph)
+  private readonly MICROSOFT_REFRESH_TOKEN_LIFESPAN = 90 * 24 * 60 * 60 * 1000; // 90 Tage
+
   /**
    * Handle Microsoft OAuth authorization code exchange
    * @param userId User identifier
@@ -52,7 +57,11 @@ export class MicrosoftService {
     );
 
     // Save to database
-    await this.tokenRepository.create(token as ITokenDocument);
+    const createdToken = await this.tokenRepository.create(token as ITokenDocument);
+
+    // Schedule proactive cleanup before refresh token expires (based on creation time)
+    const creationDate = createdToken.createdAt || new Date();
+    this.scheduleRefreshTokenExpirationCleanup(userId, dashboardId, creationDate);
   }
 
   /**
@@ -169,9 +178,78 @@ export class MicrosoftService {
 
       logger.success('Microsoft subscription cleanup completed',
         { userId, dashboardId, processedCount: microsoftSubscriptions.length }, 'MicrosoftService');
+
+      // Clear expiration cleanup jobs
+      const cleanupJobKey = `cleanup-${userId}-${dashboardId}`;
+      const cleanupJob = this.tokenExpirationCleanupJobs.get(cleanupJobKey);
+      if (cleanupJob) {
+        clearTimeout(cleanupJob);
+        this.tokenExpirationCleanupJobs.delete(cleanupJobKey);
+      }
     } catch (error) {
       logger.error('Error during Microsoft subscription cleanup', error as Error, 'MicrosoftService');
       // Don't throw - cleanup should not block logout
+    }
+  }
+
+  /**
+   * Schedule proactive subscription cleanup 60 minutes before refresh token expires
+   */
+  private scheduleRefreshTokenExpirationCleanup(
+    userId: string,
+    dashboardId: string,
+    tokenCreationDate: Date
+  ): void {
+    const cleanupJobKey = `cleanup-${userId}-${dashboardId}`;
+
+    // Clear existing cleanup job
+    const existingCleanupJob = this.tokenExpirationCleanupJobs.get(cleanupJobKey);
+    if (existingCleanupJob) {
+      clearTimeout(existingCleanupJob);
+    }
+
+    // Calculate estimated refresh token expiration based on creation date
+    const estimatedRefreshExpiration = new Date(
+      tokenCreationDate.getTime() + this.MICROSOFT_REFRESH_TOKEN_LIFESPAN
+    );
+
+    const cleanupTime = estimatedRefreshExpiration.getTime() - this.CLEANUP_BEFORE_EXPIRATION;
+    const now = Date.now();
+
+    if (cleanupTime <= now) {
+      logger.warn('Microsoft refresh token expires very soon, cleaning up immediately',
+        { userId, dashboardId, estimatedRefreshExpiration }, 'MicrosoftService');
+      this.performProactiveCleanup(userId, dashboardId);
+      return;
+    }
+
+    const timeUntilCleanup = cleanupTime - now;
+    const daysUntilCleanup = Math.floor(timeUntilCleanup / (24 * 60 * 60 * 1000));
+
+    logger.info('Scheduled Microsoft proactive cleanup based on refresh token expiration',
+      { userId, dashboardId, daysUntilCleanup, estimatedRefreshExpiration }, 'MicrosoftService');
+
+    const cleanupJob = setTimeout(async () => {
+      await this.performProactiveCleanup(userId, dashboardId);
+    }, timeUntilCleanup);
+
+    this.tokenExpirationCleanupJobs.set(cleanupJobKey, cleanupJob);
+  }
+
+  /**
+   * Perform proactive Microsoft cleanup while refresh token is still valid
+   */
+  private async performProactiveCleanup(userId: string, dashboardId: string): Promise<void> {
+    logger.info('Starting proactive Microsoft subscription cleanup (refresh token expires in 60min)',
+      { userId, dashboardId }, 'MicrosoftService');
+
+    try {
+      await this.cleanup(userId, dashboardId);
+      logger.success('Proactive Microsoft subscription cleanup completed',
+        { userId, dashboardId }, 'MicrosoftService');
+    } catch (error) {
+      logger.error('Proactive Microsoft subscription cleanup failed',
+        error as Error, 'MicrosoftService');
     }
   }
 
@@ -260,6 +338,10 @@ export class MicrosoftService {
       newExpirationDate,
       newRefreshToken
     );
+
+    // Schedule new proactive cleanup for refreshed token (keep original creation date for refresh token expiration)
+    const originalCreationDate = token.createdAt || new Date();
+    this.scheduleRefreshTokenExpirationCleanup(userId, dashboardId, originalCreationDate);
 
     return newAccessToken;
   }
