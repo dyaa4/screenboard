@@ -25,80 +25,10 @@ export class SmartThingsService {
     private eventSubscriptionRepository: EventSubscriptionRepository
   ) { }
 
-  private subscriptionRenewalJobs: Map<string, NodeJS.Timeout> = new Map();
-  private readonly RENEWAL_INTERVAL = 6 * 24 * 60 * 60 * 1000; // 6 Tage
 
 
-  /**
-   *  Handles the authentication callback from SmartThings.
-   * @param userId  the current user ID
-   * @param dashboardId  the current dashboard ID
-   * @param code  the authorization code
-   */
-  private scheduleSubscriptionRenewal(
-    userId: string,
-    dashboardId: string,
-    deviceId: string,
-    subscriptionId: string
-  ): void {
-    const jobKey = `${userId}-${dashboardId}-${deviceId}`;
 
-    const existingJob = this.subscriptionRenewalJobs.get(jobKey);
-    if (existingJob) {
-      clearTimeout(existingJob);
-    }
 
-    const renewalJob = setTimeout(async () => {
-      try {
-        const accessToken = await this.ensureValidAccessToken(
-          userId,
-          dashboardId
-        );
-
-        const token = await this.tokenRepository.findToken(
-          userId,
-          dashboardId,
-          SERVICES.SMARTTHINGS
-        );
-
-        if (!token) {
-          throw new Error("Token not found for user and dashboard for SmartThingsService");
-        }
-
-        // Erneuere die Subscription
-        const newSubscription =
-          await this.smartThingsRepository.subscribeToDeviceEvents(
-            accessToken,
-            deviceId,
-            token.installedAppId!
-          );
-
-        // Plane die nächste Erneuerung
-        this.scheduleSubscriptionRenewal(
-          userId,
-          dashboardId,
-          deviceId,
-          newSubscription.resourceId
-        );
-      } catch (error) {
-        console.error("Failed to renew subscription:", error);
-        // Retry in einer Stunde
-        setTimeout(
-          () => {
-            this.scheduleSubscriptionRenewal(
-              userId,
-              dashboardId,
-              deviceId,
-              subscriptionId
-            );
-          },
-          60 * 60 * 1000
-        );
-      }
-    }, this.RENEWAL_INTERVAL);
-
-    this.subscriptionRenewalJobs.set(jobKey, renewalJob);
-  }
 
 
   /**
@@ -110,16 +40,6 @@ export class SmartThingsService {
 
   async cleanup(userId: string, dashboardId: string): Promise<void> {
     await this.logout(userId, dashboardId);
-
-    // Clear renewal jobs
-    for (const [jobKey, timeout] of this.subscriptionRenewalJobs.entries()) {
-      if (jobKey.startsWith(`${userId}-${dashboardId}`)) {
-        clearTimeout(timeout);
-        this.subscriptionRenewalJobs.delete(jobKey);
-      }
-    }
-
-
   }
 
   /**
@@ -235,13 +155,6 @@ export class SmartThingsService {
           deviceId,
           token?.installedAppId!
         );
-
-      this.scheduleSubscriptionRenewal(
-        userId,
-        dashboardId,
-        deviceId,
-        subscription.resourceId
-      );
 
       return subscription;
     } catch (error) {
