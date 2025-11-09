@@ -258,8 +258,24 @@ export class GoogleService {
       // 3. Prepare update data from Google response
       const resourceId = subscription.resourceId;
 
-      // Google expiration is Unix timestamp in milliseconds
-      const expirationDate = subscription.expiration ? new Date(subscription.expiration) : new Date(Date.now() + 24 * 60 * 60 * 1000);
+      // Google expiration handling with robust date validation
+      let expirationDate: Date;
+
+      if (subscription.expiration) {
+        // Try to parse Google's expiration timestamp
+        const parsedDate = new Date(subscription.expiration);
+        if (!isNaN(parsedDate.getTime())) {
+          expirationDate = parsedDate;
+        } else {
+          // Fallback if Google's timestamp is invalid
+          logger.warn(`Invalid expiration timestamp from Google: ${subscription.expiration}, using fallback`);
+          expirationDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+        }
+      } else {
+        // No expiration provided by Google
+        expirationDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+      }
+
       logger.info(`Google subscription expiration details`, {
         originalExpiration: subscription.expiration,
         convertedDate: expirationDate.toISOString(),
