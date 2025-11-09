@@ -55,20 +55,19 @@ export class GoogleService {
       // 2. Delete subscriptions at Google (parallel for better performance)  
       const deletePromises = googleSubscriptions.map(async (subscription) => {
         try {
-          if (subscription.resourceId && subscription.targetId) {
-            // Reconstruct the channel.id that was used when creating the subscription
+          if (subscription.resourceId) {
+            // Reconstruct the channel.id that was used when creating the subscription (simple userId-dashboardId)
             const userIdWithoutAuth0 = userId.replace("auth0|", "");
-            const userIdWithDashboardId = `${userIdWithoutAuth0}-${dashboardId}`;
-            const uniqueChannelId = `${userIdWithDashboardId}-${subscription.targetId}`;
+            const channelId = `${userIdWithoutAuth0}-${dashboardId}`;
 
             // Call Google API directly with both id and resourceId
             await this.stopGoogleSubscriptionWithChannelId(
               newAccessToken,
-              uniqueChannelId,
+              channelId,
               subscription.resourceId
             );
 
-            logger.info(`✅ Deleted Google subscription ${subscription.resourceId} with channel ${uniqueChannelId}`);
+            logger.info(`✅ Deleted Google subscription ${subscription.resourceId} with channel ${channelId}`);
           }
         } catch (error) {
           logger.warn(`⚠️ Failed to delete Google subscription ${subscription.resourceId}:`, error as Error);
