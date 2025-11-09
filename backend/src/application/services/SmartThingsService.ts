@@ -25,20 +25,6 @@ export class SmartThingsService {
     private eventSubscriptionService: EventSubscriptionService,
     private eventSubscriptionRepository: EventSubscriptionRepository
   ) { }
-
-
-
-
-
-
-
-  /**
-   *  Cleans up the SmartThings service for a user and dashboard.
-   * @param userId  the current user ID
-   * @param dashboardId  the current dashboard ID
-   */
-
-
   /**
    * Refreshes all subscriptions for a user - deletes old ones and prepares for fresh ones
    */
@@ -476,7 +462,6 @@ export class SmartThingsService {
     const { messageType, eventData } = event;
 
     logger.info("Received SmartThings webhook event");
-    console.log("Webhook Event Data:", JSON.stringify(eventData, null, 2));
 
     if (messageType === "EVENT" && Array.isArray(eventData?.events)) {
       for (const event of eventData.events) {

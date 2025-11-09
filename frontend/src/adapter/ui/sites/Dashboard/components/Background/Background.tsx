@@ -77,6 +77,7 @@ export const Background = ({ layout }: BackgroundProps): ReactElement => {
       style={{
         zIndex: 1,
         filter: `brightness(${brightness / 100})`,
+        pointerEvents: 'none', // Don't interfere with layout
       }}
     >
       <div
@@ -84,6 +85,7 @@ export const Background = ({ layout }: BackgroundProps): ReactElement => {
         style={{
           backgroundImage: `url(${layout?.backgroundImages[currentImageIndex]})`,
           transition: animation ? 'background-image 1s ease-in-out' : 'none',
+          pointerEvents: 'auto', // Allow clicks on background for login
         }}
       />
       {animation && (
@@ -93,6 +95,7 @@ export const Background = ({ layout }: BackgroundProps): ReactElement => {
             backgroundImage: `url(${layout?.backgroundImages[nextImageIndex]})`,
             opacity: 0,
             transition: 'opacity 1s ease-in-out',
+            pointerEvents: 'auto',
           }}
         />
       )}

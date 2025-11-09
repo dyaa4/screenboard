@@ -82,6 +82,9 @@ export class GoogleService {
       for (const subscription of googleSubscriptions) {
         if (subscription.resourceId) {
           await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+        } else {
+          // Also delete subscriptions without resourceId (safety net)
+          await this.eventSubscriptionRepository.deleteById(subscription._id.toString());
         }
       }
 
@@ -473,11 +476,19 @@ export class GoogleService {
 
     // Find subscription in database using channelId (= EventSubscription._id)
     // This is more direct than using resourceId lookup
-    const subscription = await this.eventSubscriptionRepository.findById(channelId);
+    let subscription = await this.eventSubscriptionRepository.findById(channelId);
 
     if (!subscription) {
-      logger.warn(`No subscription found for Google channelId ${channelId}`);
-      return;
+      // Fallback: Google sometimes sends old/invalid channelIds, try resourceId lookup
+      logger.warn(`No subscription found for Google channelId ${channelId}, trying resourceId fallback`);
+      subscription = await this.eventSubscriptionRepository.findByResourceId(resourceId);
+
+      if (!subscription) {
+        logger.warn(`No subscription found for Google channelId ${channelId} or resourceId ${resourceId}`);
+        return;
+      }
+
+      logger.info(`✅ Found subscription using resourceId fallback: ${resourceId}`);
     }
 
     logger.info('Found Google subscription:', {
