@@ -289,11 +289,11 @@ export class GoogleService {
 
     // Always delete Google token from database  
     await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.GOOGLE);
-    
+
     // Only delete GOOGLE subscriptions from database (not all services!)
     const allSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(userId, dashboardId);
     const googleSubscriptions = allSubscriptions.filter(sub => sub.serviceId === SERVICES.GOOGLE);
-    
+
     for (const subscription of googleSubscriptions) {
       if (subscription.resourceId) {
         await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);

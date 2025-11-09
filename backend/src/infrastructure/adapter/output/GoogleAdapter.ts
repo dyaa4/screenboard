@@ -172,7 +172,7 @@ export class GoogleAdapter implements GoogleRepository {
           }
         }
       );
-      
+
       console.log(`✅ Stopped Google subscription with resourceId: ${resourceId}`);
     } catch (error) {
       console.error('Error stopping Google subscription:', error);
