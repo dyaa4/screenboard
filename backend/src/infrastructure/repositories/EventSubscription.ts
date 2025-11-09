@@ -35,6 +35,23 @@ export class EventSubscriptionRepository implements IEventSubscriptionRepository
     }
 
     async updateById(id: string, updates: Partial<IEventSubscriptionData>): Promise<IEventSubscriptionData | null> {
-        return await EventSubscriptionModel.findByIdAndUpdate(id, updates, { new: true }).exec();
+        console.log(`🔄 EventSubscriptionRepository.updateById called:`, {
+            id,
+            updates: JSON.stringify(updates, null, 2)
+        });
+
+        const result = await EventSubscriptionModel.findByIdAndUpdate(id, updates, { new: true }).exec();
+
+        console.log(`📋 EventSubscriptionRepository.updateById result:`, {
+            id,
+            result: result ? {
+                _id: result._id,
+                resourceId: result.resourceId,
+                expiration: result.expiration,
+                updatedAt: result.updatedAt
+            } : null
+        });
+
+        return result;
     }
 }

@@ -256,25 +256,33 @@ export class GoogleService {
         eventSubscription._id // Pass the real database ID as channelId
       );
 
-      // 3. Update EventSubscription with actual data from Google response
-      eventSubscription.resourceId = subscription.resourceId;
-
+      // 3. Prepare update data from Google response
+      const resourceId = subscription.resourceId;
+      
       // Google expiration is Unix timestamp in milliseconds
       const expirationDate = subscription.expiration ? new Date(subscription.expiration) : new Date(Date.now() + 24 * 60 * 60 * 1000);
       logger.info(`Google subscription expiration details`, {
         originalExpiration: subscription.expiration,
         convertedDate: expirationDate.toISOString(),
-        isValidDate: !isNaN(expirationDate.getTime())
+        isValidDate: !isNaN(expirationDate.getTime()),
+        resourceId: resourceId
       });
 
-      eventSubscription.expiration = expirationDate;
-      eventSubscription.updatedAt = new Date();
-
       // 4. Update the EventSubscription in database with Google response data
-      await this.eventSubscriptionRepository.updateById(eventSubscription._id, {
-        resourceId: eventSubscription.resourceId,
-        expiration: eventSubscription.expiration,
-        updatedAt: eventSubscription.updatedAt
+      const updateResult = await this.eventSubscriptionRepository.updateById(eventSubscription._id, {
+        resourceId: resourceId,
+        expiration: expirationDate,
+        updatedAt: new Date()
+      });
+
+      if (!updateResult) {
+        throw new Error(`Failed to update EventSubscription with ID ${eventSubscription._id}`);
+      }
+
+      logger.info(`✅ EventSubscription updated successfully`, {
+        id: eventSubscription._id,
+        resourceId: resourceId,
+        expiration: expirationDate.toISOString()
       });
 
       logger.info(`✅ Google calendar subscription saved to database`, {
