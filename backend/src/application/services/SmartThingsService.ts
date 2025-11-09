@@ -145,6 +145,8 @@ export class SmartThingsService {
   }
 
   async cleanup(userId: string, dashboardId: string): Promise<void> {
+    logger.info(`🧹 SmartThings cleanup for user ${userId}`);
+
     // Try to refresh subscriptions with current token (cleanup at SmartThings)
     try {
       const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
@@ -155,7 +157,8 @@ export class SmartThingsService {
       await this.emergencyCleanup(userId, dashboardId);
     }
 
-    await this.logout(userId, dashboardId);
+    // Delete token from database
+    await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.SMARTTHINGS);
   }
 
   /**

@@ -92,17 +92,9 @@ export class GoogleService {
 
   // Cleanup-Methode beim Ausloggen oder Beenden
   async cleanup(userId: string, dashboardId: string): Promise<void> {
-    // Try to refresh subscriptions with current token (cleanup at Google)
-    try {
-      const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
-      await this.refreshUserSubscriptions(userId, dashboardId, accessToken);
-    } catch (error) {
-      logger.warn(`⚠️ Could not cleanup Google subscriptions with valid token, doing emergency cleanup:`, error as Error);
-      // Emergency cleanup - just remove from database
-      await this.emergencyCleanup(userId, dashboardId);
-    }
+    logger.info(`🧹 Google cleanup for user ${userId}`);
 
-    // Bestehende Logout-Logik
+    // Just call logout - logout handles everything
     await this.logout(userId, dashboardId);
   }
 
@@ -144,11 +136,11 @@ export class GoogleService {
 
       const googleTokens = await this.googleRepository.exchangeAuthCodeForTokens(code);
 
-      // Clean up any existing subscriptions before setting up new ones
-      await this.refreshUserSubscriptions(userId, dashboardId, googleTokens.accessToken);
-
       // the expiresIn is in ms
       const { accessToken, refreshToken, expiresIn } = googleTokens;
+
+      // Clean up any existing subscriptions before setting up new ones
+      await this.refreshUserSubscriptions(userId, dashboardId, accessToken);
 
       logger.token('create', 'Google', userId);
 
@@ -280,44 +272,24 @@ export class GoogleService {
 
   async logout(userId: string, dashboardId: string): Promise<void> {
     try {
-      // Hole den aktuellen Token, um damit Google zu benachrichtigen
-      const token = await this.tokenRepository.findToken(
-        userId,
-        dashboardId,
-        SERVICES.GOOGLE
-      )
+      logger.info(`🚪 Google logout for user ${userId}`);
 
-      if (token && token.accessToken) {
-        // Hole alle Subscriptions für dieses Dashboard
-        const subscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(userId, dashboardId)
-
-        // Stoppe alle Subscriptions bei Google
-        for (const subscription of subscriptions) {
-          if (subscription.resourceId) {
-            try {
-              await this.googleRepository.stopSubscriptionPublic(
-                token.accessToken,
-                subscription.resourceId,
-                userId,
-                dashboardId
-              )
-            } catch (error) {
-              console.error('Error stopping subscription at Google:', error)
-              // Continue, um alle zu stoppen, auch wenn eine fehlschlägt
-            }
-          }
-        }
+      // Cleanup subscriptions (if not already done by cleanup())
+      try {
+        const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
+        await this.refreshUserSubscriptions(userId, dashboardId, accessToken);
+      } catch (error) {
+        logger.warn(`⚠️ Could not cleanup Google subscriptions during logout, doing emergency cleanup:`, error as Error);
+        await this.emergencyCleanup(userId, dashboardId);
       }
+
     } catch (error) {
-      console.error('Error during logout subscription cleanup:', error)
-      // Continue with deletion even if stopping fails
+      logger.error('Error during Google logout:', error as Error);
     }
 
-    // Lösche den Token aus unserer DB
-    await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.GOOGLE)
-
-    // Lösche alle Subscriptions aus unserer DB
-    await this.eventSubscriptionRepository.deleteAllForUserDashboard(userId, dashboardId)
+    // Always delete token and subscriptions from database
+    await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.GOOGLE);
+    await this.eventSubscriptionRepository.deleteAllForUserDashboard(userId, dashboardId);
 
     // Räume Renewal Jobs auf
     await this.cleanup(userId, dashboardId)
