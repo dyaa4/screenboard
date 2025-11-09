@@ -14,7 +14,7 @@ import {
   SmartThingsSubscriptionDTO,
   WebhookSmartthingsEvent,
 } from "../../domain/types/SmartThingDtos";
-import { IEventSubscriptionData } from "../../domain/types/IEventSubscriptionDocument";
+import { EventSubscription } from "../../domain/entities/EventSubscription";
 import logger from "../../utils/logger";
 import { EventSubscriptionService } from "./EventSubscriptionService";
 
@@ -278,19 +278,17 @@ export class SmartThingsService {
           token?.installedAppId!
         );
 
-      // Save subscription to our database for tracking
-      const subscriptionData = {
+      // Create and save EventSubscription domain object
+      const eventSubscription = new EventSubscription(
         userId,
         dashboardId,
-        serviceId: SERVICES.SMARTTHINGS,
-        targetId: deviceId,
-        resourceId: subscription.resourceId,
-        expiration: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // SmartThings subscriptions don't expire but we set 1 year
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+        SERVICES.SMARTTHINGS,
+        deviceId,
+        new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // SmartThings subscriptions don't expire but we set 1 year
+        subscription.resourceId
+      );
 
-      await this.eventSubscriptionRepository.create(subscriptionData as IEventSubscriptionData);
+      await this.eventSubscriptionService.createSubscriptionFromDomain(eventSubscription);
 
       logger.info(`✅ SmartThings device subscription saved to database`, {
         userId,

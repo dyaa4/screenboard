@@ -34,8 +34,8 @@ const microsoftAdapter = new MicrosoftAdapter();
 const smartThingsAdapter = new SmartThingsAdapter();
 
 // Service Instances
-const googleService = new GoogleService(googleAdapter, tokenRepository, eventSubscriptionRepository);
-const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository, eventSubscriptionRepository);
+const googleService = new GoogleService(googleAdapter, tokenRepository, eventSubscriptionRepository, eventSubscriptionService);
+const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository, eventSubscriptionRepository, eventSubscriptionService);
 const smartThingsService = new SmartThingsService(smartThingsAdapter, tokenRepository, eventSubscriptionService, eventSubscriptionRepository);
 
 const dashboardService = new DashboardService(

@@ -10,7 +10,8 @@ import { MicrosoftCalendarListDto } from "../../infrastructure/dtos/MicrosoftCal
 import { MicrosoftUserInfoDTO } from "../../infrastructure/dtos/MicrosoftUserInfoDTO";
 import { MicrosoftSubscriptionDTO } from "../../infrastructure/dtos/MicrosoftSubscriptionDTO";
 import { emitToUserDashboard } from "../../infrastructure/server/socketIo";
-import { IEventSubscriptionData } from "../../domain/types/IEventSubscriptionDocument";
+import { EventSubscription } from "../../domain/entities/EventSubscription";
+import { EventSubscriptionService } from "./EventSubscriptionService";
 import logger from "../../utils/logger";
 
 /**
@@ -23,6 +24,7 @@ export class MicrosoftService {
     private microsoftRepository: MicrosoftRepository,
     private tokenRepository: TokenRepository,
     private eventSubscriptionRepository: EventSubscriptionRepository,
+    private eventSubscriptionService: EventSubscriptionService,
   ) { }
 
 
@@ -382,19 +384,17 @@ export class MicrosoftService {
         dashboardId
       );
 
-      // Save subscription to our database for tracking
-      const subscriptionData = {
+      // Create and save EventSubscription domain object
+      const eventSubscription = new EventSubscription(
         userId,
         dashboardId,
-        serviceId: SERVICES.MICROSOFT,
-        targetId: calendarId,
-        resourceId: subscription.id, // Microsoft uses 'id' as resourceId
-        expiration: new Date(subscription.expirationDateTime),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+        SERVICES.MICROSOFT,
+        calendarId,
+        new Date(subscription.expirationDateTime),
+        subscription.id // Microsoft uses 'id' as resourceId
+      );
 
-      await this.eventSubscriptionRepository.create(subscriptionData as IEventSubscriptionData);
+      await this.eventSubscriptionService.createSubscriptionFromDomain(eventSubscription);
 
       logger.info(`✅ Microsoft calendar subscription saved to database`, {
         userId,

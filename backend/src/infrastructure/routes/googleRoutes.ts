@@ -4,13 +4,15 @@ import { GoogleAdapter } from "../../infrastructure/adapter/output/GoogleAdapter
 import { TokenRepository } from "../repositories/TokenRepository";
 import { AESEncryptionAdapter } from "../adapter/output/AESEncryptionAdapter";
 import { EventSubscriptionRepository } from "../../infrastructure/repositories/EventSubscription"
+import { EventSubscriptionService } from "../../application/services/EventSubscriptionService"
 import { Router } from "express"
 
 const router = Router()
 const googleAdapter = new GoogleAdapter()
 const tokenRepository = new TokenRepository(new AESEncryptionAdapter());
 const eventSubscriptionRepository = new EventSubscriptionRepository()
-const googleService = new GoogleService(googleAdapter, tokenRepository, eventSubscriptionRepository)
+const eventSubscriptionService = new EventSubscriptionService(eventSubscriptionRepository)
+const googleService = new GoogleService(googleAdapter, tokenRepository, eventSubscriptionRepository, eventSubscriptionService)
 const googleController = new GoogleController(googleService)
 
 router.post("/auth/google/login", (req, res) =>

@@ -12,7 +12,8 @@ import { IGoogleToken } from "../../domain/types/IGoogleToken"
 import { ITokenDocument } from "../../domain/types/ITokenDocument"
 import { Token } from "../../domain/entities/Token"
 import { emitToUserDashboard } from "../../infrastructure/server/socketIo"
-import { IEventSubscriptionData } from "../../domain/types/IEventSubscriptionDocument"
+import { EventSubscriptionService } from "./EventSubscriptionService"
+import { EventSubscription } from "../../domain/entities/EventSubscription"
 import axios from "axios"
 import logger from "../../utils/logger"
 
@@ -21,6 +22,7 @@ export class GoogleService {
     private googleRepository: GoogleRepository,
     private tokenRepository: TokenRepository,
     private eventSubscriptionRepository: EventSubscriptionRepository,
+    private eventSubscriptionService: EventSubscriptionService,
   ) { }
 
 
@@ -225,26 +227,32 @@ export class GoogleService {
     const googleAccessToken = await this.ensureValidAccessToken(userId, dashboardId);
 
     try {
+      // 1. First create EventSubscription domain object to get the ID
+      const eventSubscription = new EventSubscription(
+        userId,
+        dashboardId,
+        SERVICES.GOOGLE,
+        calendarId,
+        new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Temporary expiration, will be updated
+        undefined // resourceId will be set after Google response
+      );
+
+      // 2. Use the EventSubscription._id as channelId for Google
       const subscription = await this.googleRepository.subscribeToCalendarEvents(
         googleAccessToken,
         calendarId,
         userId,
-        dashboardId
+        dashboardId,
+        eventSubscription._id // Pass the EventSubscription ID as channelId
       );
 
-      // Save subscription to our database for tracking
-      const subscriptionData = {
-        userId,
-        dashboardId,
-        serviceId: SERVICES.GOOGLE,
-        targetId: calendarId,
-        resourceId: subscription.resourceId,
-        expiration: new Date(subscription.expiration),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      // 3. Update EventSubscription with actual data from Google response
+      eventSubscription.resourceId = subscription.resourceId;
+      eventSubscription.expiration = new Date(subscription.expiration);
+      eventSubscription.updatedAt = new Date();
 
-      await this.eventSubscriptionRepository.create(subscriptionData as IEventSubscriptionData);
+      // 4. Save the completed EventSubscription to database
+      await this.eventSubscriptionService.createSubscriptionFromDomain(eventSubscription);
 
       logger.info(`✅ Google calendar subscription saved to database`, {
         userId,
@@ -380,21 +388,52 @@ export class GoogleService {
 
   /**
    * @description Processes the webhook data from Google and emits
-   * the event to the correct user.
+   * the event to the correct user using database lookup (like SmartThings)
    * @param webhookData - The data sent by Google in the webhook request.
    */
   async handleCalendarWebhook(webhookData: {
     id: string
     resourceId: string
   }): Promise<void> {
-    const { id: userIdWithDashboardId, resourceId } = webhookData
+    const { id: channelId, resourceId } = webhookData
 
-    if (!userIdWithDashboardId || !resourceId) {
+    logger.info("Received Google Calendar webhook event", { channelId, resourceId });
+
+    if (!channelId || !resourceId) {
       throw new Error("Webhook data is missing required fields")
     }
 
-    emitToUserDashboard(userIdWithDashboardId, "google-calendar-event", {
-      erfolgreich: "erfolgreich",
-    })
+    // Find subscription in database using channelId (= EventSubscription._id)
+    // This is more direct than using resourceId lookup
+    const subscription = await this.eventSubscriptionRepository.findById(channelId);
+
+    if (!subscription) {
+      logger.warn(`No subscription found for Google channelId ${channelId}`);
+      return;
+    }
+
+    logger.info('Found Google subscription:', {
+      userId: subscription.userId,
+      dashboardId: subscription.dashboardId,
+      targetId: subscription.targetId,
+      resourceId: subscription.resourceId
+    });
+
+    // Extract userId without auth0| prefix (same as SmartThings)
+    const userId = subscription.userId.replace("auth0|", "");
+
+    // Emit to specific user/dashboard
+    emitToUserDashboard(
+      `${userId}-${subscription.dashboardId}`,
+      "google-calendar-event",
+      {
+        calendarId: subscription.targetId,
+        resourceId: resourceId,
+        timestamp: new Date().toISOString(),
+        message: "Calendar event updated"
+      }
+    );
+
+    logger.info(`✅ Google calendar event emitted to user ${userId}, dashboard ${subscription.dashboardId}`);
   }
 }

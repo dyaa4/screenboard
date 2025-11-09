@@ -5,6 +5,7 @@ import {
   GoogleSubscriptionDTO,
 } from "../../../infrastructure/dtos/GoogleEventDTO"
 import { GoogleUserInfoDTO } from "../../../infrastructure/dtos/GoogleUserInfoDTO"
+import { ObjectId } from "mongodb"
 import axios from "axios"
 import { GoogleRepository } from "../../../domain/repositories/GoogleRepository"
 import logger from "../../../utils/logger"
@@ -139,12 +140,15 @@ export class GoogleAdapter implements GoogleRepository {
       // Erst die alte Subscription stoppen
       await this.stopSubscription(accessToken, existingResourceId, userId, dashboardId);
 
-      // Dann eine neue erstellen
+      // Dann eine neue erstellen - TODO: This should be handled in Service layer
+      // For now, generate a temporary channelId
+      const tempChannelId = new ObjectId().toHexString();
       return await this.subscribeToCalendarEvents(
         accessToken,
         calendarId,
         userId,
-        dashboardId
+        dashboardId,
+        tempChannelId
       );
     } catch (error) {
       console.error('Error renewing subscription:', error);
@@ -202,27 +206,27 @@ export class GoogleAdapter implements GoogleRepository {
    * @description subscribes to calendar events
    * @param accessToken
    * @param calendarId
+   * @param userId
+   * @param dashboardId  
+   * @param channelId - The EventSubscription._id to use as Google channel.id
    * @returns
    */
   async subscribeToCalendarEvents(
     accessToken: string,
     calendarId: string,
-    userId: string,
-    dashboardId: string
+    _userId: string,
+    _dashboardId: string,
+    channelId: string
   ): Promise<GoogleSubscriptionDTO> {
     try {
-      //send userId without the "auth0|"
-      const userIdWithoutAuth0 = userId.replace("auth0|", "")
-      const userIdWithDashboardId = `${userIdWithoutAuth0}-${dashboardId}`
-
-      // Use simple userId-dashboardId as channel.id (same for all calendars of this user/dashboard)
-      const channelId = userIdWithDashboardId;
+      // Use the EventSubscription._id as Google channel.id (passed from Service layer)
+      // This allows webhook to directly lookup subscription in database
 
       const channel = {
-        id: channelId,
+        id: channelId, // EventSubscription._id from Service layer
         type: "webhook",
         address: process.env.GOOGLE_CALENDAR_WEBHOOK_URL,
-        token: userIdWithDashboardId,
+        token: channelId, // Use same ID for token (simpler and consistent)
       }
 
       const response = await axios.post(
@@ -235,7 +239,23 @@ export class GoogleAdapter implements GoogleRepository {
         }
       )
 
-      return response.data
+      // Return properly structured GoogleSubscriptionDTO
+      const subscriptionDTO: GoogleSubscriptionDTO = {
+        kind: response.data.kind,
+        id: response.data.id, // This is the channel.id we sent
+        resourceId: response.data.resourceId, // This is what we use for tracking
+        resourceUri: response.data.resourceUri,
+        expiration: response.data.expiration,
+      }
+
+      logger.info(`✅ Google Calendar subscription created`, {
+        channelId: subscriptionDTO.id,
+        resourceId: subscriptionDTO.resourceId,
+        calendarId,
+        expiration: subscriptionDTO.expiration
+      });
+
+      return subscriptionDTO
     } catch (error) {
       console.error("Error subscribing to calendar events:", error)
       throw new Error("Failed to subscribe to Google Calendar events.")

@@ -23,7 +23,8 @@ export interface GoogleRepository {
     accessToken: string,
     calendarId: string,
     userId: string,
-    dashboardId: string
+    dashboardId: string,
+    channelId: string
   ): Promise<GoogleSubscriptionDTO>
 
   renewSubscription(

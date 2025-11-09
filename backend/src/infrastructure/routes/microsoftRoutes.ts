@@ -4,6 +4,7 @@ import { MicrosoftController } from "../../infrastructure/adapter/input/controll
 import { MicrosoftAdapter } from "../../infrastructure/adapter/output/MicrosoftAdapter";
 import { TokenRepository } from "../repositories/TokenRepository";
 import { EventSubscriptionRepository } from "../repositories/EventSubscription";
+import { EventSubscriptionService } from "../../application/services/EventSubscriptionService";
 import { AESEncryptionAdapter } from "../adapter/output/AESEncryptionAdapter";
 
 const router = Router();
@@ -12,7 +13,8 @@ const router = Router();
 const tokenRepository = new TokenRepository(new AESEncryptionAdapter());
 const eventSubscriptionRepository = new EventSubscriptionRepository();
 const microsoftAdapter = new MicrosoftAdapter();
-const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository, eventSubscriptionRepository);
+const eventSubscriptionService = new EventSubscriptionService(eventSubscriptionRepository);
+const microsoftService = new MicrosoftService(microsoftAdapter, tokenRepository, eventSubscriptionRepository, eventSubscriptionService);
 const microsoftController = new MicrosoftController(microsoftService);
 
 // Authentication Routes

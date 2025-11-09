@@ -267,7 +267,19 @@ export class MicrosoftAdapter implements MicrosoftRepository {
         expirationDateTime: response.data.expirationDateTime
       }, 'MicrosoftAdapter');
 
-      return response.data;
+      // Return properly structured MicrosoftSubscriptionDTO
+      const subscriptionDTO: MicrosoftSubscriptionDTO = {
+        id: response.data.id,
+        resource: response.data.resource,
+        applicationId: response.data.applicationId,
+        changeType: response.data.changeType,
+        clientState: response.data.clientState,
+        notificationUrl: response.data.notificationUrl,
+        expirationDateTime: response.data.expirationDateTime,
+        creatorId: response.data.creatorId,
+      };
+
+      return subscriptionDTO;
     } catch (error: any) {
       logger.error('Microsoft Graph subscription creation failed', error, 'MicrosoftAdapter');
       logger.apiCall('Microsoft Graph', '/subscriptions', 'POST', error.response?.status);
