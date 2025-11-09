@@ -13,6 +13,7 @@ import { ITokenDocument } from "../../domain/types/ITokenDocument"
 import { Token } from "../../domain/entities/Token"
 import { emitToUserDashboard } from "../../infrastructure/server/socketIo"
 import { IEventSubscriptionData } from "../../domain/types/IEventSubscriptionDocument"
+import axios from "axios"
 import logger from "../../utils/logger"
 
 export class GoogleService {
@@ -51,17 +52,23 @@ export class GoogleService {
 
       logger.info(`🗑️ Cleaning up ${googleSubscriptions.length} existing Google subscriptions`);
 
-      // 2. Delete subscriptions at Google (parallel for better performance)
+      // 2. Delete subscriptions at Google (parallel for better performance)  
       const deletePromises = googleSubscriptions.map(async (subscription) => {
         try {
-          if (subscription.resourceId) {
-            await this.googleRepository.stopSubscriptionPublic(
+          if (subscription.resourceId && subscription.targetId) {
+            // Reconstruct the channel.id that was used when creating the subscription
+            const userIdWithoutAuth0 = userId.replace("auth0|", "");
+            const userIdWithDashboardId = `${userIdWithoutAuth0}-${dashboardId}`;
+            const uniqueChannelId = `${userIdWithDashboardId}-${subscription.targetId}`;
+
+            // Call Google API directly with both id and resourceId
+            await this.stopGoogleSubscriptionWithChannelId(
               newAccessToken,
-              subscription.resourceId,
-              userId,
-              dashboardId
+              uniqueChannelId,
+              subscription.resourceId
             );
-            logger.info(`✅ Deleted Google subscription ${subscription.resourceId}`);
+
+            logger.info(`✅ Deleted Google subscription ${subscription.resourceId} with channel ${uniqueChannelId}`);
           }
         } catch (error) {
           logger.warn(`⚠️ Failed to delete Google subscription ${subscription.resourceId}:`, error as Error);
@@ -120,6 +127,35 @@ export class GoogleService {
     }
 
     logger.info(`✅ Emergency cleanup completed: removed ${googleSubscriptions.length} Google subscriptions`);
+  }
+
+  /**
+   * Stop a Google subscription with both channel.id and resourceId
+   */
+  private async stopGoogleSubscriptionWithChannelId(
+    accessToken: string,
+    channelId: string,
+    resourceId: string
+  ): Promise<void> {
+    try {
+      await axios.post(
+        'https://www.googleapis.com/calendar/v3/channels/stop',
+        {
+          id: channelId,
+          resourceId: resourceId
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+
+      logger.info(`✅ Successfully stopped Google subscription: channel=${channelId}, resource=${resourceId}`);
+    } catch (error) {
+      logger.warn(`⚠️ Failed to stop Google subscription: channel=${channelId}, resource=${resourceId}:`, error as Error);
+      throw error; // Re-throw so caller can handle
+    }
   }
 
 

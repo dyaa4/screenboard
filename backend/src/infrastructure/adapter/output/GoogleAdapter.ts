@@ -212,11 +212,11 @@ export class GoogleAdapter implements GoogleRepository {
       const userIdWithoutAuth0 = userId.replace("auth0|", "")
       const userIdWithDashboardId = `${userIdWithoutAuth0}-${dashboardId}`
 
-      // Make channel.id unique by including calendarId - this prevents 400 errors for multiple calendars
-      const uniqueChannelId = `${userIdWithDashboardId}-${calendarId}`;
+      // Use simple userId-dashboardId as channel.id (same for all calendars of this user/dashboard)
+      const channelId = userIdWithDashboardId;
 
       const channel = {
-        id: uniqueChannelId,
+        id: channelId,
         type: "webhook",
         address: process.env.GOOGLE_CALENDAR_WEBHOOK_URL,
         token: userIdWithDashboardId + calendarId,
