@@ -38,7 +38,7 @@ export class GoogleService {
     logger.info(`🔄 Refreshing Google subscriptions for user ${userId}`);
 
     try {
-      // 1. Get all active Google subscriptions for this user
+      // 1. Get all active Google subscriptions for this user-
       const activeSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(
         userId,
         dashboardId
@@ -227,7 +227,7 @@ export class GoogleService {
     const googleAccessToken = await this.ensureValidAccessToken(userId, dashboardId);
 
     try {
-      // 1. First create EventSubscription domain object to get the ID
+      // 1. First create EventSubscription domain object
       const eventSubscription = new EventSubscription(
         userId,
         dashboardId,
@@ -237,28 +237,54 @@ export class GoogleService {
         undefined // resourceId will be set after Google response
       );
 
-      // 2. Use the EventSubscription._id as channelId for Google
+      // 2. Save to database first to get a real database ID
+      await this.eventSubscriptionService.createSubscriptionFromDomain(eventSubscription);
+
+      logger.info(`EventSubscription created and saved to database`, {
+        id: eventSubscription._id,
+        userId,
+        dashboardId,
+        calendarId
+      });
+
+      // 3. Use the real database ID as channelId for Google
       const subscription = await this.googleRepository.subscribeToCalendarEvents(
         googleAccessToken,
         calendarId,
         userId,
         dashboardId,
-        eventSubscription._id // Pass the EventSubscription ID as channelId
+        eventSubscription._id // Pass the real database ID as channelId
       );
 
       // 3. Update EventSubscription with actual data from Google response
       eventSubscription.resourceId = subscription.resourceId;
-      eventSubscription.expiration = new Date(subscription.expiration);
+
+      // Google expiration is Unix timestamp in milliseconds
+      const expirationDate = subscription.expiration ? new Date(subscription.expiration) : new Date(Date.now() + 24 * 60 * 60 * 1000);
+      logger.info(`Google subscription expiration details`, {
+        originalExpiration: subscription.expiration,
+        convertedDate: expirationDate.toISOString(),
+        isValidDate: !isNaN(expirationDate.getTime())
+      });
+
+      eventSubscription.expiration = expirationDate;
       eventSubscription.updatedAt = new Date();
 
-      // 4. Save the completed EventSubscription to database
-      await this.eventSubscriptionService.createSubscriptionFromDomain(eventSubscription);
+      // 4. Update the EventSubscription in database with Google response data
+      await this.eventSubscriptionRepository.updateById(eventSubscription._id, {
+        resourceId: eventSubscription.resourceId,
+        expiration: eventSubscription.expiration,
+        updatedAt: eventSubscription.updatedAt
+      });
 
       logger.info(`✅ Google calendar subscription saved to database`, {
+        subscriptionId: eventSubscription._id,
         userId,
         dashboardId,
         calendarId,
-        resourceId: subscription.resourceId
+        resourceId: subscription.resourceId,
+        channelId: subscription.id,
+        expiration: eventSubscription.expiration.toISOString()
       });
 
       return subscription;

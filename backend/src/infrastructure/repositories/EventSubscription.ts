@@ -33,4 +33,8 @@ export class EventSubscriptionRepository implements IEventSubscriptionRepository
     async findByUserAndDashboard(userId: string, dashboardId: string): Promise<IEventSubscriptionData[]> {
         return await EventSubscriptionModel.find({ userId, dashboardId });
     }
+
+    async updateById(id: string, updates: Partial<IEventSubscriptionData>): Promise<IEventSubscriptionData | null> {
+        return await EventSubscriptionModel.findByIdAndUpdate(id, updates, { new: true }).exec();
+    }
 }
