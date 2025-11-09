@@ -155,15 +155,18 @@ export class GoogleAdapter implements GoogleRepository {
   private async stopSubscription(
     accessToken: string,
     resourceId: string,
-    _userId: string,
-    _dashboardId: string
+    userId: string,
+    dashboardId: string
   ): Promise<void> {
     try {
-      // We can't reconstruct the exact channel.id without calendarId
-      // But Google also accepts stopping by resourceId only
+      // Reconstruct the channel.id that was used when creating the subscription
+      const userIdWithoutAuth0 = userId.replace("auth0|", "");
+      const channelId = `${userIdWithoutAuth0}-${dashboardId}`;
+
       await axios.post(
         'https://www.googleapis.com/calendar/v3/channels/stop',
         {
+          id: channelId,
           resourceId: resourceId
         },
         {
@@ -173,7 +176,7 @@ export class GoogleAdapter implements GoogleRepository {
         }
       );
 
-      console.log(`✅ Stopped Google subscription with resourceId: ${resourceId}`);
+      console.log(`✅ Stopped Google subscription with channelId: ${channelId}, resourceId: ${resourceId}`);
     } catch (error) {
       console.error('Error stopping Google subscription:', error);
       // Wir werfen hier keinen Fehler, da die Subscription vielleicht schon abgelaufen ist
@@ -181,7 +184,7 @@ export class GoogleAdapter implements GoogleRepository {
   }
 
   /**
-   * Stop a subscription with the given resourceId
+   * Stop a subscription with the given resourceId and channel.id
    * This is a public wrapper for stopSubscription to be used externally
    */
   async stopSubscriptionPublic(
@@ -219,7 +222,7 @@ export class GoogleAdapter implements GoogleRepository {
         id: channelId,
         type: "webhook",
         address: process.env.GOOGLE_CALENDAR_WEBHOOK_URL,
-        token: userIdWithDashboardId + calendarId,
+        token: userIdWithDashboardId,
       }
 
       const response = await axios.post(
