@@ -20,6 +20,10 @@ export class EventSubscriptionRepository implements IEventSubscriptionRepository
         await EventSubscriptionModel.deleteOne({ resourceId });
     }
 
+    async deleteById(id: string): Promise<void> {
+        await EventSubscriptionModel.deleteOne({ _id: id });
+    }
+
     async getExpiringSoon(): Promise<IEventSubscriptionData[]> {
         const now = new Date();
         const soon = new Date(Date.now() + 24 * 60 * 60 * 1000); //for the next 24 hours

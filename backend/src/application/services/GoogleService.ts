@@ -258,7 +258,7 @@ export class GoogleService {
 
       // 3. Prepare update data from Google response
       const resourceId = subscription.resourceId;
-      
+
       // Google expiration is Unix timestamp in milliseconds
       const expirationDate = subscription.expiration ? new Date(subscription.expiration) : new Date(Date.now() + 24 * 60 * 60 * 1000);
       logger.info(`Google subscription expiration details`, {
@@ -348,33 +348,52 @@ export class GoogleService {
   }
 
   async logout(userId: string, dashboardId: string): Promise<void> {
-    try {
-      logger.info(`🚪 Google logout for user ${userId}`);
+    logger.info(`🚪 Google logout for user ${userId}, dashboard ${dashboardId}`);
 
+    try {
       // Cleanup subscriptions (if not already done by cleanup())
       try {
         const accessToken = await this.ensureValidAccessToken(userId, dashboardId);
         await this.refreshUserSubscriptions(userId, dashboardId, accessToken);
+        logger.info(`✅ Cleaned up Google subscriptions via refresh for user ${userId}`);
       } catch (error) {
         logger.warn(`⚠️ Could not cleanup Google subscriptions during logout, doing emergency cleanup:`, error as Error);
         await this.emergencyCleanup(userId, dashboardId);
       }
 
     } catch (error) {
-      logger.error('Error during Google logout:', error as Error);
+      logger.error('Error during Google logout subscription cleanup:', error as Error);
     }
 
     // Always delete Google token from database  
-    await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.GOOGLE);
+    try {
+      await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.GOOGLE);
+      logger.info(`✅ Deleted Google token for user ${userId}`);
+    } catch (error) {
+      logger.error('Error deleting Google token:', error as Error);
+    }
 
-    // Only delete GOOGLE subscriptions from database (not all services!)
-    const allSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(userId, dashboardId);
-    const googleSubscriptions = allSubscriptions.filter(sub => sub.serviceId === SERVICES.GOOGLE);
+    // FORCE delete ALL GOOGLE subscriptions from database (safety net!)
+    try {
+      const allSubscriptions = await this.eventSubscriptionRepository.findByUserAndDashboard(userId, dashboardId);
+      const googleSubscriptions = allSubscriptions.filter(sub => sub.serviceId === SERVICES.GOOGLE);
 
-    for (const subscription of googleSubscriptions) {
-      if (subscription.resourceId) {
-        await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+      logger.info(`🗑️ LOGOUT SAFETY: Found ${googleSubscriptions.length} Google subscriptions to delete for user ${userId}`);
+
+      for (const subscription of googleSubscriptions) {
+        if (subscription.resourceId) {
+          await this.eventSubscriptionRepository.deleteByResourceId(subscription.resourceId);
+          logger.info(`✅ LOGOUT: Deleted Google subscription ${subscription.resourceId}`);
+        } else {
+          // Even subscriptions without resourceId should be deleted from DB
+          await this.eventSubscriptionRepository.deleteById(subscription._id.toString());
+          logger.info(`✅ LOGOUT: Deleted Google subscription by ID ${subscription._id}`);
+        }
       }
+
+      logger.info(`✅ LOGOUT COMPLETED: All ${googleSubscriptions.length} Google subscriptions deleted for user ${userId}`);
+    } catch (error) {
+      logger.error(`❌ Error during Google logout subscription cleanup:`, error as Error);
     }
   }
 

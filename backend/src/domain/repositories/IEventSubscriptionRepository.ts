@@ -5,7 +5,9 @@ export interface IEventSubscriptionRepository {
     findByResourceId(resourceId: string): Promise<IEventSubscriptionData | null>;
     findById(id: string): Promise<IEventSubscriptionData | null>;
     deleteByResourceId(resourceId: string): Promise<void>;
+    deleteById(id: string): Promise<void>;
     deleteAllForUserDashboard(userId: string, dashboardId: string): Promise<void>;
     findByUserAndDashboard(userId: string, dashboardId: string): Promise<IEventSubscriptionData[]>;
     getExpiringSoon(): Promise<IEventSubscriptionData[]>;
+    updateById(id: string, updates: Partial<IEventSubscriptionData>): Promise<IEventSubscriptionData | null>;
 }
