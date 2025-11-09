@@ -290,9 +290,6 @@ export class GoogleService {
     // Always delete token and subscriptions from database
     await this.tokenRepository.deleteToken(userId, dashboardId, SERVICES.GOOGLE);
     await this.eventSubscriptionRepository.deleteAllForUserDashboard(userId, dashboardId);
-
-    // Räume Renewal Jobs auf
-    await this.cleanup(userId, dashboardId)
   }
 
   // Methode, um sicherzustellen, dass das Access Token gültig ist
