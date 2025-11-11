@@ -312,8 +312,14 @@ export class SmartThingsService {
 
         // CRITICAL: Cleanup local subscription records (API calls impossible with expired token)
         try {
-          await this.eventSubscriptionRepository.deleteAllForUserDashboard(userId, dashboardId);
-          logger.info('Cleaned up local SmartThings subscription records on token expiration',
+          // Only delete SmartThings subscriptions (do NOT touch other services)
+          if (this.eventSubscriptionRepository.deleteAllForUserDashboardAndService) {
+            await this.eventSubscriptionRepository.deleteAllForUserDashboardAndService(userId, dashboardId, SERVICES.SMARTTHINGS);
+          } else {
+            // Fallback (legacy) – avoid accidental broad deletions by logging warning
+            logger.warn('Repository missing service-scoped delete; skipping mass deletion to protect other services', { userId, dashboardId }, 'SmartThingsService');
+          }
+          logger.info('Cleaned up local SmartThings-only subscription records on token expiration',
             { userId, dashboardId }, 'SmartThingsService');
         } catch (cleanupError) {
           logger.warn('Failed to cleanup SmartThings subscription records on token expiration but continuing',
@@ -382,8 +388,12 @@ export class SmartThingsService {
       SERVICES.SMARTTHINGS
     );
 
-    // Lösche alle Subscriptions aus unserer DB
-    await this.eventSubscriptionRepository.deleteAllForUserDashboard(userId, dashboardId);
+    // Lösche NUR SmartThings Subscriptions aus unserer DB (andere Integrationen nicht anfassen)
+    if (this.eventSubscriptionRepository.deleteAllForUserDashboardAndService) {
+      await this.eventSubscriptionRepository.deleteAllForUserDashboardAndService(userId, dashboardId, SERVICES.SMARTTHINGS);
+    } else {
+      logger.warn('Repository missing service-scoped delete; skipping broad deletion during logout', { userId, dashboardId }, 'SmartThingsService');
+    }
 
     // Räume Renewal Jobs auf
     await this.cleanup(userId, dashboardId);

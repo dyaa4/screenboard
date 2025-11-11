@@ -1,4 +1,5 @@
 import EventSubscriptionModel from "../../infrastructure/database/EventSubscriptionModel";
+import logger from "../../utils/logger";
 import { IEventSubscriptionRepository } from "../../domain/repositories/IEventSubscriptionRepository";
 import { IEventSubscriptionData } from "../../domain/types/IEventSubscriptionDocument";
 
@@ -17,10 +18,12 @@ export class EventSubscriptionRepository implements IEventSubscriptionRepository
     }
 
     async deleteByResourceId(resourceId: string): Promise<void> {
+        logger.info('Deleting event subscription by resourceId', { resourceId }, 'EventSubscriptionRepository');
         await EventSubscriptionModel.deleteOne({ resourceId });
     }
 
     async deleteById(id: string): Promise<void> {
+        logger.info('Deleting event subscription by id', { id }, 'EventSubscriptionRepository');
         await EventSubscriptionModel.deleteOne({ _id: id });
     }
 
@@ -31,7 +34,13 @@ export class EventSubscriptionRepository implements IEventSubscriptionRepository
     }
 
     async deleteAllForUserDashboard(userId: string, dashboardId: string): Promise<void> {
+        logger.info('Deleting ALL event subscriptions for user/dashboard (ALL SERVICES!)', { userId, dashboardId }, 'EventSubscriptionRepository');
         await EventSubscriptionModel.deleteMany({ userId, dashboardId });
+    }
+
+    async deleteAllForUserDashboardAndService(userId: string, dashboardId: string, serviceId: string): Promise<void> {
+        logger.info('Deleting event subscriptions for user/dashboard/service', { userId, dashboardId, serviceId }, 'EventSubscriptionRepository');
+        await EventSubscriptionModel.deleteMany({ userId, dashboardId, serviceId });
     }
 
     async findByUserAndDashboard(userId: string, dashboardId: string): Promise<IEventSubscriptionData[]> {

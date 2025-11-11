@@ -93,6 +93,7 @@ export class TokenRepository implements ITokenRepository {
         dashboardId: string,
         serviceId: string,
     ): Promise<void> {
+        logger.info('Deleting token from DB', { userId, dashboardId, serviceId }, 'TokenRepository');
         await TokenModel.deleteOne({ userId, dashboardId, serviceId }).exec();
     }
 
@@ -102,6 +103,7 @@ export class TokenRepository implements ITokenRepository {
         expiration: Date,
         newRefreshToken?: string
     ): Promise<ITokenDocument | null> {
+        logger.info('Updating access token', { tokenId, expiration: expiration?.toISOString?.() }, 'TokenRepository');
         // Encrypt new tokens before updating
         const updateData: any = {
             accessToken: this.encryptionService.encrypt(newAccessToken),
@@ -137,10 +139,17 @@ export class TokenRepository implements ITokenRepository {
 
 
 
+            const plain = encryptedToken.toObject();
+
+            // Ensure we keep both _id and the virtual id property so callers
+            // that expect a Mongoose-like Document (with `id`) continue to work.
             const decryptedToken = {
-                ...encryptedToken.toObject(),
+                ...plain,
                 accessToken: decryptedAccessToken,
-                refreshToken: decryptedRefreshToken
+                refreshToken: decryptedRefreshToken,
+                // encryptedToken is still a Document here, so include its id/_id
+                id: (encryptedToken as any).id || plain._id,
+                _id: plain._id,
             };
 
             // Return as ITokenDocument (maintain the same type)
