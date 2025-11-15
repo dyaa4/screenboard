@@ -109,12 +109,12 @@ const PlayerContainer = ({
   theme?: string;
 }) => (
   <Card
-    className="w-full h-48 sm:h-52 shadow-xl hover:shadow-2xl transition-shadow duration-500"
+    className="w-full h-auto min-h-48 sm:min-h-52 shadow-xl hover:shadow-2xl transition-shadow duration-500"
     style={{
       ...getCustomColorCssClass(layout, theme),
     }}
   >
-    <CardBody className="p-3 sm:p-4 overflow-hidden">{children}</CardBody>
+    <CardBody className="p-3 sm:p-4 pb-4 sm:pb-5">{children}</CardBody>
   </Card>
 );
 
@@ -235,8 +235,8 @@ const PlayerContent = ({
         {/* Progress Bar */}
         <Progress
           aria-label="Music progress"
-          value={(progress / trackDuration) * 100}
-          className="mb-2"
+          value={trackDuration > 0 ? Math.max(0, Math.min(100, (progress / trackDuration) * 100)) : 0}
+          className="mt-1"
           color="success"
           size="sm"
         />
