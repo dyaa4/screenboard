@@ -1,6 +1,6 @@
 import { WeatherDay } from '@adapter/ui/types/weather/WeatherDay';
 import { useNext5DaysWeather } from '@hooks/sites/dashboardSite/useNext5DaysWeather';
-import { getFontSizeClass } from '@sites/Dashboard/helper';
+import { getFontSizeClass, getGlassBackground } from '@sites/Dashboard/helper';
 import classNames from 'classnames';
 import MenuSection from '../MenuSection/MenuSection';
 import { getIcon } from './helper';
@@ -39,16 +39,25 @@ const WeatherWidget = (props: WeatherProps): React.ReactNode => {
   const getDays = (layout: Layout | undefined): React.ReactNode[] => {
     return (weatherDataListe || [])?.map((day: WeatherDay) => {
       const isCurrentDay = isToday(parseISO(day.date));
+      const customColors = getCustomColorCssClass(layout, theme);
+      const hasCustomColor = layout?.customColor && customColors;
 
       return (
         <Card
           key={day.id}
-          className="flex-1 min-w-[160px] h-[7vw] max-h-[140px] min-h-[120px] overflow-x-hidden transition-shadow duration-300 shadow-lg hover:shadow-xl"
+          className="flex-1 min-w-[160px] h-[7vw] max-h-[140px] min-h-[120px] overflow-x-hidden shadow-xl backdrop-blur-xl border border-white/10"
           style={{
-            ...getCustomColorCssClass(layout, theme),
+            background: hasCustomColor
+              ? `linear-gradient(135deg, ${customColors!.backgroundColor || getGlassBackground(theme)} 0%, ${customColors!.backgroundColor || getGlassBackground(theme)} 100%)`
+              : getGlassBackground(theme),
+            backdropFilter: 'blur(40px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            boxShadow: hasCustomColor
+              ? `0 4px 16px 0 rgba(0, 0, 0, 0.1), 0 0 30px -8px ${customColors!.backgroundColor || 'transparent'}`
+              : '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
           }}
         >
-          <CardBody className="flex flex-row justify-between p-3 gap-2 overflow-x-hidden">
+          <CardBody className="flex flex-row justify-between p-3 gap-2 overflow-x-hidden bg-transparent">
             <div className="flex flex-col justify-between flex-1">
               <div>
                 <p
@@ -111,7 +120,7 @@ const WeatherWidget = (props: WeatherProps): React.ReactNode => {
           layout={layout}
         />
       ) : (
-        <div className="flex gap-4 w-full ">{getDays(layout)}</div>
+        <div className="flex gap-4 w-full bg-transparent">{getDays(layout)}</div>
       )}
     </MenuSection>
   );

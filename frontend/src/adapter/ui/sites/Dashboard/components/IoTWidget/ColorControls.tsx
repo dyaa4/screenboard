@@ -4,7 +4,7 @@ import { Card, Slider, Button } from '@heroui/react';
 import { IoTDevice } from '../../../../../../domain/types';
 import { Layout } from '../../../../../../domain/entities/Layout';
 import { getCustomColorCssClass } from '@adapter/ui/helpers/generalHelper';
-import { getFontSizeClass } from '@sites/Dashboard/helper';
+import { getFontSizeClass, getGlassBackground } from '@sites/Dashboard/helper';
 import { useTheme } from 'next-themes';
 
 interface ColorControlsProps {
@@ -33,7 +33,7 @@ export default function ColorControls({
     const [hue, setHue] = useState(0);
     const [saturation, setSaturation] = useState(100);
     const [colorTemperature, setColorTemperature] = useState(3000);
-    const [brightness, setBrightness] = useState(100);
+    const [localBrightness, setLocalBrightness] = useState(50);
 
     // Panel state - closed by default
     const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -91,7 +91,7 @@ export default function ColorControls({
 
     // Only for actual brightness selection (not live preview)
     const handleBrightnessChange = (newLevel: number) => {
-        setBrightness(newLevel);
+        setLocalBrightness(newLevel);
         onBrightnessChange(device.deviceId, newLevel);
     };
 
@@ -106,7 +106,7 @@ export default function ColorControls({
     };
 
     const handleLiveBrightnessPreview = (newLevel: number) => {
-        setBrightness(newLevel);
+        setLocalBrightness(newLevel);
     };
 
     if (!device.supportsColor && !device.supportsColorTemperature && !device.supportsBrightness) {
@@ -118,7 +118,7 @@ export default function ColorControls({
             {/* Color Control Button */}
             <Button
                 size="sm"
-                variant="ghost"
+                variant="shadow"
                 isIconOnly
                 onPress={() => setIsPanelOpen(!isPanelOpen)}
                 isDisabled={isLoading || hasError}
@@ -133,7 +133,7 @@ export default function ColorControls({
                 <>
                     {/* Backdrop with blur effect */}
                     <div
-                        className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-md"
+                        className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-lg"
                         onClick={(e) => {
                             e.stopPropagation();
                             setIsPanelOpen(false);
@@ -153,20 +153,26 @@ export default function ColorControls({
                         }}
                     >
                         <Card
-                            className="p-3 shadow-2xl border max-h-full"
-                            style={getCustomColorCssClass(layout, theme)}
+                            className="p-4 shadow-2xl border-2 border-primary/20 max-h-full backdrop-blur-xl"
+                            style={{
+                                background: getGlassBackground(theme),
+                                backdropFilter: 'blur(40px) saturate(180%)',
+                                WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                                boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
+                            }}
                         >
-                            <div className="space-y-3 overflow-hidden">
-                                <div className="flex items-center justify-between">
-                                    <h4 className={`${getFontSizeClass(layout?.fontSize)} font-medium`}>
-                                        <i className="fa-solid fa-palette mr-2"></i>
+                            <div className="space-y-4 overflow-hidden bg-transparent">
+                                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                                    <h4 className={`${getFontSizeClass(layout?.fontSize)} font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent`}>
+                                        <i className="fa-solid fa-palette mr-2 text-primary"></i>
                                         Farbsteuerung
                                     </h4>
                                     <Button
                                         size="sm"
-                                        variant="ghost"
+                                        variant="light"
                                         isIconOnly
                                         onPress={() => setIsPanelOpen(false)}
+                                        className="hover:bg-danger/10 hover:text-danger transition-colors"
                                     >
                                         <i className="fa-solid fa-times"></i>
                                     </Button>
@@ -186,7 +192,7 @@ export default function ColorControls({
                                                 step={1}
                                                 maxValue={100}
                                                 minValue={0}
-                                                value={brightness}
+                                                value={localBrightness}
                                                 onChange={(value) => handleLiveBrightnessPreview(value as number)}
                                                 onChangeEnd={(value) => handleBrightnessChange(value as number)}
                                                 isDisabled={isLoading || hasError}
@@ -195,7 +201,7 @@ export default function ColorControls({
                                                     track: "bg-gradient-to-r from-gray-800 to-yellow-200",
                                                 }}
                                             />
-                                            <span className="text-xs w-12 text-right">{Math.round(brightness)}%</span>
+                                            <span className="text-xs w-12 text-right">{Math.round(localBrightness)}%</span>
                                         </div>
 
                                         {/* Quick Brightness Presets */}

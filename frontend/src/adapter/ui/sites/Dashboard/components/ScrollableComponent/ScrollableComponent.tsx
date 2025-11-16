@@ -60,6 +60,7 @@ const ScrollableComponent: React.FC<IScrollableComponentProps> = ({
         userSelect: 'none',
         cursor: isScrolling ? 'grabbing' : 'grab',
         direction: isRTL ? 'rtl' : 'ltr',
+        backgroundColor: 'transparent',
       }}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}

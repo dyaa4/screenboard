@@ -2,7 +2,7 @@ import { getLocale } from '@adapter/ui/helpers/dateHelper';
 import { getCustomColorCssClass } from '@adapter/ui/helpers/generalHelper';
 import { SimpleEventDto } from '@domain/dtos/SimpleEventDto';
 import { Layout } from '@domain/entities/Layout';
-import { getFontSizeClass } from '@sites/Dashboard/helper';
+import { getFontSizeClass, getGlassBackground } from '@sites/Dashboard/helper';
 import {
   addDays,
   eachDayOfInterval,
@@ -145,16 +145,25 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
     const dayEvents = getEventsForDay(day);
     const isCurrentDay = isToday(day);
     const hasEvents = dayEvents.length > 0;
+    const customColors = getCustomColorCssClass(layout, theme);
+    const hasCustomColor = layout?.customColor && customColors;
 
     return (
       <Card
         key={day.toString()}
-        className="shrink-0 w-[250px] min-h-[180px] max-h-[350px] overflow-x-hidden transition-shadow duration-300 shadow-lg hover:shadow-xl"
+        className="shrink-0 w-[250px] min-h-[180px] max-h-[350px] overflow-x-hidden shadow-xl backdrop-blur-xl border border-white/10"
         style={{
-          ...getCustomColorCssClass(layout, theme),
+          background: hasCustomColor
+            ? `linear-gradient(135deg, ${customColors!.backgroundColor || getGlassBackground(theme)} 0%, ${customColors!.backgroundColor || getGlassBackground(theme)} 100%)`
+            : getGlassBackground(theme),
+          backdropFilter: 'blur(40px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+          boxShadow: hasCustomColor
+            ? `0 4px 16px 0 rgba(0, 0, 0, 0.1), 0 0 30px -8px ${customColors!.backgroundColor || 'transparent'}`
+            : '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
         }}
       >
-        <CardHeader className="flex-col items-start pb-1 pt-2 px-3">
+        <CardHeader className="flex-col items-start pb-1 pt-2 px-3 bg-transparent">
           <p className={`font-bold ${getFontSizeClass(layout?.fontSize)}`}>
             {format(day, 'd. MMM', { locale })}
           </p>
@@ -166,7 +175,7 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
               : format(day, 'EEE', { locale })}
           </p>
         </CardHeader>
-        <CardBody className="overflow-y-auto overflow-x-hidden pt-1 px-2 py-2">
+        <CardBody className="overflow-y-auto overflow-x-hidden pt-1 px-2 py-2 bg-transparent">
           {hasEvents ? (
             <div className="space-y-0.5">
               {dayEvents.map(renderEventItem)}
@@ -189,8 +198,8 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
   };
 
   return (
-    <div className="relative w-full">
-      <div className="flex gap-4 transition-all duration-500">
+    <div className="relative w-full bg-transparent">
+      <div className="flex gap-4 transition-all duration-500 bg-transparent">
         {visibleDays.map(renderDay)}
       </div>
     </div>

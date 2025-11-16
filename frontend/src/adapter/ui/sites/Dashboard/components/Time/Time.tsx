@@ -7,7 +7,10 @@ import { format, toZonedTime } from 'date-fns-tz';
 import * as dateFnsLocales from 'date-fns/locale';
 import React, { useEffect, useState } from 'react';
 import Clock from 'react-clock';
-import 'react-clock/dist/Clock.css'; // Importieren Sie die CSS-Datei für die Uhr
+import 'react-clock/dist/Clock.css';
+import { getLocale } from '@adapter/ui/helpers/dateHelper';
+import { getGlassBackground } from '@sites/Dashboard/helper';
+import { useTheme } from 'next-themes';
 
 const useCurrentDateEffect = (timezone: string): Date => {
   const [date, setDate] = useState<Date>(() =>
@@ -35,6 +38,7 @@ const Time: React.FC<TimeProps> = ({ widget }) => {
   const timezone = widgetSettings?.timezone || 'UTC';
   const timeformat = widgetSettings?.timeformat || '24h';
   const clockType = widgetSettings?.clockType || 'digital';
+  const { theme } = useTheme();
 
   const dateFormat = timeformat === '24h' ? 'HH:mm' : 'hh:mm a';
 
@@ -63,9 +67,29 @@ const Time: React.FC<TimeProps> = ({ widget }) => {
   return (
     <div className="time-widget">
       {clockType === 'digital' ? (
-        <span className="time">{formattedTime}</span>
+        <div
+          className="inline-block px-8 py-4 rounded-3xl shadow-2xl backdrop-blur-xl border border-white/10"
+          style={{
+            background: getGlassBackground(theme),
+            backdropFilter: 'blur(40px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <span className="time text-5xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-br from-white via-white/90 to-white/70 bg-clip-text text-transparent drop-shadow-lg">
+            {formattedTime}
+          </span>
+        </div>
       ) : (
-        <div className="analog-clock-container p-4 bg-white/80 dark:bg-content1/80 rounded-full shadow-lg">
+        <div
+          className="analog-clock-container p-4 rounded-full shadow-2xl backdrop-blur-xl border border-white/10"
+          style={{
+            background: getGlassBackground(theme),
+            backdropFilter: 'blur(40px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            boxShadow: '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
+          }}
+        >
           <Clock
             value={date}
             renderNumbers={true}

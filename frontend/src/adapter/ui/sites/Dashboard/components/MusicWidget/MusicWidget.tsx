@@ -14,6 +14,7 @@ import useTrackProgress from './hooks/useTrackProgress';
 import { Layout } from '../../../../../../domain/entities/Layout';
 import { Dashboard } from '../../../../../../domain/entities/Dashboard';
 import { getCustomColorCssClass } from '@adapter/ui/helpers/generalHelper';
+import { getGlassBackground } from '@sites/Dashboard/helper';
 import { useTheme } from 'next-themes';
 import WidgetSkeleton from '../WidgetSkeleton/WidgetSkeleton';
 
@@ -107,16 +108,28 @@ const PlayerContainer = ({
   children: React.ReactNode;
   layout?: Layout;
   theme?: string;
-}) => (
-  <Card
-    className="w-full h-auto min-h-48 sm:min-h-52 shadow-xl hover:shadow-2xl transition-shadow duration-500"
-    style={{
-      ...getCustomColorCssClass(layout, theme),
-    }}
-  >
-    <CardBody className="p-3 sm:p-4 pb-4 sm:pb-5">{children}</CardBody>
-  </Card>
-);
+}) => {
+  const customColors = getCustomColorCssClass(layout, theme);
+  const hasCustomColor = layout?.customColor && customColors;
+
+  return (
+    <Card
+      className="w-full h-auto min-h-48 sm:min-h-52 shadow-2xl backdrop-blur-xl border border-white/10"
+      style={{
+        background: hasCustomColor
+          ? `linear-gradient(135deg, ${customColors!.backgroundColor || getGlassBackground(theme)} 0%, ${customColors!.backgroundColor || getGlassBackground(theme)} 100%)`
+          : getGlassBackground(theme),
+        backdropFilter: 'blur(40px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+        boxShadow: hasCustomColor
+          ? `0 4px 16px 0 rgba(0, 0, 0, 0.1), 0 0 40px -10px ${customColors!.backgroundColor || 'transparent'}`
+          : '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      <CardBody className="p-3 sm:p-4 pb-4 sm:pb-5 bg-transparent">{children}</CardBody>
+    </Card>
+  );
+};
 
 const NoPlayerMessage = () => (
   <div className="flex flex-col items-center justify-center h-full">

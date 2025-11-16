@@ -1,7 +1,7 @@
 import { Layout } from '@domain/entities/Layout';
 import { Widget } from '@domain/entities/Widget';
 import { RemarkWidgetSettings } from '@domain/types';
-import { getFontSizeClass } from '@sites/Dashboard/helper';
+import { getFontSizeClass, getGlassBackground } from '@sites/Dashboard/helper';
 import { useEffect, useState } from 'react';
 import { Card, CardBody } from '@heroui/react';
 import { getCustomColorCssClass } from '@adapter/ui/helpers/generalHelper';
@@ -32,14 +32,24 @@ const RemarkWidget = (props: RemarkWidgetProps): JSX.Element => {
     };
   }, []);
 
+  const customColors = getCustomColorCssClass(layout, theme);
+  const hasCustomColor = layout?.customColor && customColors;
+
   return (
-    <Card 
-      className="mt-4 shadow-xl hover:shadow-2xl transition-shadow duration-500"
+    <Card
+      className="mt-4 shadow-2xl backdrop-blur-xl border border-white/10"
       style={{
-        ...getCustomColorCssClass(layout, theme),
+        background: hasCustomColor
+          ? `linear-gradient(135deg, ${customColors!.backgroundColor || getGlassBackground(theme)} 0%, ${customColors!.backgroundColor || getGlassBackground(theme)} 100%)`
+          : getGlassBackground(theme),
+        backdropFilter: 'blur(40px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+        boxShadow: hasCustomColor
+          ? `0 4px 16px 0 rgba(0, 0, 0, 0.1), 0 0 40px -10px ${customColors!.backgroundColor || 'transparent'}`
+          : '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
       }}
     >
-      <CardBody className="flex flex-row gap-6 items-center px-8 py-10">
+      <CardBody className="flex flex-row gap-6 items-center px-8 py-10 bg-transparent">
         <i className="fa-solid fa-quote-left text-3xl opacity-50 flex-shrink-0"></i>
         <p className={`${getFontSizeClass(layout?.fontSize)} flex-1 text-center italic font-light leading-relaxed`}>
           {sentence}

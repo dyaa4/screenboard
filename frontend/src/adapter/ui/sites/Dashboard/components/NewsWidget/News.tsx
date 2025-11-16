@@ -7,6 +7,7 @@ import MenuSection from '../MenuSection/MenuSection';
 import { Widget } from '../../../../../../domain/entities/Widget';
 import { Layout } from '../../../../../../domain/entities/Layout';
 import { getCustomColorCssClass } from '@adapter/ui/helpers/generalHelper';
+import { getGlassBackground } from '@sites/Dashboard/helper';
 import { useTheme } from 'next-themes';
 import { JSX } from 'react';
 import { Card, CardHeader, CardBody, CardFooter, Image } from '@heroui/react';
@@ -63,55 +64,67 @@ function NewsWidget({ widget, layout }: NewsProps): JSX.Element {
               layout={layout}
             />
           ) : (
-            <div className="flex gap-4 min-w-max">
-              {rssData.map((item: any) => (
-                <Card
-                  key={item.guid}
-                  className="w-80 shrink-0 transition-shadow duration-300 shadow-lg hover:shadow-xl"
-                  style={{
-                    ...getCustomColorCssClass(layout, theme),
-                  }}
-                >
-                  <CardHeader className="p-0 overflow-hidden">
-                    {item.enclosure?.url ? (
-                      <Image
-                        src={item.enclosure.url}
-                        alt={item.title}
-                        className="w-full h-48 object-cover cursor-grab active:cursor-grabbing"
-                        fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='192'%3E%3Crect width='320' height='192' fill='%23f4f4f5'/%3E%3C/svg%3E"
-                        onDragStart={(e) => e.preventDefault()}
-                      />
-                    ) : (
-                      <div className="w-full h-48 flex items-center justify-center bg-default-100">
-                        <i className="fa-solid fa-newspaper text-4xl text-default-400"></i>
-                      </div>
-                    )}
-                  </CardHeader>
-                  <CardBody className="py-3 px-4 gap-2 overflow-hidden">
-                    <h3 className="text-lg font-semibold line-clamp-2" title={item.title}>
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-default-500 line-clamp-3" title={item.description}>
-                      {item.description}
-                    </p>
-                  </CardBody>
-                  <CardFooter className="px-4 py-3 flex justify-between items-center">
-                    <span className="text-xs text-default-400">
-                      {formatDate(new Date(item.pubDate))}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(item.link, '_blank', 'noopener,noreferrer');
-                      }}
-                      className="cursor-pointer hover:text-primary transition-colors"
-                      aria-label="Open article"
-                    >
-                      <i className="fa-solid fa-external-link text-lg text-default-500 hover:text-primary"></i>
-                    </button>
-                  </CardFooter>
-                </Card>
-              ))}
+            <div className="flex gap-4 min-w-max bg-transparent">
+              {rssData.map((item: any) => {
+                const customColors = getCustomColorCssClass(layout, theme);
+                const hasCustomColor = layout?.customColor && customColors;
+
+                return (
+                  <Card
+                    key={item.guid}
+                    className="w-80 shrink-0 shadow-xl backdrop-blur-xl border border-white/10"
+                    style={{
+                      background: hasCustomColor
+                        ? `linear-gradient(135deg, ${customColors!.backgroundColor || getGlassBackground(theme)} 0%, ${customColors!.backgroundColor || getGlassBackground(theme)} 100%)`
+                        : getGlassBackground(theme),
+                      backdropFilter: 'blur(40px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+                      boxShadow: hasCustomColor
+                        ? `0 4px 16px 0 rgba(0, 0, 0, 0.1), 0 0 30px -8px ${customColors!.backgroundColor || 'transparent'}`
+                        : '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    <CardHeader className="p-0 overflow-hidden">
+                      {item.enclosure?.url ? (
+                        <Image
+                          src={item.enclosure.url}
+                          alt={item.title}
+                          className="w-full h-48 object-cover cursor-grab active:cursor-grabbing"
+                          fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='192'%3E%3Crect width='320' height='192' fill='%23f4f4f5'/%3E%3C/svg%3E"
+                          onDragStart={(e) => e.preventDefault()}
+                        />
+                      ) : (
+                        <div className="w-full h-48 flex items-center justify-center bg-default-100">
+                          <i className="fa-solid fa-newspaper text-4xl text-default-400"></i>
+                        </div>
+                      )}
+                    </CardHeader>
+                    <CardBody className="py-3 px-4 gap-2 overflow-hidden">
+                      <h3 className="text-lg font-semibold line-clamp-2" title={item.title}>
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-default-500 line-clamp-3" title={item.description}>
+                        {item.description}
+                      </p>
+                    </CardBody>
+                    <CardFooter className="px-4 py-3 flex justify-between items-center">
+                      <span className="text-xs text-default-400">
+                        {formatDate(new Date(item.pubDate))}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(item.link, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="cursor-pointer hover:text-primary transition-colors"
+                        aria-label="Open article"
+                      >
+                        <i className="fa-solid fa-external-link text-lg text-default-500 hover:text-primary"></i>
+                      </button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </>

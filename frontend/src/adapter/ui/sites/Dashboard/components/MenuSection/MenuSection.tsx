@@ -14,17 +14,17 @@ const MenuSection: React.FC<IMenuSectionProps> = (props: IMenuSectionProps) => {
   const getContent = (): JSX.Element => {
     if (props.scrollable) {
       return (
-        <ScrollableComponent className="flex flex-row gap-4">
+        <ScrollableComponent className="flex flex-row gap-4 bg-transparent">
           {props.children}
         </ScrollableComponent>
       );
     }
 
-    return <div className="flex flex-row gap-4 ">{props.children}</div>;
+    return <div className="flex flex-row gap-4 bg-transparent">{props.children}</div>;
   };
 
   return (
-    <div className="mt-4 flex flex-col gap-2">
+    <div className="mt-4 flex flex-col gap-2 bg-transparent">
       <div className="items-center flex gap-2">
         <i className={props.icon + ' text-white'} />
         <span

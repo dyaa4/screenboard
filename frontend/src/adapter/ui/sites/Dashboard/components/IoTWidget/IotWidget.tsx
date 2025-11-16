@@ -6,7 +6,7 @@ import { t } from '@adapter/ui/i18n/i18n';
 import NotConfiguredMessage from '@components/NotConfiguredMessage/NotConfiguredMessage';
 import { Card, Chip } from '@heroui/react';
 import { useSmartThings } from '@hooks/api/useSmartthings';
-import { getFontSizeClass } from '@sites/Dashboard/helper';
+import { getFontSizeClass, getGlassBackground } from '@sites/Dashboard/helper';
 import { useTheme } from 'next-themes';
 import { JSX, useEffect, useState } from 'react';
 import { Layout } from '../../../../../../domain/entities/Layout';
@@ -292,15 +292,24 @@ function IoTWidget({ widget, layout }: IoTWidgetProps): JSX.Element {
     const isOn = isDeviceOn(device.deviceId);
     const hasError = commandErrors[device.deviceId];
     const deviceIcon = getDeviceIcon(device);
+    const customColors = getCustomColorCssClass(layout, theme);
+    const hasCustomColor = layout?.customColor && customColors;
 
     return (
       <div key={device.deviceId} className="relative">
         <Card
-          className="p-4 transition-shadow duration-300 shadow-lg hover:shadow-xl"
+          className="p-4 shadow-xl backdrop-blur-xl border border-white/10"
           style={{
-            width: '160px', // Fixed width for all devices since color controls are now in overlay
+            width: '160px',
             minHeight: '120px',
-            ...getCustomColorCssClass(layout, theme),
+            background: hasCustomColor
+              ? `linear-gradient(135deg, ${customColors!.backgroundColor || getGlassBackground(theme)} 0%, ${customColors!.backgroundColor || getGlassBackground(theme)} 100%)`
+              : getGlassBackground(theme),
+            backdropFilter: 'blur(40px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            boxShadow: hasCustomColor
+              ? `0 4px 16px 0 rgba(0, 0, 0, 0.1), 0 0 30px -8px ${customColors!.backgroundColor || 'transparent'}`
+              : '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
           }}
         >
           <div

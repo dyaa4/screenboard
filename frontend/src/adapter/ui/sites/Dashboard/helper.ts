@@ -19,3 +19,14 @@ export const getFontSizeClass = (fontsize: FontSize | undefined) => {
       return 'text-md';
   }
 };
+
+/**
+ * Returns the appropriate glass background color based on theme
+ * Dark mode: darker semi-transparent background for better contrast
+ * Light mode: lighter semi-transparent background
+ */
+export const getGlassBackground = (theme: string | undefined): string => {
+  return theme === 'dark'
+    ? 'rgba(0, 0, 0, 0.3)'  // Darker in dark mode
+    : 'rgba(255, 255, 255, 0.05)';  // Light in light mode
+};

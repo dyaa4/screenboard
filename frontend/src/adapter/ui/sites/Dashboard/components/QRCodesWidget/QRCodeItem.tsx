@@ -2,6 +2,7 @@ import { QRCodeData } from '../../../../../../domain/types/widget/QRCodeWidgetSe
 import { QRCodeSVG } from 'qrcode.react';
 import { memo } from 'react';
 import { Tooltip, Card, CardHeader, CardBody, CardFooter, Divider, Chip } from '@heroui/react';
+import { getGlassBackground } from '@sites/Dashboard/helper';
 
 interface QRCodeItemProps {
   qrcode: QRCodeData;
@@ -52,12 +53,22 @@ const QRCodeItem = memo(
     // Maximale Länge für Details
     const maxDetailLength = 30;
 
+    const customColors = getCustomColorCssClass(layout, theme);
+    const hasCustomColor = layout?.customColor && customColors;
+
     return (
       <Card
+        className="qr-code-item shadow-xl backdrop-blur-xl border border-white/10"
         style={{
-          ...getCustomColorCssClass(layout, theme),
+          background: hasCustomColor
+            ? `linear-gradient(135deg, ${customColors!.backgroundColor || getGlassBackground(theme)} 0%, ${customColors!.backgroundColor || getGlassBackground(theme)} 100%)`
+            : getGlassBackground(theme),
+          backdropFilter: 'blur(40px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+          boxShadow: hasCustomColor
+            ? `0 4px 16px 0 rgba(0, 0, 0, 0.1), 0 0 30px -8px ${customColors!.backgroundColor || 'transparent'}`
+            : '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
         }}
-        className="qr-code-item transition-shadow duration-300 shadow-lg hover:shadow-xl"
       >
         <CardHeader className="flex items-center justify-between">
           <Chip
