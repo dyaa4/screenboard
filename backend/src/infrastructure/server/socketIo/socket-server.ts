@@ -33,6 +33,14 @@ export class SocketServer {
                 methods: ["GET", "POST"],
                 credentials: true,
             },
+            // Timeouts für 24/7 Stabilität
+            pingTimeout: 60000, // 60 Sekunden - Zeit bis Server Client als disconnected markiert
+            pingInterval: 25000, // 25 Sekunden - Intervall für Ping/Pong
+            connectTimeout: 45000, // 45 Sekunden - Timeout für initiale Verbindung
+            // Transports explizit definieren
+            transports: ['websocket', 'polling'],
+            // Allow upgrades von polling zu websocket
+            allowUpgrades: true,
         })
 
         this.authService = new AuthService()
@@ -61,6 +69,17 @@ export class SocketServer {
 
         this.socketManager.addSocket(socket)
 
+        // Heartbeat-Handler für 24/7 Verbindungsüberwachung
+        socket.on("heartbeat", (data: any) => {
+            logger.debug('Heartbeat received', {
+                socketId: socket.id,
+                userId: socket.user?.id,
+                timestamp: data?.timestamp
+            }, 'SocketServer');
+            // Bestätige Heartbeat
+            socket.emit("pong", { timestamp: Date.now() })
+        })
+
         socket.on("communication", (message: string) => {
             this.handleCommunication(socket, message)
         })
@@ -69,13 +88,16 @@ export class SocketServer {
             this.handleRefreshDashboard(socket, data)
         })
 
-        socket.on("disconnect", () => {
-            this.handleDisconnect(socket)
+        socket.on("disconnect", (reason: string) => {
+            this.handleDisconnect(socket, reason)
         })
 
         socket.on("error", (error: Error) => {
             logger.error("SocketIO client error", error, 'SocketServer')
         })
+
+        // Sende initiale Pong-Nachricht um Verbindung zu bestätigen
+        socket.emit("pong", { timestamp: Date.now(), message: "Connected" })
     }
 
     private handleCommunication(
@@ -141,12 +163,13 @@ export class SocketServer {
         }
     }
 
-    private handleDisconnect(socket: AuthenticatedSocket): void {
+    private handleDisconnect(socket: AuthenticatedSocket, reason?: string): void {
         try {
             logger.info('SocketIO client disconnected', {
                 socketId: socket.id,
                 userId: socket.user?.id,
-                dashboardId: socket.user?.dashboardId
+                dashboardId: socket.user?.dashboardId,
+                reason: reason || 'unknown'
             }, 'SocketServer');
             this.socketManager.removeSocket(socket)
         } catch (error) {

@@ -45,6 +45,12 @@ export default class CommunicationAdapter implements CommunicationRepository {
       auth: { token },
       query: { dashboardId },
       extraHeaders: { Authorization: `Bearer ${token}` },
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      transports: ['websocket', 'polling'],
     });
 
     this.setupListeners();
@@ -70,12 +76,15 @@ export default class CommunicationAdapter implements CommunicationRepository {
           return;
         }
 
-        if (this.isConnected()) {
-          console.log('Token check: reconnecting...');
+        // Nur reconnecten wenn NICHT verbunden
+        if (!this.isConnected()) {
+          console.log('Token check: Connection lost, reconnecting...');
           await this.reconnect();
+        } else {
+          console.log('Token check: Connection is healthy');
         }
       },
-      10 * 60 * 1000,
+      5 * 60 * 1000, // Reduziere auf 5 Minuten für bessere Reaktionszeit
     );
   }
 
@@ -122,29 +131,58 @@ export default class CommunicationAdapter implements CommunicationRepository {
 
     this.socket.on('connect', () => {
       console.log('Socket connected:', new Date().toISOString());
+      // Sende Heartbeat bei erfolgreicher Verbindung
+      this.socket?.emit('heartbeat', { timestamp: Date.now() });
     });
 
     this.socket.on('disconnect', (reason) => {
       console.log('Socket disconnected. Reason:', reason);
-      // Bei bestimmten Disconnect-Gründen Token-Check stoppen
-      if (reason === 'io server disconnect' || reason === 'transport close') {
-        this.stopTokenCheck();
+      // Nur bei Server-initiierter Trennung Token-Check stoppen
+      if (reason === 'io server disconnect') {
+        console.warn('Server disconnected the socket. Attempting reconnect...');
       }
+      // Bei transport close und Client-disconnect automatisch reconnecten lassen
+    });
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log(`Socket reconnected after ${attemptNumber} attempts`);
+      // Nach Reconnect Heartbeat senden
+      this.socket?.emit('heartbeat', { timestamp: Date.now() });
+    });
+
+    this.socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log(`Reconnection attempt ${attemptNumber}`);
+    });
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('Reconnection error:', error);
+    });
+
+    this.socket.on('reconnect_failed', () => {
+      console.error('Reconnection failed after all attempts');
+      // Token könnte abgelaufen sein, versuche mit neuem Token
+      this.reconnect().catch(console.error);
     });
 
     this.socket.on('connect_error', async (error) => {
       console.error('Connection error:', error);
-      if (error.message === 'Authentication error') {
+      // Bei Auth-Fehler Token erneuern und reconnecten
+      if (error.message?.includes('Authentication') || error.message?.includes('auth')) {
+        console.log('Authentication error detected, refreshing token...');
         try {
           await this.reconnect();
         } catch (reconnectError) {
-          console.error('Reconnect failed:', reconnectError);
-          this.stopTokenCheck();
+          console.error('Reconnect with new token failed:', reconnectError);
         }
-      } else {
-        // Bei anderen Verbindungsfehlern auch Token-Check stoppen
-        this.stopTokenCheck();
       }
+    });
+
+    this.socket.on('pong', () => {
+      console.log('Pong received from server');
+    });
+
+    this.socket.on('error', (error) => {
+      console.error('Socket error:', error);
     });
   }
 
@@ -252,32 +290,43 @@ export default class CommunicationAdapter implements CommunicationRepository {
   public async reconnect(): Promise<void> {
     if (!this.currentDashboardId) {
       console.warn('No dashboardId available for reconnect.');
-      this.stopTokenCheck();
       return;
     }
 
     try {
+      console.log('Attempting to reconnect with fresh token...');
+
       // Frischen Token holen
       const token = await this.accessTokenUseCase.getAccessToken();
       if (!token) {
         console.error('No token available. Cannot reconnect socket.');
-        this.stopTokenCheck();
         return;
       }
 
-      this.socket?.disconnect();
+      // Alte Verbindung sauber trennen
+      if (this.socket) {
+        this.socket.removeAllListeners();
+        this.socket.disconnect();
+      }
 
       const socketUrl = import.meta.env.VITE_SERVER_API;
       this.socket = io(socketUrl, {
         auth: { token },
         query: { dashboardId: this.currentDashboardId },
         extraHeaders: { Authorization: `Bearer ${token}` },
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+        transports: ['websocket', 'polling'],
       });
 
       this.setupListeners();
+      console.log('Reconnect initiated with new token');
     } catch (error) {
       console.error('Failed to reconnect socket:', error);
-      this.stopTokenCheck();
+      // Nicht Token-Check stoppen, damit es später nochmal versucht wird
     }
   }
   /**
