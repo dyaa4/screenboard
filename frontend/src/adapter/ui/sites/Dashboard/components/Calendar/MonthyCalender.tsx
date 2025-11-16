@@ -175,7 +175,7 @@ const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
               : format(day, 'EEE', { locale })}
           </p>
         </CardHeader>
-        <CardBody className="overflow-y-auto overflow-x-hidden pt-1 px-2 py-2 bg-transparent">
+        <CardBody className="overflow-y-hidden overflow-x-hidden pt-1 px-2 py-2 bg-transparent">
           {hasEvents ? (
             <div className="space-y-0.5">
               {dayEvents.map(renderEventItem)}

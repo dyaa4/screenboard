@@ -57,6 +57,7 @@ const ScrollableComponent: React.FC<IScrollableComponentProps> = ({
       id={id}
       style={{
         overflowX: 'auto',
+        overflowY: 'hidden',
         userSelect: 'none',
         cursor: isScrolling ? 'grabbing' : 'grab',
         direction: isRTL ? 'rtl' : 'ltr',

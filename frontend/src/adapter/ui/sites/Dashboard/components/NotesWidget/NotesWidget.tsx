@@ -57,7 +57,7 @@ function NotesWidget({ widget, layout }: NotesProps): JSX.Element {
             : '0 4px 16px 0 rgba(0, 0, 0, 0.1)',
         }}
       >
-        <CardBody className="overflow-auto bg-transparent" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <CardBody className="bg-transparent" style={{ maxHeight: 'none' }}>
           <div
             className="prose dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{
