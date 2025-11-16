@@ -71,8 +71,6 @@ $blue: rgb(66, 165, 245);
 
 body {
   margin: 0px;
-  overflow-x: hidden;
-  overflow-y: hidden;
   padding: 0px;
 
   &::-webkit-scrollbar-track {
@@ -113,7 +111,8 @@ body {
 #app {
   background-color: gray(30);
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
   box-sizing: border-box;
 
@@ -673,9 +672,6 @@ body {
     height: 100vh;
     width: 100%;
     max-width: 100vw;
-    overflow: hidden;
-    overflow-x: hidden;
-    overflow-y: hidden;
     opacity: 0;
     pointer-events: none;
     position: relative;
@@ -690,8 +686,7 @@ body {
       max-width: 100%;
       padding: 25px;
       box-sizing: border-box;
-      overflow-x: hidden;
-      overflow-y: hidden;
+
 
       #app-menu-content {
         margin: auto;
